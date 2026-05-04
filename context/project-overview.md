@@ -266,6 +266,14 @@ AI provider:
 - Markdown-first editing experience
 - Clear visual distinction between item types
 
+### Screenshots
+
+Refer to the screenshots bellow as a base for the dashboard UI. It doesnt have to be exact. Use it as a refernce:
+
+@context/screenshots/dashboard-ui-main.png
+@context/screenshots/dashboard-ui-item-drawer.png
+
+
 ### 8.2 Main Layout
 
 ```text
