@@ -3,10 +3,25 @@
 ## Status
 
 <!-- Not Started | Inprogress | Completed -->
+Inprogress
 
 ## Goals
 
+- Implement Dashboard UI Phase 3 from `context/features/dashboard-phase-3-spec.md`.
+- Build the main dashboard area to the right of the sidebar.
+- Add 4 top stats cards for number of items, collections, favorite items, and favorite collections.
+- Render recent collections from mock data.
+- Render pinned items from mock data.
+- Render 10 recent items from mock data.
+
 ## Notes
+
+- Source spec: `context/features/dashboard-phase-3-spec.md`
+- Primary visual reference: `context/screenshots/dashboard-ui-main.png`
+- Product context: `context/project-overview.md`
+- Data reference: `src/lib/mock-data.ts`
+- Prior phase references: `context/features/dashboard-phase-1-spec.md`, `context/features/dashboard-phase-2-spec.md`
+- Follow `AGENTS.md`: read relevant installed Next.js docs under `node_modules/next/dist/docs/` before changing app code.
 
 ## History
 
