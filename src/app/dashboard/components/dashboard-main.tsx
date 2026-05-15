@@ -1,0 +1,133 @@
+"use client";
+
+import { Folder, Heart, Layers3, Star } from "lucide-react";
+import { useState } from "react";
+
+import { mockCollections, mockItems, mockItemTypes } from "@/lib/mock-data";
+import type { DashboardData } from "@/features/dashboard/dashboard-types";
+
+import { CollectionCard } from "./collection-card";
+import { DashboardSection } from "./dashboard-section";
+import { ItemCard } from "./item-card";
+import { ItemContentDrawer } from "./item-content-drawer";
+import { StatCard } from "./stat-card";
+
+export function DashboardMain({ data }: { data: DashboardData }) {
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
+  const selectedItem =
+    selectedItemId === null
+      ? undefined
+      : mockItems.find((item) => item.id === selectedItemId);
+  const selectedType = selectedItem
+    ? data.typeById.get(selectedItem.typeId)
+    : undefined;
+  const selectedCollection = selectedItem
+    ? getCollection(data, selectedItem.collectionId)
+    : undefined;
+
+  const openItemDrawer = (itemId: string) => {
+    setSelectedItemId(itemId);
+    setIsItemDrawerOpen(true);
+  };
+  const closeItemDrawer = () => setIsItemDrawerOpen(false);
+
+  const stats = [
+    {
+      label: "Items",
+      value: mockItems.length,
+      detail: `${mockItemTypes.length} item types`,
+      icon: Layers3,
+      iconClassName: "bg-blue-500/15 text-blue-400",
+    },
+    {
+      label: "Collections",
+      value: mockCollections.length,
+      detail: `${data.recentCollections.length} recently used`,
+      icon: Folder,
+      iconClassName: "bg-emerald-500/15 text-emerald-400",
+    },
+    {
+      label: "Favorite Items",
+      value: data.favoriteItems.length,
+      detail: "Saved for quick access",
+      icon: Star,
+      iconClassName: "bg-amber-500/15 text-amber-400",
+    },
+    {
+      label: "Favorite Collections",
+      value: data.favoriteCollections.length,
+      detail: "Pinned collection groups",
+      icon: Heart,
+      iconClassName: "bg-rose-500/15 text-rose-400",
+    },
+  ];
+
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto bg-background">
+      <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-8 px-4 py-6 md:px-6 lg:px-8">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            {mockItems.length} items
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 min-[1420px]:grid-cols-4">
+          {stats.map((stat) => (
+            <StatCard key={stat.label} {...stat} />
+          ))}
+        </div>
+
+        <DashboardSection title="Recent Collections">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {data.recentCollections.map((collection) => (
+              <CollectionCard collection={collection} key={collection.id} />
+            ))}
+          </div>
+        </DashboardSection>
+
+        <DashboardSection title="Pinned Items">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {data.pinnedItems.map((item) => (
+              <ItemCard
+                collection={getCollection(data, item.collectionId)}
+                item={item}
+                key={item.id}
+                onOpen={() => openItemDrawer(item.id)}
+                type={data.typeById.get(item.typeId)}
+              />
+            ))}
+          </div>
+        </DashboardSection>
+
+        <DashboardSection title="Recent Items">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {data.recentItems.map((item) => (
+              <ItemCard
+                collection={getCollection(data, item.collectionId)}
+                item={item}
+                key={item.id}
+                onOpen={() => openItemDrawer(item.id)}
+                type={data.typeById.get(item.typeId)}
+              />
+            ))}
+          </div>
+        </DashboardSection>
+      </div>
+
+      <ItemContentDrawer
+        collection={selectedCollection}
+        isOpen={isItemDrawerOpen}
+        item={selectedItem}
+        onClose={closeItemDrawer}
+        onExited={() => setSelectedItemId(null)}
+        type={selectedType}
+      />
+    </div>
+  );
+}
+
+function getCollection(data: DashboardData, collectionId: string | null) {
+  return collectionId ? data.collectionById.get(collectionId) : undefined;
+}
