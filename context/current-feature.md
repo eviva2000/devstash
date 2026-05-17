@@ -3,26 +3,15 @@
 ## Status
 
 <!-- Not Started | Inprogress | Completed -->
-Inprogress
+Completed
 
 ## Goals
 
-- Implement Prisma + Neon PostgreSQL setup from `context/features/database-spec.md`.
-- Add Prisma ORM using Prisma 7 conventions.
-- Create the initial schema from the data models in `context/project-overview.md`.
-- Include NextAuth models: Account, Session, and VerificationToken.
-- Add appropriate indexes and cascade deletes.
-- Use migrations for database changes; do not push schema directly unless explicitly requested.
+- None
 
 ## Notes
 
-- Source spec: `context/features/database-spec.md`
-- Product/data model reference: `context/project-overview.md`
-- Database target: Neon PostgreSQL serverless.
-- Development and production use separate Neon branches; `DATABASE_URL` should point at the development branch while implementing.
-- Prisma 7 has breaking changes. Read the full Prisma 7 upgrade guide before implementation: `https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7`
-- Also reference the Prisma setup guide: `https://www.prisma.io/docs/getting-started/prisma-orm/quickstart/prisma-postgres`
-- Follow `AGENTS.md`: read relevant installed Next.js docs under `node_modules/next/dist/docs/` before changing app code.
+- None
 
 ## History
 
@@ -50,3 +39,10 @@ Keep this updated. Earliest to Latest
   - Added a right-side item content drawer with smooth open and close transitions
   - Split the dashboard shell into focused dashboard components and moved dashboard data, types, and utilities into `src/features/dashboard/`
   - Verified with `npm run lint`, `npm run build`, and a browser smoke test for the item drawer
+- **Database Setup** (May 17, 2026)
+  - Completed on branch `codex-database-setup` and merged into `main`
+  - Scope defined from `context/features/database-spec.md`
+  - Added Prisma 7 with Neon PostgreSQL support using `@prisma/adapter-pg`
+  - Created the initial schema for users, accounts, sessions, verification tokens, items, item types, collections, tags, and item-tag relationships
+  - Added indexes, unique constraints, and cascade/restrict/set-null delete behavior for the core data model
+  - Added the initial Prisma migration, generated Prisma client output, database seed script, database smoke test script, and shared Prisma client helper
