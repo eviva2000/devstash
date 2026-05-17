@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ItemContentType {
+  TEXT
+  FILE
+  URL
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+model User {
+  id                   String             @id @default(cuid())
+  name                 String?
+  email                String?            @unique
+  emailVerified        DateTime?          @map("email_verified")
+  image                String?
+  passwordHash         String?            @map("password_hash")
+  plan                 SubscriptionPlan   @default(FREE)
+  subscriptionStatus   SubscriptionStatus @default(INACTIVE) @map("subscription_status")
+  stripeCustomerId     String?            @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?            @unique @map("stripe_subscription_id")
+  accounts             Account[]
+  sessions             Session[]
+  items                Item[]
+  itemTypes            ItemType[]
+  collections          Collection[]
+  tags                 Tag[]
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Item {
+  id           String          @id @default(cuid())
+  title        String
+  description  String?
+  contentType  ItemContentType @map("content_type")
+  content      String?
+  language     String?
+  url          String?
+  fileUrl      String?         @map("file_url")
+  fileName     String?         @map("file_name")
+  fileMimeType String?         @map("file_mime_type")
+  fileSize     Int?            @map("file_size")
+  isFavorite   Boolean         @default(false) @map("is_favorite")
+  isPinned     Boolean         @default(false) @map("is_pinned")
+  lastUsedAt   DateTime?       @map("last_used_at")
+  userId       String          @map("user_id")
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  typeId       String          @map("type_id")
+  type         ItemType        @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  collectionId String?         @map("collection_id")
+  collection   Collection?     @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  tags         ItemTag[]
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+  @@index([userId, isFavorite])
+  @@index([userId, isPinned])
+  @@index([typeId])
+  @@index([collectionId])
+  @@index([lastUsedAt])
+  @@map("items")
+}
+
+model ItemType {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  icon      String?
+  color     String?
+  isSystem  Boolean  @default(false) @map("is_system")
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     Item[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@index([isSystem])
+  @@map("item_types")
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  isFavorite  Boolean  @default(false) @map("is_favorite")
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       Item[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@index([userId, isFavorite])
+  @@map("collections")
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     ItemTag[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@map("tags")
+}
+
+model ItemTag {
+  itemId String @map("item_id")
+  tagId  String @map("tag_id")
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, tagId])
+  @@index([tagId])
+  @@map("item_tags")
+}
