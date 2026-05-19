@@ -44,3 +44,12 @@ Keep this updated. Earliest to Latest
   - Created the initial schema for users, accounts, sessions, verification tokens, items, item types, collections, tags, and item-tag relationships
   - Added indexes, unique constraints, and cascade/restrict/set-null delete behavior for the core data model
   - Added the initial Prisma migration, generated Prisma client output, database seed script, database smoke test script, and shared Prisma client helper
+- **Seed Data Feature** (May 19, 2026)
+  - Completed on branch `seed-data-feature`
+  - Replaced `prisma/seed.ts` with spec-compliant demo data for `demo@devstash.io`
+  - Added bcryptjs password hashing with 12 rounds for the demo password
+  - Seeded 7 system item types with Lucide icon names and hex colors
+  - Seeded 5 collections and 18 representative snippets, prompts, commands, and links
+  - Added `npm run db:seed` for direct seed execution
+  - Updated `scripts/test-db.ts` to fetch and validate the demo user, password hash, system item types, collections, items, and link URLs
+  - Verified with `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run db:seed`, and `npm run db:test`
