@@ -40,8 +40,6 @@ Keep this updated. Earliest to Latest
   - Split the dashboard shell into focused dashboard components and moved dashboard data, types, and utilities into `src/features/dashboard/`
   - Verified with `npm run lint`, `npm run build`, and a browser smoke test for the item drawer
 - **Database Setup** (May 17, 2026)
-  - Completed on branch `codex-database-setup` and merged into `main`
-  - Scope defined from `context/features/database-spec.md`
   - Added Prisma 7 with Neon PostgreSQL support using `@prisma/adapter-pg`
   - Created the initial schema for users, accounts, sessions, verification tokens, items, item types, collections, tags, and item-tag relationships
   - Added indexes, unique constraints, and cascade/restrict/set-null delete behavior for the core data model
