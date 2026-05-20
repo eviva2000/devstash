@@ -3,15 +3,20 @@
 ## Status
 
 <!-- Not Started | Inprogress | Completed -->
-Completed
+Not Started
 
 ## Goals
 
-- None
+- Replace dummy collection data in dashboard with real data from Neon database using Prisma
+- Display 6 recent collections with actual stats and type information
+- Derive collection card border color from most-used content type
+- Show small icons of all types in each collection
 
 ## Notes
 
-- None
+- Keep current design and layout (reference: `@context/screenshots/dashboard-ui-main.png`)
+- Do not add items underneath collections yet (future task)
+- Collection card border color derived from most-used content type in that collection
 
 ## History
 
