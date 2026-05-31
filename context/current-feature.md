@@ -2,8 +2,13 @@
 
 ## Status
 
+<<<<<<< HEAD
+<!-- Not Started | In progress | Completed -->
+Completed
+=======
 <!-- Not Started | In progress | Complete -->
 Complete
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 
 ## Goals
 
@@ -66,3 +71,11 @@ Keep this updated. Earliest to Latest
   - Derived item card icons and borders from database item type metadata, including hex color support
   - Hid the pinned items section when no pinned items exist
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and a browser smoke test
+  - **Stats and Sidebar Database Integration** (May 31, 2026)
+  - Completed on branch `stats`
+  - Replaced dashboard stat values with database-backed item and collection counts
+  - Displayed system item types in the sidebar with database-backed counts, icons, and `/items/[typename]` links
+  - Switched sidebar favorite and recent collections to actual database collection data
+  - Added a `View all collections` sidebar link to `/collections`
+  - Rendered recent sidebar collections with colored circles based on each collection's most-used item type
+  - Added `src/lib/db/items.ts` helpers for item stats and item type counts

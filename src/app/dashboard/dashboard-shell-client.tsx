@@ -3,11 +3,18 @@
 import { useMemo, useState } from "react";
 
 import type {
+<<<<<<< HEAD
+  DashboardCollection,
+=======
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
   DashboardData,
   DashboardItem,
   DashboardItemStats,
   SidebarData,
+<<<<<<< HEAD
+=======
   DashboardCollection,
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 } from "@/features/dashboard/dashboard-types";
 import { getTypeHref } from "@/features/dashboard/dashboard-utils";
 
@@ -19,16 +26,8 @@ import {
 } from "./components/dashboard-sidebar";
 
 interface DashboardShellClientProps {
-  recentCollections: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    description?: string | null;
-    isFavorite: boolean;
-    itemCount: number;
-    dominantType?: { icon?: string | null; color?: string | null } | null;
-    types?: Array<{ icon?: string | null; name: string; slug?: string }>;
-  }>;
+  recentCollections: DashboardCollection[];
+  favoriteCollections: DashboardCollection[];
   itemTypes: Array<{
     id: string;
     name: string;
@@ -42,16 +41,21 @@ interface DashboardShellClientProps {
   itemStats: DashboardItemStats;
   itemTypeCounts: Record<string, number>;
   collectionStats: { total: number; favorites: number };
+  itemStats: DashboardItemStats;
+  itemTypeCounts: Record<string, number>;
 }
 
 export function DashboardShellClient({
   recentCollections,
+  favoriteCollections,
   itemTypes,
   pinnedItems,
   recentItems,
   itemStats,
   itemTypeCounts,
   collectionStats,
+  itemStats,
+  itemTypeCounts,
 }: DashboardShellClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -60,6 +64,8 @@ export function DashboardShellClient({
     const typeById = new Map(itemTypes.map((type) => [type.id, type]));
     const allDashboardItems = uniqueItems([...pinnedItems, ...recentItems]);
 
+<<<<<<< HEAD
+=======
     // Transform received collections to match DashboardCollection type
     const transformedCollections: DashboardCollection[] = recentCollections.map((col) => ({
       id: col.id,
@@ -70,10 +76,21 @@ export function DashboardShellClient({
       itemCount: col.itemCount,
     }));
 
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
     const collectionById: Map<string, DashboardCollection> = new Map(
-      transformedCollections.map((collection) => [collection.id, collection])
+      [...recentCollections, ...favoriteCollections].map((collection) => [
+        collection.id,
+        collection,
+      ])
     );
 
+<<<<<<< HEAD
+    const favoriteItems = mockItems.filter((item) => item.isFavorite);
+    const pinnedItems = mockItems.filter((item) => item.isPinned);
+    const recentItems = [...mockItems]
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .slice(0, 10);
+=======
     for (const item of allDashboardItems) {
       if (item.collection && !collectionById.has(item.collection.id)) {
         collectionById.set(item.collection.id, item.collection);
@@ -84,13 +101,14 @@ export function DashboardShellClient({
     const favoriteCollections = transformedCollections.filter(
       (collection) => collection.isFavorite
     );
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 
     const dashboardData: DashboardData = {
       collectionById,
       favoriteCollections,
       favoriteItems,
       pinnedItems,
-      recentCollections: transformedCollections,
+      recentCollections,
       recentItems,
       typeById,
     };
@@ -99,18 +117,33 @@ export function DashboardShellClient({
       totalItemsCount: itemStats.total,
       favoriteItemsCount: itemStats.favorites,
       pinnedItemsCount: itemStats.pinned,
+<<<<<<< HEAD
+      recentItemsCount: itemStats.recent,
+=======
       recentItemsCount: recentItems.length,
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
       types: itemTypes.map((type) => ({
         ...type,
         count: itemTypeCounts[type.id] ?? 0,
         href: getTypeHref(type.slug),
       })),
       favoriteCollections,
-      recentCollections: transformedCollections.slice(0, 3),
+      recentCollections: recentCollections.slice(0, 3),
     };
 
     return { dashboardData, sidebarData };
+<<<<<<< HEAD
+  }, [
+    favoriteCollections,
+    itemStats,
+    itemTypeCounts,
+    itemTypes,
+    mockItems,
+    recentCollections,
+  ]);
+=======
   }, [recentCollections, itemTypes, pinnedItems, recentItems, itemStats, itemTypeCounts]);
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 
   return (
     <main className="flex min-h-screen overflow-hidden bg-background text-foreground">

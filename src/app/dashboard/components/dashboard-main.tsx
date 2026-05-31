@@ -3,6 +3,10 @@
 import { Folder, Heart, Layers3, Star } from "lucide-react";
 import { useState } from "react";
 
+<<<<<<< HEAD
+import { mockItems } from "@/lib/mock-data";
+=======
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 import type {
   DashboardData,
   DashboardItemStats,

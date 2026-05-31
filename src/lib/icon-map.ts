@@ -21,6 +21,7 @@ const iconMap: Record<string, LucideIcon> = {
   File,
   Image,
   Link,
+  link: Link,
 };
 
 export function getIconComponent(iconName?: string | null): LucideIcon | null {

@@ -20,6 +20,7 @@ export const typeIconMap = {
   File,
   Image,
   Link: LinkIcon,
+  link: LinkIcon,
 };
 
 export const typeColorMap = {
@@ -32,6 +33,9 @@ export const typeColorMap = {
   cyan: "bg-cyan-500/15 text-cyan-400",
 };
 
+<<<<<<< HEAD
+const hexColorPattern = /^#[0-9a-f]{6}$/i;
+=======
 export const typeBorderColorMap = {
   blue: "border-blue-500/50",
   purple: "border-purple-500/50",
@@ -66,6 +70,7 @@ export function getTypeBorderStyle(color?: string | null) {
 const pluralTypeSlugs: Record<string, string> = {
   url: "urls",
 };
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -74,7 +79,26 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
 });
 
 export function getTypeHref(slug: string) {
-  return `/items/${pluralTypeSlugs[slug] ?? `${slug}s`}`;
+  return `/items/${slug}`;
+}
+
+export function getTypeColorStyle(color?: string | null) {
+  if (!color || !hexColorPattern.test(color)) {
+    return undefined;
+  }
+
+  return {
+    backgroundColor: `${color}26`,
+    color,
+  };
+}
+
+export function getTypeMarkerStyle(color?: string | null) {
+  if (!color || !hexColorPattern.test(color)) {
+    return undefined;
+  }
+
+  return { backgroundColor: color };
 }
 
 export function getInitials(name: string) {

@@ -21,6 +21,10 @@ import type { SidebarData } from "@/features/dashboard/dashboard-types";
 import {
   getInitials,
   getTypeColorStyle,
+<<<<<<< HEAD
+  getTypeMarkerStyle,
+=======
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
@@ -241,13 +245,23 @@ function SidebarContent({
             <SidebarLink
               count={collection.itemCount}
               href={`/collections/${collection.slug}`}
-              icon={Folder}
+              marker
+              markerStyle={getTypeMarkerStyle(
+                collection.dominantType?.color
+              )}
               isCollapsed={compact}
               key={collection.id}
               label={collection.name}
               onClick={onClose}
             />
           ))}
+          <SidebarLink
+            href="/collections"
+            icon={Folder}
+            isCollapsed={compact}
+            label="View all collections"
+            onClick={onClose}
+          />
         </CollapsibleSidebarSection>
       </nav>
 
@@ -375,17 +389,23 @@ function SidebarLink({
   iconStyle,
   isCollapsed,
   label,
+  marker,
+  markerStyle,
   onClick,
 }: {
   readonly count?: number;
   readonly href: string;
-  readonly icon: ComponentType<{ className?: string }>;
+  readonly icon?: ComponentType<{ className?: string }>;
   readonly iconClassName?: string;
   readonly iconStyle?: CSSProperties;
   readonly isCollapsed: boolean;
   readonly label: string;
+  readonly marker?: boolean;
+  readonly markerStyle?: CSSProperties;
   readonly onClick?: () => void;
 }) {
+  const hasMarker = marker || Boolean(markerStyle);
+
   return (
     <Link
       className={cn(
@@ -396,6 +416,26 @@ function SidebarLink({
       onClick={onClick}
       title={isCollapsed ? label : undefined}
     >
+<<<<<<< HEAD
+      {hasMarker ? (
+        <span className="flex size-6 shrink-0 items-center justify-center">
+          <span
+            className="size-2.5 rounded-full bg-muted-foreground"
+            style={markerStyle}
+          />
+        </span>
+      ) : (
+        <span
+          className={cn(
+            "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground",
+            iconClassName
+          )}
+          style={iconStyle}
+        >
+          {Icon && <Icon className="size-4" />}
+        </span>
+      )}
+=======
       <span
         className={cn(
           "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground",
@@ -405,6 +445,7 @@ function SidebarLink({
       >
         <Icon className="size-4" />
       </span>
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
       {!isCollapsed && (
         <>
           <span className="min-w-0 flex-1 truncate">{label}</span>
