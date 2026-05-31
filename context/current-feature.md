@@ -3,20 +3,15 @@
 ## Status
 
 <!-- Not Started | Inprogress | Completed -->
-Not Started
+Completed
 
 ## Goals
 
-- Replace dummy collection data in dashboard with real data from Neon database using Prisma
-- Display 6 recent collections with actual stats and type information
-- Derive collection card border color from most-used content type
-- Show small icons of all types in each collection
+- No active feature
 
 ## Notes
 
-- Keep current design and layout (reference: `@context/screenshots/dashboard-ui-main.png`)
-- Do not add items underneath collections yet (future task)
-- Collection card border color derived from most-used content type in that collection
+- No active notes
 
 ## History
 
@@ -49,3 +44,8 @@ Keep this updated. Earliest to Latest
   - Created the initial schema for users, accounts, sessions, verification tokens, items, item types, collections, tags, and item-tag relationships
   - Added indexes, unique constraints, and cascade/restrict/set-null delete behavior for the core data model
   - Added the initial Prisma migration, generated Prisma client output, database seed script, database smoke test script, and shared Prisma client helper
+- **Dashboard Collections Database Integration** (May 31, 2026)
+  - Replaced dummy dashboard collection data with real collection data from the Neon database through Prisma
+  - Displayed the 6 most recent collections with real stats and type information
+  - Derived each collection card border color from the collection's most-used content type
+  - Added compact type icons to each collection card for all represented content types

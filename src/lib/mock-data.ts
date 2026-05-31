@@ -1,4 +1,4 @@
-// Mock data for dashboard UI - single source of truth until database is implemented
+// src/lib/ data for dashboard UI - single source of truth until database is implemented
 
 export const mockUser = {
   id: "user-1",
@@ -78,10 +78,10 @@ export const mockCollections = [
   },
   {
     id: "col-2",
-    name: "AI Prompts",
+    name: "AI Promptssss",
     slug: "ai-prompts",
     description: "Useful prompts for coding assistance",
-    isFavorite: false,
+    isFavorite: true,
     itemCount: 12,
   },
   {
