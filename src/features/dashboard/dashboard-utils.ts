@@ -1,21 +1,26 @@
 import {
+  Code,
   Code2,
   File,
   FileText,
   Image,
   Link as LinkIcon,
   Sparkles,
+  StickyNote,
   Terminal,
 } from "lucide-react";
 
 export const typeIconMap = {
+  Code,
   Code2,
   Sparkles,
   FileText,
+  StickyNote,
   Terminal,
   File,
   Image,
   Link: LinkIcon,
+  link: LinkIcon,
 };
 
 export const typeColorMap = {
@@ -28,9 +33,7 @@ export const typeColorMap = {
   cyan: "bg-cyan-500/15 text-cyan-400",
 };
 
-const pluralTypeSlugs: Record<string, string> = {
-  url: "urls",
-};
+const hexColorPattern = /^#[0-9a-f]{6}$/i;
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -39,7 +42,26 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
 });
 
 export function getTypeHref(slug: string) {
-  return `/items/${pluralTypeSlugs[slug] ?? `${slug}s`}`;
+  return `/items/${slug}`;
+}
+
+export function getTypeColorStyle(color?: string | null) {
+  if (!color || !hexColorPattern.test(color)) {
+    return undefined;
+  }
+
+  return {
+    backgroundColor: `${color}26`,
+    color,
+  };
+}
+
+export function getTypeMarkerStyle(color?: string | null) {
+  if (!color || !hexColorPattern.test(color)) {
+    return undefined;
+  }
+
+  return { backgroundColor: color };
 }
 
 export function getInitials(name: string) {

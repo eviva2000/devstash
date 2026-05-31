@@ -2,7 +2,7 @@
 
 ## Status
 
-<!-- Not Started | Inprogress | Completed -->
+<!-- Not Started | In progress | Completed -->
 Completed
 
 ## Goals
@@ -58,3 +58,12 @@ Keep this updated. Earliest to Latest
   - Added `npm run db:seed` for direct seed execution
   - Updated `scripts/test-db.ts` to fetch and validate the demo user, password hash, system item types, collections, items, and link URLs
   - Verified with `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run db:seed`, and `npm run db:test`
+- **Stats and Sidebar Database Integration** (May 31, 2026)
+  - Completed on branch `stats`
+  - Replaced dashboard stat values with database-backed item and collection counts
+  - Displayed system item types in the sidebar with database-backed counts, icons, and `/items/[typename]` links
+  - Switched sidebar favorite and recent collections to actual database collection data
+  - Added a `View all collections` sidebar link to `/collections`
+  - Rendered recent sidebar collections with colored circles based on each collection's most-used item type
+  - Added `src/lib/db/items.ts` helpers for item stats and item type counts
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and a browser smoke test

@@ -1,4 +1,81 @@
+import type { Prisma } from "@/generated/prisma/client";
+import type { DashboardCollection } from "@/features/dashboard/dashboard-types";
 import { prisma } from "@/lib/prisma";
+
+const collectionInclude = {
+  items: {
+    include: {
+      type: {
+        select: { id: true, name: true, slug: true, icon: true, color: true },
+      },
+    },
+  },
+} as const;
+
+type CollectionWithItems = Prisma.CollectionGetPayload<{
+  include: typeof collectionInclude;
+}>;
+
+function toDashboardCollection(
+  collection: CollectionWithItems
+): DashboardCollection & {
+  types: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    icon?: string | null;
+    color?: string | null;
+    count: number;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+} {
+  const typeCountMap = new Map<
+    string,
+    { count: number; type: CollectionWithItems["items"][number]["type"] }
+  >();
+
+  collection.items.forEach((item) => {
+    const existing = typeCountMap.get(item.typeId);
+
+    if (existing) {
+      existing.count++;
+      return;
+    }
+
+    typeCountMap.set(item.typeId, { count: 1, type: item.type });
+  });
+
+  const typeEntries = Array.from(typeCountMap.values());
+  const dominantType =
+    typeEntries.length > 0
+      ? typeEntries.reduce((prev, current) =>
+          current.count > prev.count ? current : prev
+        ).type
+      : null;
+
+  const types = typeEntries.map((entry) => ({
+    id: entry.type.id,
+    name: entry.type.name,
+    slug: entry.type.slug,
+    icon: entry.type.icon,
+    color: entry.type.color,
+    count: entry.count,
+  }));
+
+  return {
+    id: collection.id,
+    name: collection.name,
+    slug: collection.slug,
+    description: collection.description ?? "",
+    isFavorite: collection.isFavorite,
+    itemCount: collection.items.length,
+    dominantType,
+    types,
+    createdAt: collection.createdAt,
+    updatedAt: collection.updatedAt,
+  };
+}
 
 /**
  * Get recent collections with item counts and type distribution
@@ -9,73 +86,36 @@ export async function getRecentCollections(userId: string, limit: number = 6) {
     where: { userId },
     take: limit,
     orderBy: { updatedAt: "desc" },
-    include: {
-      items: {
-        include: {
-          type: {
-            select: { id: true, name: true, slug: true, icon: true, color: true },
-          },
-        },
-      },
-    },
+    include: collectionInclude,
   });
 
-  // Transform collections with type distribution and dominant type
-  return collections.map((collection) => {
-    const typeCountMap = new Map<string, { count: number; type: (typeof collection.items)[0]["type"] }>();
-
-    // Count items by type
-    collection.items.forEach((item) => {
-      const existing = typeCountMap.get(item.typeId);
-      if (existing) {
-        existing.count++;
-      } else {
-        typeCountMap.set(item.typeId, { count: 1, type: item.type });
-      }
-    });
-
-    // Get dominant type (most items in this collection)
-    let dominantType = Array.from(typeCountMap.values())[0]?.type || null;
-    if (typeCountMap.size > 0) {
-      dominantType = Array.from(typeCountMap.values()).reduce((prev, current) =>
-        current.count > prev.count ? current : prev
-      ).type;
-    }
-
-    // Get all types in this collection for display
-    const types = Array.from(typeCountMap.values()).map((entry) => ({
-      id: entry.type.id,
-      name: entry.type.name,
-      slug: entry.type.slug,
-      icon: entry.type.icon,
-      color: entry.type.color,
-      count: entry.count,
-    }));
-
-    return {
-      id: collection.id,
-      name: collection.name,
-      slug: collection.slug,
-      description: collection.description,
-      isFavorite: collection.isFavorite,
-      itemCount: collection.items.length,
-      dominantType,
-      types,
-      createdAt: collection.createdAt,
-      updatedAt: collection.updatedAt,
-    };
-  });
+  return collections.map(toDashboardCollection);
 }
 
 /**
- * Get all item types with colors and icons
- * Used for displaying type information in the dashboard
+ * Get favorite collections for the sidebar.
  */
-export async function getItemTypes(userId: string) {
+export async function getFavoriteCollections(
+  userId: string,
+  limit: number = 5
+) {
+  const collections = await prisma.collection.findMany({
+    where: { userId, isFavorite: true },
+    take: limit,
+    orderBy: { updatedAt: "desc" },
+    include: collectionInclude,
+  });
+
+  return collections.map(toDashboardCollection);
+}
+
+/**
+ * Get system item types with colors and icons.
+ * Used for displaying type information in the dashboard sidebar.
+ */
+export async function getItemTypes() {
   return await prisma.itemType.findMany({
-    where: {
-      OR: [{ userId }, { isSystem: true }],
-    },
+    where: { isSystem: true },
     orderBy: { createdAt: "asc" },
   });
 }

@@ -1,9 +1,16 @@
 import { DashboardShellClient } from "./dashboard-shell-client";
+import type {
+  DashboardCollection,
+  DashboardItemStats,
+  DashboardItemType,
+} from "@/features/dashboard/dashboard-types";
 import {
+  getFavoriteCollections,
   getCollectionStats,
   getItemTypes,
   getRecentCollections,
 } from "@/lib/db/collections";
+import { getItemStats, getItemTypeCounts } from "@/lib/db/items";
 import {
   mockItemTypes,
   mockCollections,
@@ -22,31 +29,35 @@ async function resolveDemoUserId(): Promise<string | null> {
 }
 
 export async function DashboardShell() {
-  type RecentCollection = {
-    id: string;
-    name: string;
-    slug: string;
-    description?: string | null;
-    isFavorite: boolean;
-    itemCount: number;
-    dominantType?: { icon?: string | null; color?: string | null } | null;
-    types?: Array<{ icon?: string | null; name: string; slug?: string }>;
-  };
-
-  type ItemType = {
-    id: string;
-    name: string;
-    slug: string;
-    icon?: string | null;
-    color?: string | null;
-  };
-
-  let recentCollections: RecentCollection[] = (mockCollections.slice(0, 6) as unknown) as RecentCollection[];
-  let itemTypes: ItemType[] = (mockItemTypes as unknown) as ItemType[];
+  let recentCollections: DashboardCollection[] = mockCollections
+    .slice(0, 6)
+    .map((collection) => ({
+      ...collection,
+      description: collection.description ?? "",
+    }));
+  let favoriteCollections: DashboardCollection[] = mockCollections
+    .filter((collection) => collection.isFavorite)
+    .map((collection) => ({
+      ...collection,
+      description: collection.description ?? "",
+    }));
+  let itemTypes: DashboardItemType[] = mockItemTypes;
   let collectionStats = {
     total: mockCollections.length,
     favorites: mockCollections.filter((c) => c.isFavorite).length,
   };
+  let itemStats: DashboardItemStats = {
+    total: mockItems.length,
+    favorites: mockItems.filter((item) => item.isFavorite).length,
+    pinned: mockItems.filter((item) => item.isPinned).length,
+    recent: Math.min(mockItems.length, 10),
+  };
+  let itemTypeCounts: Record<string, number> = mockItems.reduce<
+    Record<string, number>
+  >((counts, item) => {
+    counts[item.typeId] = (counts[item.typeId] ?? 0) + 1;
+    return counts;
+  }, {});
 
   try {
     const userId = await resolveDemoUserId();
@@ -54,27 +65,41 @@ export async function DashboardShell() {
       throw new Error("No user found in database; using mock data.");
     }
 
-    const [dbCollections, dbTypes, dbStats] = await Promise.all([
+    const [
+      dbRecentCollections,
+      dbFavoriteCollections,
+      dbTypes,
+      dbCollectionStats,
+      dbItemStats,
+      dbItemTypeCounts,
+    ] = await Promise.all([
       getRecentCollections(userId, 6),
-      getItemTypes(userId),
+      getFavoriteCollections(userId),
+      getItemTypes(),
       getCollectionStats(userId),
+      getItemStats(userId),
+      getItemTypeCounts(userId),
     ]);
 
-    if (dbCollections.length > 0) {
-      recentCollections = dbCollections as RecentCollection[];
-      itemTypes = dbTypes as ItemType[];
-      collectionStats = dbStats;
-    }
+    recentCollections = dbRecentCollections;
+    favoriteCollections = dbFavoriteCollections;
+    itemTypes = dbTypes;
+    collectionStats = dbCollectionStats;
+    itemStats = dbItemStats;
+    itemTypeCounts = dbItemTypeCounts;
   } catch (error) {
-    console.warn("Failed to fetch collections from database, using mock data:", error);
+    console.warn("Failed to fetch dashboard sidebar data from database, using mock data:", error);
   }
 
   return (
     <DashboardShellClient
       recentCollections={recentCollections}
+      favoriteCollections={favoriteCollections}
       itemTypes={itemTypes}
       mockItems={mockItems}
       collectionStats={collectionStats}
+      itemStats={itemStats}
+      itemTypeCounts={itemTypeCounts}
     />
   );
 }

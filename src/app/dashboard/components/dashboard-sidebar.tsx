@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import {
   ChevronDown,
@@ -20,11 +20,13 @@ import { Button } from "@/components/ui/button";
 import type { SidebarData } from "@/features/dashboard/dashboard-types";
 import {
   getInitials,
+  getTypeColorStyle,
+  getTypeMarkerStyle,
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
 import { cn } from "@/lib/utils";
-import { mockItems, mockUser } from "@/lib/mock-data";
+import { mockUser } from "@/lib/mock-data";
 
 export function DesktopSidebar({
   data,
@@ -154,7 +156,7 @@ function SidebarContent({
       <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-4">
         <div className="space-y-1">
           <SidebarLink
-            count={mockItems.length}
+            count={data.totalItemsCount}
             href="/dashboard"
             icon={Layers3}
             isCollapsed={compact}
@@ -201,6 +203,7 @@ function SidebarContent({
                 href={type.href}
                 icon={Icon}
                 iconClassName={colorClass}
+                iconStyle={getTypeColorStyle(type.color)}
                 isCollapsed={compact}
                 key={type.id}
                 label={type.name}
@@ -239,13 +242,23 @@ function SidebarContent({
             <SidebarLink
               count={collection.itemCount}
               href={`/collections/${collection.slug}`}
-              icon={Folder}
+              marker
+              markerStyle={getTypeMarkerStyle(
+                collection.dominantType?.color
+              )}
               isCollapsed={compact}
               key={collection.id}
               label={collection.name}
               onClick={onClose}
             />
           ))}
+          <SidebarLink
+            href="/collections"
+            icon={Folder}
+            isCollapsed={compact}
+            label="View all collections"
+            onClick={onClose}
+          />
         </CollapsibleSidebarSection>
       </nav>
 
@@ -370,18 +383,26 @@ function SidebarLink({
   href,
   icon: Icon,
   iconClassName,
+  iconStyle,
   isCollapsed,
   label,
+  marker,
+  markerStyle,
   onClick,
 }: {
   readonly count?: number;
   readonly href: string;
-  readonly icon: ComponentType<{ className?: string }>;
+  readonly icon?: ComponentType<{ className?: string }>;
   readonly iconClassName?: string;
+  readonly iconStyle?: CSSProperties;
   readonly isCollapsed: boolean;
   readonly label: string;
+  readonly marker?: boolean;
+  readonly markerStyle?: CSSProperties;
   readonly onClick?: () => void;
 }) {
+  const hasMarker = marker || Boolean(markerStyle);
+
   return (
     <Link
       className={cn(
@@ -392,14 +413,24 @@ function SidebarLink({
       onClick={onClick}
       title={isCollapsed ? label : undefined}
     >
-      <span
-        className={cn(
-          "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground",
-          iconClassName
-        )}
-      >
-        <Icon className="size-4" />
-      </span>
+      {hasMarker ? (
+        <span className="flex size-6 shrink-0 items-center justify-center">
+          <span
+            className="size-2.5 rounded-full bg-muted-foreground"
+            style={markerStyle}
+          />
+        </span>
+      ) : (
+        <span
+          className={cn(
+            "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground",
+            iconClassName
+          )}
+          style={iconStyle}
+        >
+          {Icon && <Icon className="size-4" />}
+        </span>
+      )}
       {!isCollapsed && (
         <>
           <span className="min-w-0 flex-1 truncate">{label}</span>
