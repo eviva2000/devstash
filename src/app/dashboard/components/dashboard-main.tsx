@@ -3,7 +3,7 @@
 import { Folder, Heart, Layers3, Star } from "lucide-react";
 import { useState } from "react";
 
-import { mockCollections, mockItems, mockItemTypes } from "@/lib/mock-data";
+import { mockItems, mockItemTypes } from "@/lib/mock-data";
 import type { DashboardData } from "@/features/dashboard/dashboard-types";
 
 import { CollectionCard } from "./collection-card";
@@ -12,7 +12,26 @@ import { ItemCard } from "./item-card";
 import { ItemContentDrawer } from "./item-content-drawer";
 import { StatCard } from "./stat-card";
 
-export function DashboardMain({ data }: { data: DashboardData }) {
+interface ExtendedCollection {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  isFavorite: boolean;
+  itemCount: number;
+  dominantType?: { icon?: string | null; color?: string | null } | null;
+  types?: Array<{ icon?: string | null; name: string; slug?: string }>;
+}
+
+export function DashboardMain({
+  data,
+  extendedCollections,
+  collectionStats,
+}: {
+  data: DashboardData;
+  extendedCollections?: ExtendedCollection[];
+  collectionStats: { total: number; favorites: number };
+}) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
   const selectedItem =
@@ -32,6 +51,20 @@ export function DashboardMain({ data }: { data: DashboardData }) {
   };
   const closeItemDrawer = () => setIsItemDrawerOpen(false);
 
+  // Prefer DB-backed collections (with type metadata) when provided;
+  // fall back to the in-memory shape from DashboardData.
+  const collectionsToRender: ExtendedCollection[] =
+    extendedCollections && extendedCollections.length > 0
+      ? extendedCollections
+      : data.recentCollections.map((c) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          description: c.description,
+          isFavorite: c.isFavorite,
+          itemCount: c.itemCount,
+        }));
+
   const stats = [
     {
       label: "Items",
@@ -42,8 +75,8 @@ export function DashboardMain({ data }: { data: DashboardData }) {
     },
     {
       label: "Collections",
-      value: mockCollections.length,
-      detail: `${data.recentCollections.length} recently used`,
+      value: collectionStats.total,
+      detail: `${collectionsToRender.length} recently used`,
       icon: Folder,
       iconClassName: "bg-emerald-500/15 text-emerald-400",
     },
@@ -56,7 +89,7 @@ export function DashboardMain({ data }: { data: DashboardData }) {
     },
     {
       label: "Favorite Collections",
-      value: data.favoriteCollections.length,
+      value: collectionStats.favorites,
       detail: "Pinned collection groups",
       icon: Heart,
       iconClassName: "bg-rose-500/15 text-rose-400",
@@ -81,7 +114,7 @@ export function DashboardMain({ data }: { data: DashboardData }) {
 
         <DashboardSection title="Recent Collections">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {data.recentCollections.map((collection) => (
+            {collectionsToRender.map((collection) => (
               <CollectionCard collection={collection} key={collection.id} />
             ))}
           </div>

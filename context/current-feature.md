@@ -7,11 +7,11 @@ Completed
 
 ## Goals
 
-- None
+- No active feature
 
 ## Notes
 
-- None
+- No active notes
 
 ## History
 
@@ -44,6 +44,11 @@ Keep this updated. Earliest to Latest
   - Created the initial schema for users, accounts, sessions, verification tokens, items, item types, collections, tags, and item-tag relationships
   - Added indexes, unique constraints, and cascade/restrict/set-null delete behavior for the core data model
   - Added the initial Prisma migration, generated Prisma client output, database seed script, database smoke test script, and shared Prisma client helper
+- **Dashboard Collections Database Integration** (May 31, 2026)
+  - Replaced dummy dashboard collection data with real collection data from the Neon database through Prisma
+  - Displayed the 6 most recent collections with real stats and type information
+  - Derived each collection card border color from the collection's most-used content type
+  - Added compact type icons to each collection card for all represented content types
 - **Seed Data Feature** (May 19, 2026)
   - Completed on branch `seed-data-feature`
   - Replaced `prisma/seed.ts` with spec-compliant demo data for `demo@devstash.io`

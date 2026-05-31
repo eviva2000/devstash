@@ -1,42 +1,80 @@
-"use client";
-
-import { useMemo, useState } from "react";
-
-import { getDashboardData } from "@/features/dashboard/dashboard-data";
-
-import { DashboardHeader } from "./components/dashboard-header";
-import { DashboardMain } from "./components/dashboard-main";
+import { DashboardShellClient } from "./dashboard-shell-client";
 import {
-  DesktopSidebar,
-  MobileDrawer,
-} from "./components/dashboard-sidebar";
+  getCollectionStats,
+  getItemTypes,
+  getRecentCollections,
+} from "@/lib/db/collections";
+import {
+  mockItemTypes,
+  mockCollections,
+  mockItems,
+} from "@/lib/mock-data";
+import { prisma } from "@/lib/prisma";
 
-export function DashboardShell() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-  const { dashboardData, sidebarData } = useMemo(() => getDashboardData(), []);
+// TODO: Replace with the authenticated user once auth is wired up.
+// For now, fall back to the first user in the database.
+async function resolveDemoUserId(): Promise<string | null> {
+  const user = await prisma.user.findFirst({
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
+  return user?.id ?? null;
+}
+
+export async function DashboardShell() {
+  type RecentCollection = {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string | null;
+    isFavorite: boolean;
+    itemCount: number;
+    dominantType?: { icon?: string | null; color?: string | null } | null;
+    types?: Array<{ icon?: string | null; name: string; slug?: string }>;
+  };
+
+  type ItemType = {
+    id: string;
+    name: string;
+    slug: string;
+    icon?: string | null;
+    color?: string | null;
+  };
+
+  let recentCollections: RecentCollection[] = (mockCollections.slice(0, 6) as unknown) as RecentCollection[];
+  let itemTypes: ItemType[] = (mockItemTypes as unknown) as ItemType[];
+  let collectionStats = {
+    total: mockCollections.length,
+    favorites: mockCollections.filter((c) => c.isFavorite).length,
+  };
+
+  try {
+    const userId = await resolveDemoUserId();
+    if (!userId) {
+      throw new Error("No user found in database; using mock data.");
+    }
+
+    const [dbCollections, dbTypes, dbStats] = await Promise.all([
+      getRecentCollections(userId, 6),
+      getItemTypes(userId),
+      getCollectionStats(userId),
+    ]);
+
+    if (dbCollections.length > 0) {
+      recentCollections = dbCollections as RecentCollection[];
+      itemTypes = dbTypes as ItemType[];
+      collectionStats = dbStats;
+    }
+  } catch (error) {
+    console.warn("Failed to fetch collections from database, using mock data:", error);
+  }
 
   return (
-    <main className="flex min-h-screen overflow-hidden bg-background text-foreground">
-      <DesktopSidebar
-        data={sidebarData}
-        isCollapsed={isCollapsed}
-        onToggle={() => setIsCollapsed((value) => !value)}
-      />
-
-      <MobileDrawer
-        data={sidebarData}
-        isOpen={isMobileDrawerOpen}
-        onClose={() => setIsMobileDrawerOpen(false)}
-      />
-
-      <section className="flex min-w-0 flex-1 flex-col">
-        <DashboardHeader
-          isMobileDrawerOpen={isMobileDrawerOpen}
-          onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
-        />
-        <DashboardMain data={dashboardData} />
-      </section>
-    </main>
+    <DashboardShellClient
+      recentCollections={recentCollections}
+      itemTypes={itemTypes}
+      mockItems={mockItems}
+      collectionStats={collectionStats}
+    />
   );
 }
