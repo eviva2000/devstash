@@ -7,6 +7,9 @@ import type {
 } from "@/features/dashboard/dashboard-types";
 import {
   formatDate,
+  getTypeBorderStyle,
+  getTypeColorStyle,
+  typeBorderColorMap,
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
@@ -29,12 +32,21 @@ export function ItemCard({
   const iconClassName = type
     ? typeColorMap[type.color as keyof typeof typeColorMap] ?? typeColorMap.zinc
     : typeColorMap.zinc;
+  const borderClassName = type
+    ? typeBorderColorMap[type.color as keyof typeof typeBorderColorMap] ??
+      "border-border"
+    : "border-border";
+  const visibleTags = item.tags.slice(0, type ? 2 : 3);
 
   return (
     <button
       aria-label={`Open item details for ${item.title}`}
-      className="group flex min-h-44 w-full flex-col rounded-md border border-border bg-card p-4 text-left text-card-foreground transition-colors hover:border-muted-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      className={cn(
+        "group flex min-h-44 w-full flex-col rounded-md border bg-card p-4 text-left text-card-foreground transition-colors hover:border-muted-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        borderClassName
+      )}
       onClick={onOpen}
+      style={getTypeBorderStyle(type?.color)}
       type="button"
     >
       <div className="flex items-start gap-3">
@@ -43,6 +55,7 @@ export function ItemCard({
             "flex size-8 shrink-0 items-center justify-center rounded-md",
             iconClassName
           )}
+          style={getTypeColorStyle(type?.color)}
         >
           <Icon className="size-4" />
         </span>
@@ -60,16 +73,23 @@ export function ItemCard({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {item.tags.slice(0, 3).map((tag) => (
-          <span
-            className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
-            key={tag}
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
+      {(type || visibleTags.length > 0) && (
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {type && (
+            <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+              {type.name}
+            </span>
+          )}
+          {visibleTags.map((tag) => (
+            <span
+              className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
+              key={tag}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-xs text-muted-foreground">
         <span className="truncate">
