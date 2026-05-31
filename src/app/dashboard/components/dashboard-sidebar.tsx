@@ -21,7 +21,10 @@ import type { SidebarData } from "@/features/dashboard/dashboard-types";
 import {
   getInitials,
   getTypeColorStyle,
+<<<<<<< HEAD
   getTypeMarkerStyle,
+=======
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
@@ -413,6 +416,7 @@ function SidebarLink({
       onClick={onClick}
       title={isCollapsed ? label : undefined}
     >
+<<<<<<< HEAD
       {hasMarker ? (
         <span className="flex size-6 shrink-0 items-center justify-center">
           <span
@@ -431,6 +435,17 @@ function SidebarLink({
           {Icon && <Icon className="size-4" />}
         </span>
       )}
+=======
+      <span
+        className={cn(
+          "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground",
+          iconClassName
+        )}
+        style={iconStyle}
+      >
+        <Icon className="size-4" />
+      </span>
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
       {!isCollapsed && (
         <>
           <span className="min-w-0 flex-1 truncate">{label}</span>

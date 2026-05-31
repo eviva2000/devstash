@@ -2,8 +2,13 @@
 
 ## Status
 
+<<<<<<< HEAD
 <!-- Not Started | In progress | Completed -->
 Completed
+=======
+<!-- Not Started | In progress | Complete -->
+Complete
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 
 ## Goals
 
@@ -44,11 +49,6 @@ Keep this updated. Earliest to Latest
   - Created the initial schema for users, accounts, sessions, verification tokens, items, item types, collections, tags, and item-tag relationships
   - Added indexes, unique constraints, and cascade/restrict/set-null delete behavior for the core data model
   - Added the initial Prisma migration, generated Prisma client output, database seed script, database smoke test script, and shared Prisma client helper
-- **Dashboard Collections Database Integration** (May 31, 2026)
-  - Replaced dummy dashboard collection data with real collection data from the Neon database through Prisma
-  - Displayed the 6 most recent collections with real stats and type information
-  - Derived each collection card border color from the collection's most-used content type
-  - Added compact type icons to each collection card for all represented content types
 - **Seed Data Feature** (May 19, 2026)
   - Completed on branch `seed-data-feature`
   - Replaced `prisma/seed.ts` with spec-compliant demo data for `demo@devstash.io`
@@ -58,7 +58,20 @@ Keep this updated. Earliest to Latest
   - Added `npm run db:seed` for direct seed execution
   - Updated `scripts/test-db.ts` to fetch and validate the demo user, password hash, system item types, collections, items, and link URLs
   - Verified with `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run db:seed`, and `npm run db:test`
-- **Stats and Sidebar Database Integration** (May 31, 2026)
+- **Dashboard Collections Database Integration** (May 31, 2026)
+  - Replaced dummy dashboard collection data with real collection data from the Neon database through Prisma
+  - Displayed the 6 most recent collections with real stats and type information
+  - Derived each collection card border color from the collection's most-used content type
+  - Added compact type icons to each collection card for all represented content types
+- **Dashboard Items Database Integration** (May 31, 2026)
+  - Completed on branch `item-types-to-database`
+  - Replaced dashboard pinned and recent item mock data with Neon database data through Prisma
+  - Added `src/lib/db/items.ts` with item fetching, item stats, and item type count helpers
+  - Fetched dashboard item data in the server component and passed database-backed items into the client dashboard
+  - Derived item card icons and borders from database item type metadata, including hex color support
+  - Hid the pinned items section when no pinned items exist
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and a browser smoke test
+  - **Stats and Sidebar Database Integration** (May 31, 2026)
   - Completed on branch `stats`
   - Replaced dashboard stat values with database-backed item and collection counts
   - Displayed system item types in the sidebar with database-backed counts, icons, and `/items/[typename]` links
@@ -66,4 +79,3 @@ Keep this updated. Earliest to Latest
   - Added a `View all collections` sidebar link to `/collections`
   - Rendered recent sidebar collections with colored circles based on each collection's most-used item type
   - Added `src/lib/db/items.ts` helpers for item stats and item type counts
-  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and a browser smoke test

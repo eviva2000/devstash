@@ -8,6 +8,7 @@ import type {
 } from "@/features/dashboard/dashboard-types";
 import {
   formatDate,
+  getTypeColorStyle,
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
@@ -80,6 +81,7 @@ export function ItemContentDrawer({
               "flex size-9 shrink-0 items-center justify-center rounded-md",
               iconClassName
             )}
+            style={getTypeColorStyle(type?.color)}
           >
             <Icon className="size-5" />
           </span>
@@ -142,19 +144,21 @@ export function ItemContentDrawer({
               <DrawerMeta label="Updated" value={formatDate(item.updatedAt)} />
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold">Tags</h3>
-              <div className="flex flex-wrap gap-1.5">
-                {item.tags.map((tag) => (
-                  <span
-                    className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
-                    key={tag}
-                  >
-                    {tag}
-                  </span>
-                ))}
+            {item.tags.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">Tags</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {item.tags.map((tag) => (
+                    <span
+                      className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
+                      key={tag}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {url && (
               <div className="space-y-2">

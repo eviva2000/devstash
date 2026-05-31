@@ -3,7 +3,10 @@
 import { Folder, Heart, Layers3, Star } from "lucide-react";
 import { useState } from "react";
 
+<<<<<<< HEAD
 import { mockItems } from "@/lib/mock-data";
+=======
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 import type {
   DashboardData,
   DashboardItemStats,
@@ -42,7 +45,9 @@ export function DashboardMain({
   const selectedItem =
     selectedItemId === null
       ? undefined
-      : mockItems.find((item) => item.id === selectedItemId);
+      : [...data.pinnedItems, ...data.recentItems].find(
+          (item) => item.id === selectedItemId
+        );
   const selectedType = selectedItem
     ? data.typeById.get(selectedItem.typeId)
     : undefined;
@@ -125,19 +130,21 @@ export function DashboardMain({
           </div>
         </DashboardSection>
 
-        <DashboardSection title="Pinned Items">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {data.pinnedItems.map((item) => (
-              <ItemCard
-                collection={getCollection(data, item.collectionId)}
-                item={item}
-                key={item.id}
-                onOpen={() => openItemDrawer(item.id)}
-                type={data.typeById.get(item.typeId)}
-              />
-            ))}
-          </div>
-        </DashboardSection>
+        {data.pinnedItems.length > 0 && (
+          <DashboardSection title="Pinned Items">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {data.pinnedItems.map((item) => (
+                <ItemCard
+                  collection={getCollection(data, item.collectionId)}
+                  item={item}
+                  key={item.id}
+                  onOpen={() => openItemDrawer(item.id)}
+                  type={data.typeById.get(item.typeId)}
+                />
+              ))}
+            </div>
+          </DashboardSection>
+        )}
 
         <DashboardSection title="Recent Items">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

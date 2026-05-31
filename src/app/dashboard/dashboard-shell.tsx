@@ -1,8 +1,13 @@
 import { DashboardShellClient } from "./dashboard-shell-client";
 import type {
+<<<<<<< HEAD
   DashboardCollection,
   DashboardItemStats,
   DashboardItemType,
+=======
+  DashboardItem,
+  DashboardItemStats,
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 } from "@/features/dashboard/dashboard-types";
 import {
   getFavoriteCollections,
@@ -12,10 +17,11 @@ import {
 } from "@/lib/db/collections";
 import { getItemStats, getItemTypeCounts } from "@/lib/db/items";
 import {
-  mockItemTypes,
-  mockCollections,
-  mockItems,
-} from "@/lib/mock-data";
+  getItemStats,
+  getItemTypeCounts,
+  getPinnedItems,
+  getRecentItems,
+} from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
 // TODO: Replace with the authenticated user once auth is wired up.
@@ -29,6 +35,7 @@ async function resolveDemoUserId(): Promise<string | null> {
 }
 
 export async function DashboardShell() {
+<<<<<<< HEAD
   let recentCollections: DashboardCollection[] = mockCollections
     .slice(0, 6)
     .map((collection) => ({
@@ -58,18 +65,54 @@ export async function DashboardShell() {
     counts[item.typeId] = (counts[item.typeId] ?? 0) + 1;
     return counts;
   }, {});
+=======
+  type RecentCollection = {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string | null;
+    isFavorite: boolean;
+    itemCount: number;
+    dominantType?: { icon?: string | null; color?: string | null } | null;
+    types?: Array<{ icon?: string | null; name: string; slug?: string }>;
+  };
+
+  type ItemType = {
+    id: string;
+    name: string;
+    slug: string;
+    icon?: string | null;
+    color?: string | null;
+  };
+
+  let recentCollections: RecentCollection[] = [];
+  let itemTypes: ItemType[] = [];
+  let pinnedItems: DashboardItem[] = [];
+  let recentItems: DashboardItem[] = [];
+  let itemTypeCounts: Record<string, number> = {};
+  let collectionStats = { total: 0, favorites: 0 };
+  let itemStats: DashboardItemStats = { total: 0, favorites: 0, pinned: 0 };
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 
   try {
     const userId = await resolveDemoUserId();
     if (!userId) {
-      throw new Error("No user found in database; using mock data.");
+      throw new Error("No user found in database.");
     }
 
     const [
+<<<<<<< HEAD
       dbRecentCollections,
       dbFavoriteCollections,
       dbTypes,
       dbCollectionStats,
+=======
+      dbCollections,
+      dbTypes,
+      dbCollectionStats,
+      dbPinnedItems,
+      dbRecentItems,
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
       dbItemStats,
       dbItemTypeCounts,
     ] = await Promise.all([
@@ -77,10 +120,16 @@ export async function DashboardShell() {
       getFavoriteCollections(userId),
       getItemTypes(),
       getCollectionStats(userId),
+<<<<<<< HEAD
+=======
+      getPinnedItems(userId),
+      getRecentItems(userId, 10),
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
       getItemStats(userId),
       getItemTypeCounts(userId),
     ]);
 
+<<<<<<< HEAD
     recentCollections = dbRecentCollections;
     favoriteCollections = dbFavoriteCollections;
     itemTypes = dbTypes;
@@ -89,6 +138,17 @@ export async function DashboardShell() {
     itemTypeCounts = dbItemTypeCounts;
   } catch (error) {
     console.warn("Failed to fetch dashboard sidebar data from database, using mock data:", error);
+=======
+    recentCollections = dbCollections as RecentCollection[];
+    itemTypes = dbTypes as ItemType[];
+    collectionStats = dbCollectionStats;
+    pinnedItems = dbPinnedItems;
+    recentItems = dbRecentItems;
+    itemStats = dbItemStats;
+    itemTypeCounts = dbItemTypeCounts;
+  } catch (error) {
+    console.warn("Failed to fetch dashboard data from database:", error);
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
   }
 
   return (
@@ -96,7 +156,10 @@ export async function DashboardShell() {
       recentCollections={recentCollections}
       favoriteCollections={favoriteCollections}
       itemTypes={itemTypes}
-      mockItems={mockItems}
+      pinnedItems={pinnedItems}
+      recentItems={recentItems}
+      itemStats={itemStats}
+      itemTypeCounts={itemTypeCounts}
       collectionStats={collectionStats}
       itemStats={itemStats}
       itemTypeCounts={itemTypeCounts}

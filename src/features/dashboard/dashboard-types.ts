@@ -5,10 +5,13 @@ export type DashboardCollection = {
   description: string;
   isFavorite: boolean;
   itemCount: number;
+<<<<<<< HEAD
   dominantType?: {
     icon?: string | null;
     color?: string | null;
   } | null;
+=======
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 };
 
 export type DashboardItemType = {
@@ -26,6 +29,10 @@ export type DashboardItem = {
   description: string;
   typeId: string;
   collectionId: string | null;
+<<<<<<< HEAD
+=======
+  collection?: DashboardCollection | null;
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
   content?: string | null;
   language?: string | null;
   url?: string | null;
@@ -61,4 +68,13 @@ export type SidebarData = {
   types: Array<DashboardItemType & { count: number; href: string }>;
   favoriteCollections: DashboardCollection[];
   recentCollections: DashboardCollection[];
+<<<<<<< HEAD
+=======
+};
+
+export type DashboardItemStats = {
+  total: number;
+  favorites: number;
+  pinned: number;
+>>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 };
