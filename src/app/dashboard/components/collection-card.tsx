@@ -1,6 +1,10 @@
 import { ArrowUpRight, Folder, Star } from "lucide-react";
 import Link from "next/link";
 
+import {
+  getTypeBorderStyle,
+  typeBorderColorMap,
+} from "@/features/dashboard/dashboard-utils";
 import { getIconComponent } from "@/lib/icon-map";
 
 interface EnhancedCollection {
@@ -14,33 +18,21 @@ interface EnhancedCollection {
   types?: Array<{ icon?: string | null; name: string; slug?: string }>;
 }
 
-function getTypeColorClass(color?: string | null): string {
-  const colorMap: Record<string, string> = {
-    blue: "border-blue-500/50",
-    purple: "border-purple-500/50",
-    zinc: "border-zinc-500/50",
-    green: "border-green-500/50",
-    orange: "border-orange-500/50",
-    pink: "border-pink-500/50",
-    cyan: "border-cyan-500/50",
-    red: "border-red-500/50",
-    amber: "border-amber-500/50",
-    emerald: "border-emerald-500/50",
-  };
-  return colorMap[color || ""] || "border-border";
-}
-
 export function CollectionCard({
   collection,
 }: {
   collection: EnhancedCollection;
 }) {
-  const borderColor = getTypeColorClass(collection.dominantType?.color);
+  const borderColor =
+    typeBorderColorMap[
+      collection.dominantType?.color as keyof typeof typeBorderColorMap
+    ] ?? "border-border";
 
   return (
     <Link
       className={`group flex min-h-36 flex-col rounded-md border ${borderColor} bg-card p-4 text-card-foreground transition-colors hover:border-muted-foreground/40`}
       href={`/collections/${collection.slug}`}
+      style={getTypeBorderStyle(collection.dominantType?.color)}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">

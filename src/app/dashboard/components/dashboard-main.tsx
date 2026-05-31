@@ -3,8 +3,10 @@
 import { Folder, Heart, Layers3, Star } from "lucide-react";
 import { useState } from "react";
 
-import { mockItems, mockItemTypes } from "@/lib/mock-data";
-import type { DashboardData } from "@/features/dashboard/dashboard-types";
+import type {
+  DashboardData,
+  DashboardItemStats,
+} from "@/features/dashboard/dashboard-types";
 
 import { CollectionCard } from "./collection-card";
 import { DashboardSection } from "./dashboard-section";
@@ -27,17 +29,21 @@ export function DashboardMain({
   data,
   extendedCollections,
   collectionStats,
+  itemStats,
 }: {
   data: DashboardData;
   extendedCollections?: ExtendedCollection[];
   collectionStats: { total: number; favorites: number };
+  itemStats: DashboardItemStats;
 }) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
   const selectedItem =
     selectedItemId === null
       ? undefined
-      : mockItems.find((item) => item.id === selectedItemId);
+      : [...data.pinnedItems, ...data.recentItems].find(
+          (item) => item.id === selectedItemId
+        );
   const selectedType = selectedItem
     ? data.typeById.get(selectedItem.typeId)
     : undefined;
@@ -68,8 +74,8 @@ export function DashboardMain({
   const stats = [
     {
       label: "Items",
-      value: mockItems.length,
-      detail: `${mockItemTypes.length} item types`,
+      value: itemStats.total,
+      detail: `${data.typeById.size} item types`,
       icon: Layers3,
       iconClassName: "bg-blue-500/15 text-blue-400",
     },
@@ -82,7 +88,7 @@ export function DashboardMain({
     },
     {
       label: "Favorite Items",
-      value: data.favoriteItems.length,
+      value: itemStats.favorites,
       detail: "Saved for quick access",
       icon: Star,
       iconClassName: "bg-amber-500/15 text-amber-400",
@@ -102,7 +108,7 @@ export function DashboardMain({
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            {mockItems.length} items
+            {itemStats.total} items
           </p>
         </div>
 
@@ -120,19 +126,21 @@ export function DashboardMain({
           </div>
         </DashboardSection>
 
-        <DashboardSection title="Pinned Items">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {data.pinnedItems.map((item) => (
-              <ItemCard
-                collection={getCollection(data, item.collectionId)}
-                item={item}
-                key={item.id}
-                onOpen={() => openItemDrawer(item.id)}
-                type={data.typeById.get(item.typeId)}
-              />
-            ))}
-          </div>
-        </DashboardSection>
+        {data.pinnedItems.length > 0 && (
+          <DashboardSection title="Pinned Items">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {data.pinnedItems.map((item) => (
+                <ItemCard
+                  collection={getCollection(data, item.collectionId)}
+                  item={item}
+                  key={item.id}
+                  onOpen={() => openItemDrawer(item.id)}
+                  type={data.typeById.get(item.typeId)}
+                />
+              ))}
+            </div>
+          </DashboardSection>
+        )}
 
         <DashboardSection title="Recent Items">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

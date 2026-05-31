@@ -2,7 +2,13 @@
 
 import { useMemo, useState } from "react";
 
-import type { DashboardData, SidebarData, DashboardCollection, DashboardItem } from "@/features/dashboard/dashboard-types";
+import type {
+  DashboardData,
+  DashboardItem,
+  DashboardItemStats,
+  SidebarData,
+  DashboardCollection,
+} from "@/features/dashboard/dashboard-types";
 import { getTypeHref } from "@/features/dashboard/dashboard-utils";
 
 import { DashboardHeader } from "./components/dashboard-header";
@@ -31,29 +37,35 @@ interface DashboardShellClientProps {
     color?: string | null;
     isSystem?: boolean;
   }>;
-  mockItems: DashboardItem[];
+  pinnedItems: DashboardItem[];
+  recentItems: DashboardItem[];
+  itemStats: DashboardItemStats;
+  itemTypeCounts: Record<string, number>;
   collectionStats: { total: number; favorites: number };
 }
 
 export function DashboardShellClient({
   recentCollections,
   itemTypes,
-  mockItems,
+  pinnedItems,
+  recentItems,
+  itemStats,
+  itemTypeCounts,
   collectionStats,
 }: DashboardShellClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const { dashboardData, sidebarData } = useMemo(() => {
-    const typeCounts = new Map<string, number>();
     const typeById = new Map(itemTypes.map((type) => [type.id, type]));
+    const allDashboardItems = uniqueItems([...pinnedItems, ...recentItems]);
 
     // Transform received collections to match DashboardCollection type
     const transformedCollections: DashboardCollection[] = recentCollections.map((col) => ({
       id: col.id,
       name: col.name,
       slug: col.slug,
-      description: col.description || "",
+      description: col.description ?? "",
       isFavorite: col.isFavorite,
       itemCount: col.itemCount,
     }));
@@ -62,18 +74,16 @@ export function DashboardShellClient({
       transformedCollections.map((collection) => [collection.id, collection])
     );
 
-    for (const item of mockItems) {
-      typeCounts.set(item.typeId, (typeCounts.get(item.typeId) ?? 0) + 1);
+    for (const item of allDashboardItems) {
+      if (item.collection && !collectionById.has(item.collection.id)) {
+        collectionById.set(item.collection.id, item.collection);
+      }
     }
 
-    const favoriteItems = mockItems.filter((item) => item.isFavorite);
+    const favoriteItems = allDashboardItems.filter((item) => item.isFavorite);
     const favoriteCollections = transformedCollections.filter(
       (collection) => collection.isFavorite
     );
-    const pinnedItems = mockItems.filter((item) => item.isPinned);
-    const recentItems = [...mockItems]
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-      .slice(0, 10);
 
     const dashboardData: DashboardData = {
       collectionById,
@@ -86,12 +96,13 @@ export function DashboardShellClient({
     };
 
     const sidebarData: SidebarData = {
-      favoriteItemsCount: favoriteItems.length,
-      pinnedItemsCount: pinnedItems.length,
-      recentItemsCount: Math.min(mockItems.length, 5),
+      totalItemsCount: itemStats.total,
+      favoriteItemsCount: itemStats.favorites,
+      pinnedItemsCount: itemStats.pinned,
+      recentItemsCount: recentItems.length,
       types: itemTypes.map((type) => ({
         ...type,
-        count: typeCounts.get(type.id) ?? 0,
+        count: itemTypeCounts[type.id] ?? 0,
         href: getTypeHref(type.slug),
       })),
       favoriteCollections,
@@ -99,7 +110,7 @@ export function DashboardShellClient({
     };
 
     return { dashboardData, sidebarData };
-  }, [recentCollections, itemTypes, mockItems]);
+  }, [recentCollections, itemTypes, pinnedItems, recentItems, itemStats, itemTypeCounts]);
 
   return (
     <main className="flex min-h-screen overflow-hidden bg-background text-foreground">
@@ -124,8 +135,13 @@ export function DashboardShellClient({
           data={dashboardData}
           extendedCollections={recentCollections}
           collectionStats={collectionStats}
+          itemStats={itemStats}
         />
       </section>
     </main>
   );
+}
+
+function uniqueItems(items: DashboardItem[]) {
+  return Array.from(new Map(items.map((item) => [item.id, item])).values());
 }

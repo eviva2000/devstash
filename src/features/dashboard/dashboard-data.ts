@@ -42,6 +42,7 @@ export function getDashboardData(): {
       typeById,
     },
     sidebarData: {
+      totalItemsCount: mockItems.length,
       favoriteItemsCount: favoriteItems.length,
       pinnedItemsCount: pinnedItems.length,
       recentItemsCount: Math.min(mockItems.length, 5),

@@ -1,14 +1,19 @@
 import { DashboardShellClient } from "./dashboard-shell-client";
+import type {
+  DashboardItem,
+  DashboardItemStats,
+} from "@/features/dashboard/dashboard-types";
 import {
   getCollectionStats,
   getItemTypes,
   getRecentCollections,
 } from "@/lib/db/collections";
 import {
-  mockItemTypes,
-  mockCollections,
-  mockItems,
-} from "@/lib/mock-data";
+  getItemStats,
+  getItemTypeCounts,
+  getPinnedItems,
+  getRecentItems,
+} from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
 // TODO: Replace with the authenticated user once auth is wired up.
@@ -41,39 +46,57 @@ export async function DashboardShell() {
     color?: string | null;
   };
 
-  let recentCollections: RecentCollection[] = (mockCollections.slice(0, 6) as unknown) as RecentCollection[];
-  let itemTypes: ItemType[] = (mockItemTypes as unknown) as ItemType[];
-  let collectionStats = {
-    total: mockCollections.length,
-    favorites: mockCollections.filter((c) => c.isFavorite).length,
-  };
+  let recentCollections: RecentCollection[] = [];
+  let itemTypes: ItemType[] = [];
+  let pinnedItems: DashboardItem[] = [];
+  let recentItems: DashboardItem[] = [];
+  let itemTypeCounts: Record<string, number> = {};
+  let collectionStats = { total: 0, favorites: 0 };
+  let itemStats: DashboardItemStats = { total: 0, favorites: 0, pinned: 0 };
 
   try {
     const userId = await resolveDemoUserId();
     if (!userId) {
-      throw new Error("No user found in database; using mock data.");
+      throw new Error("No user found in database.");
     }
 
-    const [dbCollections, dbTypes, dbStats] = await Promise.all([
+    const [
+      dbCollections,
+      dbTypes,
+      dbCollectionStats,
+      dbPinnedItems,
+      dbRecentItems,
+      dbItemStats,
+      dbItemTypeCounts,
+    ] = await Promise.all([
       getRecentCollections(userId, 6),
       getItemTypes(userId),
       getCollectionStats(userId),
+      getPinnedItems(userId),
+      getRecentItems(userId, 10),
+      getItemStats(userId),
+      getItemTypeCounts(userId),
     ]);
 
-    if (dbCollections.length > 0) {
-      recentCollections = dbCollections as RecentCollection[];
-      itemTypes = dbTypes as ItemType[];
-      collectionStats = dbStats;
-    }
+    recentCollections = dbCollections as RecentCollection[];
+    itemTypes = dbTypes as ItemType[];
+    collectionStats = dbCollectionStats;
+    pinnedItems = dbPinnedItems;
+    recentItems = dbRecentItems;
+    itemStats = dbItemStats;
+    itemTypeCounts = dbItemTypeCounts;
   } catch (error) {
-    console.warn("Failed to fetch collections from database, using mock data:", error);
+    console.warn("Failed to fetch dashboard data from database:", error);
   }
 
   return (
     <DashboardShellClient
       recentCollections={recentCollections}
       itemTypes={itemTypes}
-      mockItems={mockItems}
+      pinnedItems={pinnedItems}
+      recentItems={recentItems}
+      itemStats={itemStats}
+      itemTypeCounts={itemTypeCounts}
       collectionStats={collectionStats}
     />
   );

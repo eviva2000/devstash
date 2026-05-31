@@ -1,7 +1,9 @@
 import {
+  Code,
   Code2,
   Sparkles,
   FileText,
+  StickyNote,
   Terminal,
   File,
   Image,
@@ -10,9 +12,11 @@ import {
 } from "lucide-react";
 
 const iconMap: Record<string, LucideIcon> = {
+  Code,
   Code2,
   Sparkles,
   FileText,
+  StickyNote,
   Terminal,
   File,
   Image,
