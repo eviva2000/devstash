@@ -49,3 +49,12 @@ Keep this updated. Earliest to Latest
   - Displayed the 6 most recent collections with real stats and type information
   - Derived each collection card border color from the collection's most-used content type
   - Added compact type icons to each collection card for all represented content types
+- **Seed Data Feature** (May 19, 2026)
+  - Completed on branch `seed-data-feature`
+  - Replaced `prisma/seed.ts` with spec-compliant demo data for `demo@devstash.io`
+  - Added bcryptjs password hashing with 12 rounds for the demo password
+  - Seeded 7 system item types with Lucide icon names and hex colors
+  - Seeded 5 collections and 18 representative snippets, prompts, commands, and links
+  - Added `npm run db:seed` for direct seed execution
+  - Updated `scripts/test-db.ts` to fetch and validate the demo user, password hash, system item types, collections, items, and link URLs
+  - Verified with `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run db:seed`, and `npm run db:test`
