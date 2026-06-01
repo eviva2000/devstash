@@ -21,6 +21,7 @@ import type { SidebarData } from "@/features/dashboard/dashboard-types";
 import {
   getInitials,
   getTypeColorStyle,
+  getTypeMarkerStyle,
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
@@ -96,13 +97,13 @@ function SidebarContent({
   isMobile = false,
   onClose,
   onToggle,
-}: {
+}: Readonly<{
   data: SidebarData;
   isCollapsed?: boolean;
   isMobile?: boolean;
   onClose?: () => void;
   onToggle?: () => void;
-}) {
+}>) {
   const compact = isCollapsed && !isMobile;
   const [areCollectionsOpen, setAreCollectionsOpen] = useState(true);
 
