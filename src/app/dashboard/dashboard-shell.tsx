@@ -1,21 +1,13 @@
 import { DashboardShellClient } from "./dashboard-shell-client";
 import type {
-<<<<<<< HEAD
-  DashboardCollection,
-  DashboardItemStats,
-  DashboardItemType,
-=======
   DashboardItem,
   DashboardItemStats,
->>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 } from "@/features/dashboard/dashboard-types";
 import {
-  getFavoriteCollections,
   getCollectionStats,
   getItemTypes,
   getRecentCollections,
 } from "@/lib/db/collections";
-import { getItemStats, getItemTypeCounts } from "@/lib/db/items";
 import {
   getItemStats,
   getItemTypeCounts,
@@ -35,42 +27,11 @@ async function resolveDemoUserId(): Promise<string | null> {
 }
 
 export async function DashboardShell() {
-<<<<<<< HEAD
-  let recentCollections: DashboardCollection[] = mockCollections
-    .slice(0, 6)
-    .map((collection) => ({
-      ...collection,
-      description: collection.description ?? "",
-    }));
-  let favoriteCollections: DashboardCollection[] = mockCollections
-    .filter((collection) => collection.isFavorite)
-    .map((collection) => ({
-      ...collection,
-      description: collection.description ?? "",
-    }));
-  let itemTypes: DashboardItemType[] = mockItemTypes;
-  let collectionStats = {
-    total: mockCollections.length,
-    favorites: mockCollections.filter((c) => c.isFavorite).length,
-  };
-  let itemStats: DashboardItemStats = {
-    total: mockItems.length,
-    favorites: mockItems.filter((item) => item.isFavorite).length,
-    pinned: mockItems.filter((item) => item.isPinned).length,
-    recent: Math.min(mockItems.length, 10),
-  };
-  let itemTypeCounts: Record<string, number> = mockItems.reduce<
-    Record<string, number>
-  >((counts, item) => {
-    counts[item.typeId] = (counts[item.typeId] ?? 0) + 1;
-    return counts;
-  }, {});
-=======
   type RecentCollection = {
     id: string;
     name: string;
     slug: string;
-    description?: string | null;
+    description: string;
     isFavorite: boolean;
     itemCount: number;
     dominantType?: { icon?: string | null; color?: string | null } | null;
@@ -91,8 +52,7 @@ export async function DashboardShell() {
   let recentItems: DashboardItem[] = [];
   let itemTypeCounts: Record<string, number> = {};
   let collectionStats = { total: 0, favorites: 0 };
-  let itemStats: DashboardItemStats = { total: 0, favorites: 0, pinned: 0 };
->>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
+  let itemStats: DashboardItemStats = { total: 0, favorites: 0, pinned: 0, recent: 0 };
 
   try {
     const userId = await resolveDemoUserId();
@@ -101,46 +61,25 @@ export async function DashboardShell() {
     }
 
     const [
-<<<<<<< HEAD
-      dbRecentCollections,
-      dbFavoriteCollections,
-      dbTypes,
-      dbCollectionStats,
-=======
       dbCollections,
       dbTypes,
       dbCollectionStats,
       dbPinnedItems,
       dbRecentItems,
->>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
       dbItemStats,
       dbItemTypeCounts,
     ] = await Promise.all([
       getRecentCollections(userId, 6),
-      getFavoriteCollections(userId),
       getItemTypes(),
       getCollectionStats(userId),
-<<<<<<< HEAD
-=======
       getPinnedItems(userId),
       getRecentItems(userId, 10),
->>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
       getItemStats(userId),
       getItemTypeCounts(userId),
     ]);
 
-<<<<<<< HEAD
-    recentCollections = dbRecentCollections;
-    favoriteCollections = dbFavoriteCollections;
+    recentCollections = dbCollections;
     itemTypes = dbTypes;
-    collectionStats = dbCollectionStats;
-    itemStats = dbItemStats;
-    itemTypeCounts = dbItemTypeCounts;
-  } catch (error) {
-    console.warn("Failed to fetch dashboard sidebar data from database, using mock data:", error);
-=======
-    recentCollections = dbCollections as RecentCollection[];
-    itemTypes = dbTypes as ItemType[];
     collectionStats = dbCollectionStats;
     pinnedItems = dbPinnedItems;
     recentItems = dbRecentItems;
@@ -148,8 +87,10 @@ export async function DashboardShell() {
     itemTypeCounts = dbItemTypeCounts;
   } catch (error) {
     console.warn("Failed to fetch dashboard data from database:", error);
->>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
   }
+
+
+const favoriteCollections = recentCollections.filter((collection) => collection.isFavorite);
 
   return (
     <DashboardShellClient
@@ -161,8 +102,6 @@ export async function DashboardShell() {
       itemStats={itemStats}
       itemTypeCounts={itemTypeCounts}
       collectionStats={collectionStats}
-      itemStats={itemStats}
-      itemTypeCounts={itemTypeCounts}
     />
   );
 }
