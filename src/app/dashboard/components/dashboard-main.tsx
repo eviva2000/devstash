@@ -3,10 +3,6 @@
 import { Folder, Heart, Layers3, Star } from "lucide-react";
 import { useState } from "react";
 
-<<<<<<< HEAD
-import { mockItems } from "@/lib/mock-data";
-=======
->>>>>>> 3df3759463c9cff56d825788930f4cd37c30d35a
 import type {
   DashboardData,
   DashboardItemStats,
@@ -35,10 +31,10 @@ export function DashboardMain({
   collectionStats,
   itemStats,
 }: {
-  data: DashboardData;
-  extendedCollections?: ExtendedCollection[];
-  collectionStats: { total: number; favorites: number };
-  itemStats: DashboardItemStats;
+  readonly data: DashboardData;
+  readonly extendedCollections?: ExtendedCollection[];
+  readonly collectionStats: { readonly total: number; readonly favorites: number };
+  readonly itemStats: DashboardItemStats;
 }) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);

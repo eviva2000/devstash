@@ -420,7 +420,15 @@ function SidebarLink({
         )}
         style={iconStyle}
       >
-        <Icon className="size-4" />
+        {hasMarker ? (
+          <span
+            aria-hidden="true"
+            className="size-2 rounded-full bg-current"
+            style={markerStyle}
+          />
+        ) : (
+          Icon && <Icon className="size-4" />
+        )}
       </span>
       {!isCollapsed && (
         <>

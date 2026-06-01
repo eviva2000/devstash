@@ -5,6 +5,10 @@ export type DashboardCollection = {
   description: string;
   isFavorite: boolean;
   itemCount: number;
+    dominantType?: {
+    icon?: string | null;
+    color?: string | null;
+  } | null;
 };
 
 export type DashboardItemType = {
