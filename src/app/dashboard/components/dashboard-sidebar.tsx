@@ -300,11 +300,11 @@ function SidebarSection({
   children,
   isCollapsed,
   title,
-}: {
+}: Readonly<{
   children: ReactNode;
   isCollapsed: boolean;
   title: string;
-}) {
+}>) {
   return (
     <div className="mt-5 border-t border-sidebar-border pt-4">
       {!isCollapsed && (
