@@ -11,12 +11,12 @@ import type {
 } from "@/features/dashboard/dashboard-types";
 import { getTypeHref } from "@/features/dashboard/dashboard-utils";
 
-import { DashboardHeader } from "./components/dashboard-header";
-import { DashboardMain } from "./components/dashboard-main";
+import { DashboardHeader } from "./dashboard-header";
+import { DashboardMain } from "./dashboard-main";
 import {
   DesktopSidebar,
   MobileDrawer,
-} from "./components/dashboard-sidebar";
+} from "./dashboard-sidebar";
 
 interface DashboardShellClientProps {
   readonly recentCollections: DashboardCollection[];
