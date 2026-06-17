@@ -1,22 +1,17 @@
-# Current Feature: Add Pro Badge To Sidebar
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Add a pro badge to the Files item type in the sidebar.
-- Add a pro badge to the Images item type in the sidebar.
-- Use the existing ShadCN UI badge component.
-- Keep the badge clean and subtle.
-- Display the badge text as uppercase `PRO`.
+<!-- No active feature -->
 
 ## Notes
 
-- Spec: `context/features/add-pro-badge-sidebar.md`
-- Scope is limited to sidebar item types for files and images.
+<!-- No active notes -->
 
 ## History
 
@@ -79,3 +74,8 @@ Keep this updated. Earliest to Latest
   - Added a `View all collections` sidebar link to `/collections`
   - Rendered recent sidebar collections with colored circles based on each collection's most-used item type
   - Added `src/lib/db/items.ts` helpers for item stats and item type counts
+- **Add Pro Badge To Sidebar** (June 17, 2026)
+  - Completed on branch `pro-badge-sidebar`
+  - Added the ShadCN UI Badge component
+  - Displayed subtle uppercase `PRO` badges for File and Image sidebar item types
+  - Verified with `npm run lint` and `npm run build`
