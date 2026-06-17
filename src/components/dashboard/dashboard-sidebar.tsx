@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { SidebarData } from "@/features/dashboard/dashboard-types";
 import {
@@ -27,6 +28,8 @@ import {
 } from "@/features/dashboard/dashboard-utils";
 import { cn } from "@/lib/utils";
 import { mockUser } from "@/lib/mock-data";
+
+const proBadgeItemTypeSlugs = new Set(["file", "image"]);
 
 export function DesktopSidebar({
   data,
@@ -199,6 +202,7 @@ function SidebarContent({
 
             return (
               <SidebarLink
+                badge={proBadgeItemTypeSlugs.has(type.slug) ? "PRO" : undefined}
                 count={type.count}
                 href={type.href}
                 icon={Icon}
@@ -386,10 +390,12 @@ function SidebarLink({
   iconStyle,
   isCollapsed,
   label,
+  badge,
   marker,
   markerStyle,
   onClick,
 }: {
+  readonly badge?: string;
   readonly count?: number;
   readonly href: string;
   readonly icon?: ComponentType<{ className?: string }>;
@@ -433,6 +439,14 @@ function SidebarLink({
       {!isCollapsed && (
         <>
           <span className="min-w-0 flex-1 truncate">{label}</span>
+          {badge && (
+            <Badge
+              className="h-4 border-sidebar-border bg-sidebar-accent/70 px-1.5 text-[0.625rem] font-semibold tracking-normal text-muted-foreground"
+              variant="outline"
+            >
+              {badge}
+            </Badge>
+          )}
           {typeof count === "number" && (
             <span className="shrink-0 text-xs text-muted-foreground">
               {count}
