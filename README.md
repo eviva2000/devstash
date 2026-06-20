@@ -105,10 +105,10 @@ Generate the Prisma client:
 npm run prisma:generate
 ```
 
-Seed the built-in item types:
+Seed the demo data:
 
 ```bash
-npx tsx prisma/seed.ts
+npm run db:seed
 ```
 
 Start the development server:
@@ -130,7 +130,8 @@ Open [http://localhost:3000](http://localhost:3000) for the root page or [http:/
 | `npm run prisma:generate` | Generate the Prisma client |
 | `npm run db:migrate` | Run Prisma migrations in development |
 | `npm run db:studio` | Open Prisma Studio without launching a browser |
-| `npm run db:test` | Verify database connectivity and print table counts |
+| `npm run db:seed` | Seed the demo user, item types, collections, and items |
+| `npm run db:test` | Verify database connectivity and demo seed data |
 
 ## Project Structure
 
@@ -146,7 +147,7 @@ src/
 
 prisma/
   schema.prisma              Database schema
-  seed.ts                    Built-in item type seed script
+  seed.ts                    Demo data seed script
   migrations/                Prisma migrations
 
 context/
