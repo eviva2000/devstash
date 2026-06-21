@@ -38,6 +38,7 @@ interface DashboardShellClientProps {
 
 export function DashboardShellClient({
   recentCollections,
+  favoriteCollections,
   itemTypes,
   pinnedItems,
   recentItems,
@@ -51,20 +52,6 @@ export function DashboardShellClient({
   const { dashboardData, sidebarData } = useMemo(() => {
     const typeById = new Map(itemTypes.map((type) => [type.id, type]));
     const allDashboardItems = uniqueItems([...pinnedItems, ...recentItems]);
-
-    // Transform received collections to match DashboardCollection type
-    const transformedCollections: DashboardCollection[] = recentCollections.map((col) => ({
-      id: col.id,
-      name: col.name,
-      slug: col.slug,
-      description: col.description ?? "",
-      isFavorite: col.isFavorite,
-      itemCount: col.itemCount,
-    }));
-
-     const favoriteCollections = transformedCollections.filter(
-      (collection) => collection.isFavorite
-    );
 
     const collectionById: Map<string, DashboardCollection> = new Map(
       [...recentCollections, ...favoriteCollections].map((collection) => [
@@ -80,7 +67,6 @@ export function DashboardShellClient({
     }
 
     const favoriteItems = allDashboardItems.filter((item) => item.isFavorite);
-   
 
     const dashboardData: DashboardData = {
       collectionById,
@@ -107,7 +93,15 @@ export function DashboardShellClient({
     };
 
     return { dashboardData, sidebarData };
-  }, [recentCollections, itemTypes, pinnedItems, recentItems, itemStats, itemTypeCounts]);
+  }, [
+    recentCollections,
+    favoriteCollections,
+    itemTypes,
+    pinnedItems,
+    recentItems,
+    itemStats,
+    itemTypeCounts,
+  ]);
 
   return (
     <main className="flex min-h-screen overflow-hidden bg-background text-foreground">

@@ -1,6 +1,9 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type { DashboardCollection } from "@/features/dashboard/dashboard-types";
 import { prisma } from "@/lib/prisma";
+import { validateQueryLimit } from "@/lib/db/query-limits";
+
+const MAX_COLLECTION_QUERY_LIMIT = 100;
 
 const collectionInclude = {
   items: {
@@ -82,9 +85,14 @@ function toDashboardCollection(
  * Calculates the dominant item type for each collection
  */
 export async function getRecentCollections(userId: string, limit: number = 6) {
+  const take = validateQueryLimit(limit, {
+    max: MAX_COLLECTION_QUERY_LIMIT,
+    name: "Recent collections limit",
+  });
+
   const collections = await prisma.collection.findMany({
     where: { userId },
-    take: limit,
+    take,
     orderBy: { updatedAt: "desc" },
     include: collectionInclude,
   });
@@ -99,9 +107,14 @@ export async function getFavoriteCollections(
   userId: string,
   limit: number = 5
 ) {
+  const take = validateQueryLimit(limit, {
+    max: MAX_COLLECTION_QUERY_LIMIT,
+    name: "Favorite collections limit",
+  });
+
   const collections = await prisma.collection.findMany({
     where: { userId, isFavorite: true },
-    take: limit,
+    take,
     orderBy: { updatedAt: "desc" },
     include: collectionInclude,
   });

@@ -5,6 +5,9 @@ import type {
 } from "@/features/dashboard/dashboard-types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { validateQueryLimit } from "@/lib/db/query-limits";
+
+const MAX_ITEM_QUERY_LIMIT = 50;
 
 const itemInclude = {
   collection: {
@@ -81,9 +84,14 @@ export async function getRecentItems(
   userId: string,
   limit: number = 10
 ): Promise<DashboardItem[]> {
+  const take = validateQueryLimit(limit, {
+    max: MAX_ITEM_QUERY_LIMIT,
+    name: "Recent items limit",
+  });
+
   const items = await prisma.item.findMany({
     where: { userId },
-    take: limit,
+    take,
     orderBy: { updatedAt: "desc" },
     include: itemInclude,
   });

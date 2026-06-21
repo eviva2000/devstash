@@ -45,8 +45,6 @@ export const typeBorderColorMap = {
 
 const hexColorPattern = /^#[0-9a-f]{6}$/i;
 
-
-
 export function getTypeBorderStyle(color?: string | null) {
   if (!color || !hexColorPattern.test(color)) {
     return undefined;
@@ -54,10 +52,6 @@ export function getTypeBorderStyle(color?: string | null) {
 
   return { borderColor: `${color}80` };
 }
-
-const pluralTypeSlugs: Record<string, string> = {
-  url: "urls",
-};
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
