@@ -136,6 +136,8 @@ model ItemType {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  // Custom migration 20260621120000_unique_system_item_type_slugs also adds a
+  // partial unique index on slug where user_id is null for system item types.
   @@unique([userId, slug])
   @@index([userId])
   @@index([isSystem])

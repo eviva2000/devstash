@@ -1,10 +1,7 @@
 import { DashboardShellClient } from "./dashboard-shell-client";
-import type {
-  DashboardItem,
-  DashboardItemStats,
-} from "@/features/dashboard/dashboard-types";
 import {
   getCollectionStats,
+  getFavoriteCollections,
   getItemTypes,
   getRecentCollections,
 } from "@/lib/db/collections";
@@ -27,70 +24,30 @@ async function resolveDemoUserId(): Promise<string | null> {
 }
 
 export async function DashboardShell() {
-  type RecentCollection = {
-    id: string;
-    name: string;
-    slug: string;
-    description: string;
-    isFavorite: boolean;
-    itemCount: number;
-    dominantType?: { icon?: string | null; color?: string | null } | null;
-    types?: Array<{ icon?: string | null; name: string; slug?: string }>;
-  };
-
-  type ItemType = {
-    id: string;
-    name: string;
-    slug: string;
-    icon?: string | null;
-    color?: string | null;
-  };
-
-  let recentCollections: RecentCollection[] = [];
-  let itemTypes: ItemType[] = [];
-  let pinnedItems: DashboardItem[] = [];
-  let recentItems: DashboardItem[] = [];
-  let itemTypeCounts: Record<string, number> = {};
-  let collectionStats = { total: 0, favorites: 0 };
-  let itemStats: DashboardItemStats = { total: 0, favorites: 0, pinned: 0, recent: 0 };
-
-  try {
-    const userId = await resolveDemoUserId();
-    if (!userId) {
-      throw new Error("No user found in database.");
-    }
-
-    const [
-      dbCollections,
-      dbTypes,
-      dbCollectionStats,
-      dbPinnedItems,
-      dbRecentItems,
-      dbItemStats,
-      dbItemTypeCounts,
-    ] = await Promise.all([
-      getRecentCollections(userId, 6),
-      getItemTypes(),
-      getCollectionStats(userId),
-      getPinnedItems(userId),
-      getRecentItems(userId, 10),
-      getItemStats(userId),
-      getItemTypeCounts(userId),
-    ]);
-
-    recentCollections = dbCollections;
-    itemTypes = dbTypes;
-    collectionStats = dbCollectionStats;
-    pinnedItems = dbPinnedItems;
-    recentItems = dbRecentItems;
-    itemStats = dbItemStats;
-    itemTypeCounts = dbItemTypeCounts;
-  } catch (error) {
-    console.warn("Failed to fetch dashboard data from database:", error);
+  const userId = await resolveDemoUserId();
+  if (!userId) {
+    throw new Error("No user found in database.");
   }
 
-
-const favoriteCollections = recentCollections.filter((collection) => collection.isFavorite);
+  const [
+    recentCollections,
+    favoriteCollections,
+    itemTypes,
+    collectionStats,
+    pinnedItems,
+    recentItems,
+    itemStats,
+    itemTypeCounts,
+  ] = await Promise.all([
+    getRecentCollections(userId, 6),
+    getFavoriteCollections(userId),
+    getItemTypes(),
+    getCollectionStats(userId),
+    getPinnedItems(userId),
+    getRecentItems(userId, 10),
+    getItemStats(userId),
+    getItemTypeCounts(userId),
+  ]);
 
   return (
     <DashboardShellClient

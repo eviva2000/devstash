@@ -1,17 +1,33 @@
-# Current Feature
+# Current Feature: Dashboard Favorite Collections Quick Win
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
-<!-- No active feature -->
+- Fix the low-risk dashboard sidebar favorite collections issue found by the code scan.
+- Fetch favorite collections with the existing `getFavoriteCollections()` helper instead of deriving them from only the recent collections slice.
+- Pass the server-fetched `favoriteCollections` prop through `DashboardShellClient` instead of recomputing favorites from recent collections.
+- Remove the unused `pluralTypeSlugs` variable in `src/features/dashboard/dashboard-utils.ts`.
+- Add a dashboard route error boundary for load/render failures.
+- Add a dashboard route loading state using the ShadCN-style Skeleton UI component.
+- Validate database query limits before passing them to Prisma `take`.
+- Add a database-level partial unique index that prevents duplicate system item type slugs.
+- Preserve the existing dashboard UI contract and avoid authentication work.
 
 ## Notes
 
-<!-- No active notes -->
+- Current issue: `DashboardShell` fetches recent collections but never calls `getFavoriteCollections()`, then filters `recentCollections` to build `favoriteCollections`.
+- Client issue: `DashboardShellClient` declares a `favoriteCollections` prop but does not destructure or use it, then recomputes favorites from recent collections.
+- User-visible impact: favorite collections that are not also in the latest recent collections slice can disappear from the sidebar.
+- Add `src/app/dashboard/error.tsx` so dashboard failures show a recoverable fallback instead of a blank or misleading state.
+- Add `src/app/dashboard/loading.tsx` with skeletons that mirror the dashboard shell while server data loads.
+- Validate limit arguments for recent collections, favorite collections, and recent items to reject invalid or excessive values before querying.
+- Prisma cannot express PostgreSQL partial indexes in the schema, so system item type slug uniqueness is enforced through a custom SQL migration.
+- This is a quick win because the database helper already exists and the fix should be isolated to dashboard data wiring.
+- Do not include authentication work in this feature; authentication has not been implemented yet.
 
 ## History
 
