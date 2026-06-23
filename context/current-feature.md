@@ -1,33 +1,17 @@
-# Current Feature: Dashboard Favorite Collections Quick Win
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Fix the low-risk dashboard sidebar favorite collections issue found by the code scan.
-- Fetch favorite collections with the existing `getFavoriteCollections()` helper instead of deriving them from only the recent collections slice.
-- Pass the server-fetched `favoriteCollections` prop through `DashboardShellClient` instead of recomputing favorites from recent collections.
-- Remove the unused `pluralTypeSlugs` variable in `src/features/dashboard/dashboard-utils.ts`.
-- Add a dashboard route error boundary for load/render failures.
-- Add a dashboard route loading state using the ShadCN-style Skeleton UI component.
-- Validate database query limits before passing them to Prisma `take`.
-- Add a database-level partial unique index that prevents duplicate system item type slugs.
-- Preserve the existing dashboard UI contract and avoid authentication work.
+<!-- No active feature -->
 
 ## Notes
 
-- Current issue: `DashboardShell` fetches recent collections but never calls `getFavoriteCollections()`, then filters `recentCollections` to build `favoriteCollections`.
-- Client issue: `DashboardShellClient` declares a `favoriteCollections` prop but does not destructure or use it, then recomputes favorites from recent collections.
-- User-visible impact: favorite collections that are not also in the latest recent collections slice can disappear from the sidebar.
-- Add `src/app/dashboard/error.tsx` so dashboard failures show a recoverable fallback instead of a blank or misleading state.
-- Add `src/app/dashboard/loading.tsx` with skeletons that mirror the dashboard shell while server data loads.
-- Validate limit arguments for recent collections, favorite collections, and recent items to reject invalid or excessive values before querying.
-- Prisma cannot express PostgreSQL partial indexes in the schema, so system item type slug uniqueness is enforced through a custom SQL migration.
-- This is a quick win because the database helper already exists and the fix should be isolated to dashboard data wiring.
-- Do not include authentication work in this feature; authentication has not been implemented yet.
+<!-- No active notes -->
 
 ## History
 
@@ -95,3 +79,13 @@ Keep this updated. Earliest to Latest
   - Added the ShadCN UI Badge component
   - Displayed subtle uppercase `PRO` badges for File and Image sidebar item types
   - Verified with `npm run lint` and `npm run build`
+- **Dashboard Favorite Collections Quick Win** (June 21, 2026)
+  - Completed on branch `codex-dashboard-favorite-collections-quick-win`
+  - Fetched favorite collections with `getFavoriteCollections()` instead of deriving them from recent collections
+  - Passed server-fetched favorite collections through `DashboardShellClient`
+  - Added dashboard route loading and error states with a ShadCN-style Skeleton component
+  - Added query limit validation for recent collections, favorite collections, and recent items
+  - Added a PostgreSQL partial unique index migration to prevent duplicate system item type slugs
+  - Removed the unused `pluralTypeSlugs` variable from dashboard utilities
+  - Applied the new database migration with `prisma migrate deploy`
+  - Verified with Prisma schema validation, TypeScript, ESLint, `next build`, and `prisma migrate status`

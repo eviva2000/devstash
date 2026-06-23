@@ -1,7 +1,6 @@
 ---
 name: feature
-description: Manage current feature workflow - start, review, explain or complete
-argument-hint: load|start|review|explain|complete
+description: Manage the current feature workflow for this project, including loading specs, starting work, reviewing changes, explaining changes, testing, and completing features.
 ---
 
 # Feature Workflow
@@ -26,13 +25,16 @@ current-feature.md has these sections:
 
 Execute the requested action: $ARGUMENTS
 
+Use one of these actions after `$feature`: `load`, `start`, `review`, `explain`, `test`, or `complete`.
+
 | Action | Description |
 |--------|-------------|
 | `load` | Load a feature spec or inline description |
 | `start` | Begin implementation, create branch |
 | `review` | Check goals met, code quality |
 | `explain` | Document what changed and why |
-| `complete` | Commit, push, merge, reset |
+| `test` | Add or run focused tests for changed feature code |
+| `complete` | Safely finish the feature with review, commits, merge, and optional publish |
 
 See [actions/](actions/) for detailed instructions.
 

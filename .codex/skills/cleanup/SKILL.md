@@ -1,7 +1,6 @@
 ---
 name: cleanup
-description: Clean up project housekeeping tasks (add "run" to execute fixes)
-argument-hint: run|check
+description: Review project housekeeping tasks and optionally execute selected cleanup fixes when invoked with run or fix.
 ---
 
 Review the codebase for cleanup tasks:
@@ -16,6 +15,8 @@ Review the codebase for cleanup tasks:
 8. Find `@ts-ignore` comments that might be stale
 
 **Mode: $ARGUMENTS**
+
+Use `check` or no argument to report findings only. Use `run` or `fix` to list findings and ask which numbered items to fix.
 
 If no argument or argument is "check":
 

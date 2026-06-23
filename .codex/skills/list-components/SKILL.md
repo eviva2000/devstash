@@ -1,7 +1,6 @@
 ---
 name: list-components
-description: List project components
-argument-hint: "[subdirectory]"
+description: List React component files in this project, optionally limited to a components subdirectory supplied by the user.
 ---
 
 ## Task
