@@ -1,28 +1,17 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Add email/password authentication using Auth.js Credentials provider.
-- Add a password field to the User model via migration if it does not already exist.
-- Add the Credentials provider placeholder to `auth.config.ts` for the split Auth.js pattern.
-- Override the Credentials provider in `auth.ts` with bcrypt-backed email/password validation.
-- Create `POST /api/auth/register` for name, email, password, and confirmPassword registration.
-- Validate matching passwords, reject existing users, hash passwords with bcryptjs, and create database users.
-- Verify registration, email/password sign-in, dashboard redirect, and existing GitHub OAuth behavior.
+<!-- No active feature -->
 
 ## Notes
 
-- Spec source: `context/features/auth-phase-2-spec.md`
-- Use bcryptjs for hashing; it is already installed.
-- In the split Auth.js pattern, `auth.config.ts` should contain a Credentials provider with `authorize: () => null`, while `auth.ts` should provide the real bcrypt validation logic.
-- Registration endpoint: `POST /api/auth/register`
-- Registration request body: `name`, `email`, `password`, `confirmPassword`
-- Reference: https://authjs.dev/getting-started/authentication/credentials
+<!-- No active notes -->
 
 ## History
 
@@ -108,3 +97,10 @@ Keep this updated. Earliest to Latest
   - Protected `/dashboard/*` routes through `src/proxy.ts` with redirect to the default Auth.js sign-in page
   - Extended NextAuth session and JWT types so `session.user.id` is available
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and a localhost redirect smoke test
+- **Auth Credentials - Email/Password Provider** (June 24, 2026)
+  - Completed on branch `auth-credentials-email-password-provider`
+  - Added the Auth.js Credentials provider to the split auth configuration
+  - Implemented bcrypt-backed email/password validation using the existing `passwordHash` user field
+  - Added `POST /api/auth/register` for name, email, password, and confirmPassword registration
+  - Validated required fields, password confirmation, duplicate emails, password hashing, and user creation
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and localhost browser checks for registration and credentials sign-in
