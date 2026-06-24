@@ -1,12 +1,77 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import type { Provider } from "next-auth/providers";
 
 import authConfig from "@/auth.config";
 import { prisma } from "@/lib/prisma";
 
+function getProviderId(provider: Provider): string | undefined {
+  if (typeof provider === "function") {
+    return provider().id;
+  }
+
+  return provider.id;
+}
+
+const providersWithoutCredentials = authConfig.providers.filter(
+  (provider) => getProviderId(provider) !== "credentials"
+);
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
   session: { strategy: "jwt" },
+  providers: [
+    ...providersWithoutCredentials,
+    Credentials({
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const email =
+          typeof credentials.email === "string"
+            ? credentials.email.trim().toLowerCase()
+            : "";
+        const password =
+          typeof credentials.password === "string" ? credentials.password : "";
+
+        if (!email || !password) {
+          return null;
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            passwordHash: true,
+          },
+        });
+
+        if (!user?.passwordHash) {
+          return null;
+        }
+
+        const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+
+        if (!passwordMatches) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        };
+      },
+    }),
+  ],
   callbacks: {
     jwt({ token, user }) {
       if (user) {
@@ -23,5 +88,4 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return session;
     },
   },
-  ...authConfig,
 });
