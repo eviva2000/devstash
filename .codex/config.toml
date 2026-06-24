@@ -9,3 +9,8 @@ args = ["-y", "@upstash/context7-mcp","--api-key", "ctx7sk-f1160e9a-be03-4d3b-aa
 startup_timeout_sec = 20
 tool_timeout_sec = 60
 enabled = true
+
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@playwright/mcp@latest"]
