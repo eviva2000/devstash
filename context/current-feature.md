@@ -89,3 +89,11 @@ Keep this updated. Earliest to Latest
   - Removed the unused `pluralTypeSlugs` variable from dashboard utilities
   - Applied the new database migration with `prisma migrate deploy`
   - Verified with Prisma schema validation, TypeScript, ESLint, `next build`, and `prisma migrate status`
+- **Auth Setup - NextAuth + GitHub Provider** (June 24, 2026)
+  - Completed on branch `auth-setup-nextauth-github-provider`
+  - Installed NextAuth v5 beta and the Auth.js Prisma adapter
+  - Added split Auth.js config with an edge-compatible GitHub provider config and full Prisma-backed server config
+  - Added the App Router Auth.js route handler for `/api/auth/[...nextauth]`
+  - Protected `/dashboard/*` routes through `src/proxy.ts` with redirect to the default Auth.js sign-in page
+  - Extended NextAuth session and JWT types so `session.user.id` is available
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and a localhost redirect smoke test
