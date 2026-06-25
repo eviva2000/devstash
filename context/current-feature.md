@@ -1,26 +1,17 @@
-# Current Feature: Auth UI - Sign In, Register & Sign Out
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Replace the default NextAuth pages with a custom `/sign-in` page.
-- Add a custom `/register` page that submits to `/api/auth/register` and redirects to sign-in on success.
-- Support email/password and GitHub sign-in from the custom sign-in UI.
-- Add validation and error display for sign-in and registration forms.
-- Update the sidebar user area to show the user's avatar or initials, name, profile navigation, and sign-out action.
-- Create a reusable avatar component that handles GitHub images and initials fallback.
+<!-- No active feature -->
 
 ## Notes
 
-- Spec source: `context/features/auth-phase-3-spec.md`
-- Sidebar avatar logic: use `session.user.image` when available; otherwise generate initials from the user's name.
-- Avatar click should navigate to `/profile`.
-- Avatar dropdown/up menu should include a "Sign out" link.
-- Testing checklist from spec: verify `/sign-in`, GitHub sign-in, email/password sign-in, avatar rendering, avatar dropdown, sign-out redirect, and `/register` account creation redirect.
+<!-- No active notes -->
 
 ## History
 
@@ -113,3 +104,12 @@ Keep this updated. Earliest to Latest
   - Added `POST /api/auth/register` for name, email, password, and confirmPassword registration
   - Validated required fields, password confirmation, duplicate emails, password hashing, and user creation
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and localhost browser checks for registration and credentials sign-in
+- **Auth UI - Sign In, Register & Sign Out** (June 25, 2026)
+  - Completed on branch `auth-ui-sign-in-register-sign-out`
+  - Added custom server-rendered `/sign-in` and `/register` pages with client form components for interaction
+  - Configured Auth.js to use the custom sign-in page and updated protected route redirects
+  - Added email/password and GitHub sign-in UI, registration validation, and account-created feedback
+  - Added password length validation to the registration API
+  - Replaced the mock sidebar user with authenticated session data, avatar or initials fallback, profile navigation, and sign-out
+  - Added a basic protected `/profile` page and allowed GitHub avatar images in Next config
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `git diff --check`, and `npm run build`
