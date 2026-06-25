@@ -1,23 +1,13 @@
-# Current Feature: Email Verification On Register
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Require newly registered users to verify their email before they can use the app.
-- Send a verification link through Resend during registration.
-- Use the `RESEND_API_KEY` already defined in `.env`.
-- Add a verification flow that validates the emailed link and clearly handles success, expired or invalid links, and resend needs.
-- Prevent unverified email/password users from signing in until verification is complete.
-
 ## Notes
-
-- Feature request: "Set up email verification on register. Users need to click on the link in their email. We are using Resend."
-- Existing auth stack includes Auth.js/NextAuth, credentials registration, GitHub provider, Prisma, and custom sign-in/register UI.
-- Before implementation, read the relevant Next.js docs in `node_modules/next/dist/docs/` per project rules.
 
 ## History
 
@@ -119,3 +109,10 @@ Keep this updated. Earliest to Latest
   - Replaced the mock sidebar user with authenticated session data, avatar or initials fallback, profile navigation, and sign-out
   - Added a basic protected `/profile` page and allowed GitHub avatar images in Next config
   - Verified with `npx tsc --noEmit`, `npm run lint`, `git diff --check`, and `npm run build`
+- **Email Verification On Register** (June 25, 2026)
+  - Completed on branch `email-verification-on-register`
+  - Added Resend-backed verification email sending after credentials registration
+  - Added email verification and resend endpoints plus the `/verify-email` flow
+  - Prevented unverified email/password users from signing in until verification is complete
+  - Added sign-in messaging for verified and unverified email states
+  - Added a dry-run-first script for deleting non-demo users and verification tokens
