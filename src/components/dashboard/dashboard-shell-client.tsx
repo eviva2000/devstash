@@ -8,6 +8,7 @@ import type {
   DashboardItemStats,
   SidebarData,
   DashboardCollection,
+  DashboardUser,
 } from "@/features/dashboard/dashboard-types";
 import { getTypeHref } from "@/features/dashboard/dashboard-utils";
 
@@ -19,6 +20,7 @@ import {
 } from "./dashboard-sidebar";
 
 interface DashboardShellClientProps {
+  readonly user: DashboardUser;
   readonly recentCollections: DashboardCollection[];
   readonly favoriteCollections: DashboardCollection[];
   readonly itemTypes: Array<{
@@ -37,6 +39,7 @@ interface DashboardShellClientProps {
 }
 
 export function DashboardShellClient({
+  user,
   recentCollections,
   favoriteCollections,
   itemTypes,
@@ -109,12 +112,14 @@ export function DashboardShellClient({
         data={sidebarData}
         isCollapsed={isCollapsed}
         onToggle={() => setIsCollapsed((value) => !value)}
+        user={user}
       />
 
       <MobileDrawer
         data={sidebarData}
         isOpen={isMobileDrawerOpen}
         onClose={() => setIsMobileDrawerOpen(false)}
+        user={user}
       />
 
       <section className="flex min-w-0 flex-1 flex-col">

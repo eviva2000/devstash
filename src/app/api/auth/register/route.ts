@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 
+const MIN_PASSWORD_LENGTH = 8;
+
 function getStringValue(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -47,6 +49,13 @@ export async function POST(request: Request) {
 
   if (password !== confirmPassword) {
     return Response.json({ error: "Passwords do not match." }, { status: 400 });
+  }
+
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return Response.json(
+      { error: "Password must be at least 8 characters." },
+      { status: 400 }
+    );
   }
 
   const existingUser = await prisma.user.findUnique({

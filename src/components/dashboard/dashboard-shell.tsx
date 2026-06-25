@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+
+import { auth } from "@/auth";
 import { DashboardShellClient } from "./dashboard-shell-client";
 import {
   getCollectionStats,
@@ -11,23 +14,16 @@ import {
   getPinnedItems,
   getRecentItems,
 } from "@/lib/db/items";
-import { prisma } from "@/lib/prisma";
-
-// TODO: Replace with the authenticated user once auth is wired up.
-// For now, fall back to the first user in the database.
-async function resolveDemoUserId(): Promise<string | null> {
-  const user = await prisma.user.findFirst({
-    select: { id: true },
-    orderBy: { createdAt: "asc" },
-  });
-  return user?.id ?? null;
-}
 
 export async function DashboardShell() {
-  const userId = await resolveDemoUserId();
-  if (!userId) {
-    throw new Error("No user found in database.");
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/sign-in");
   }
+
+  const userId = session.user.id;
+  const userName = session.user.name ?? session.user.email ?? "DevStash user";
 
   const [
     recentCollections,
@@ -51,6 +47,11 @@ export async function DashboardShell() {
 
   return (
     <DashboardShellClient
+      user={{
+        name: userName,
+        email: session.user.email,
+        image: session.user.image,
+      }}
       recentCollections={recentCollections}
       favoriteCollections={favoriteCollections}
       itemTypes={itemTypes}

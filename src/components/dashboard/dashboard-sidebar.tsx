@@ -8,6 +8,7 @@ import {
   FileText,
   Folder,
   Layers3,
+  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
   Pin,
@@ -17,17 +18,20 @@ import {
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import type { SidebarData } from "@/features/dashboard/dashboard-types";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { UserAvatar } from "@/components/user-avatar";
+import type {
+  DashboardUser,
+  SidebarData,
+} from "@/features/dashboard/dashboard-types";
 import {
-  getInitials,
   getTypeColorStyle,
   getTypeMarkerStyle,
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
 import { cn } from "@/lib/utils";
-import { mockUser } from "@/lib/mock-data";
+import { signOut } from "next-auth/react";
 
 const proBadgeItemTypeSlugs = new Set(["file", "image"]);
 
@@ -35,10 +39,12 @@ export function DesktopSidebar({
   data,
   isCollapsed,
   onToggle,
+  user,
 }: Readonly<{
   data: SidebarData;
   isCollapsed: boolean;
   onToggle: () => void;
+  user: DashboardUser;
 }>) {
   return (
     <aside
@@ -51,6 +57,7 @@ export function DesktopSidebar({
         data={data}
         isCollapsed={isCollapsed}
         onToggle={onToggle}
+        user={user}
       />
     </aside>
   );
@@ -60,10 +67,12 @@ export function MobileDrawer({
   data,
   isOpen,
   onClose,
+  user,
 }: {
   data: SidebarData;
   isOpen: boolean;
   onClose: () => void;
+  user: DashboardUser;
 }) {
   return (
     <div
@@ -88,7 +97,7 @@ export function MobileDrawer({
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <SidebarContent data={data} isMobile onClose={onClose} />
+        <SidebarContent data={data} isMobile onClose={onClose} user={user} />
       </aside>
     </div>
   );
@@ -100,12 +109,14 @@ function SidebarContent({
   isMobile = false,
   onClose,
   onToggle,
+  user,
 }: Readonly<{
   data: SidebarData;
   isCollapsed?: boolean;
   isMobile?: boolean;
   onClose?: () => void;
   onToggle?: () => void;
+  user: DashboardUser;
 }>) {
   const compact = isCollapsed && !isMobile;
   const [areCollectionsOpen, setAreCollectionsOpen] = useState(true);
@@ -266,37 +277,101 @@ function SidebarContent({
         </CollapsibleSidebarSection>
       </nav>
 
-      <div className="shrink-0 border-t border-sidebar-border p-3">
+      <SidebarUserMenu
+        isCollapsed={compact}
+        onNavigate={onClose}
+        user={user}
+      />
+    </>
+  );
+}
+
+function SidebarUserMenu({
+  isCollapsed,
+  onNavigate,
+  user,
+}: {
+  isCollapsed: boolean;
+  onNavigate?: () => void;
+  user: DashboardUser;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  async function handleSignOut() {
+    await signOut({ callbackUrl: "/sign-in" });
+  }
+
+  return (
+    <div className="relative shrink-0 border-t border-sidebar-border p-3">
+      {isOpen && (
         <div
           className={cn(
-            "flex items-center gap-3 rounded-lg px-2 py-2",
-            compact ? "justify-center" : "hover:bg-sidebar-accent"
+            "absolute bottom-[calc(100%-0.5rem)] z-10 rounded-lg border border-sidebar-border bg-popover p-1 text-popover-foreground shadow-xl",
+            isCollapsed ? "left-3 w-44" : "left-3 right-3"
           )}
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-500 text-xs font-semibold text-white">
-            {getInitials(mockUser.name)}
-          </span>
-          {!compact && (
-            <>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{mockUser.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {mockUser.plan} Plan
-                </p>
-              </div>
-              <Button
-                aria-label="Account settings"
-                size="icon-sm"
-                type="button"
-                variant="ghost"
-              >
-                <Settings className="size-[18px]" />
-              </Button>
-            </>
-          )}
+          <Link
+            className="flex h-9 items-center gap-2 rounded-md px-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+            href="/profile"
+            onClick={() => {
+              setIsOpen(false);
+              onNavigate?.();
+            }}
+          >
+            <Settings className="size-4" />
+            <span className="min-w-0 truncate">Profile</span>
+          </Link>
+          <button
+            className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-destructive transition-colors hover:bg-destructive/10"
+            onClick={handleSignOut}
+            type="button"
+          >
+            <LogOut className="size-4" />
+            <span className="min-w-0 truncate">Sign out</span>
+          </button>
         </div>
+      )}
+      <div
+        className={cn(
+          "flex items-center gap-2 rounded-lg px-2 py-2",
+          isCollapsed ? "justify-center" : "hover:bg-sidebar-accent"
+        )}
+      >
+        <button
+          aria-expanded={isOpen}
+          aria-label="Account menu"
+          className={cn(
+            "flex min-w-0 items-center gap-3 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
+            isCollapsed ? "justify-center" : "flex-1"
+          )}
+          onClick={() => setIsOpen((value) => !value)}
+          type="button"
+        >
+          <UserAvatar image={user.image} name={user.name} />
+          {!isCollapsed && (
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium">
+                {user.name}
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {user.email ?? "Signed in"}
+              </span>
+            </span>
+          )}
+        </button>
+        {!isCollapsed && (
+          <Link
+            aria-label="Open profile"
+            className={buttonVariants({ size: "icon-sm", variant: "ghost" })}
+            href="/profile"
+            onClick={onNavigate}
+            title="Open profile"
+          >
+            <Settings className="size-[18px]" />
+          </Link>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 

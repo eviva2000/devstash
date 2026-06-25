@@ -64,3 +64,8 @@ export type SidebarData = {
   recentCollections: DashboardCollection[];
 };
 
+export type DashboardUser = {
+  name: string;
+  email?: string | null;
+  image?: string | null;
+};
