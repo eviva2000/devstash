@@ -5,9 +5,11 @@ import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { SignInForm } from "@/components/auth/sign-in-form";
 
 type SearchParams = Promise<{
+  code?: string | string[];
   callbackUrl?: string | string[];
   error?: string | string[];
   registered?: string | string[];
+  verified?: string | string[];
 }>;
 
 function getParam(value?: string | string[]) {
@@ -51,8 +53,10 @@ export default async function SignInPage({
     >
       <SignInForm
         callbackUrl={callbackUrl}
+        initialCode={getParam(params.code)}
         initialError={getParam(params.error)}
         registered={getParam(params.registered) === "1"}
+        verified={getParam(params.verified) === "1"}
       />
     </AuthPageShell>
   );

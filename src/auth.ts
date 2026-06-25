@@ -1,6 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import type { Provider } from "next-auth/providers";
 
@@ -18,6 +18,10 @@ function getProviderId(provider: Provider): string | undefined {
 const providersWithoutCredentials = authConfig.providers.filter(
   (provider) => getProviderId(provider) !== "credentials"
 );
+
+class EmailUnverifiedError extends CredentialsSignin {
+  code = "email_unverified";
+}
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -48,6 +52,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             id: true,
             name: true,
             email: true,
+            emailVerified: true,
             image: true,
             passwordHash: true,
           },
@@ -61,6 +66,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
         if (!passwordMatches) {
           return null;
+        }
+
+        if (!user.emailVerified) {
+          throw new EmailUnverifiedError();
         }
 
         return {

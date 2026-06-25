@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "node --import tsx prisma/seed.ts",
     "db:studio": "prisma studio --browser none",
+    "db:delete-non-demo-users": "node --import tsx scripts/delete-non-demo-users.ts",
     "db:test": "node --import tsx scripts/test-db.ts"
   },
   "dependencies": {

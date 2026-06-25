@@ -1,5 +1,11 @@
 import bcrypt from "bcryptjs";
 
+import {
+  createEmailVerificationToken,
+  createEmailVerificationUrl,
+  getSafeCallbackUrl,
+} from "@/lib/auth/email-verification";
+import { sendVerificationEmail } from "@/lib/email/resend";
 import { prisma } from "@/lib/prisma";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -39,6 +45,7 @@ export async function POST(request: Request) {
   const email = getStringValue(input.email).toLowerCase();
   const password = getPasswordValue(input.password);
   const confirmPassword = getPasswordValue(input.confirmPassword);
+  const callbackUrl = getSafeCallbackUrl(getStringValue(input.callbackUrl));
 
   if (!name || !email || !password || !confirmPassword) {
     return Response.json(
@@ -85,8 +92,28 @@ export async function POST(request: Request) {
         email: true,
       },
     });
+    const verificationToken = await createEmailVerificationToken(email);
+    const verificationUrl = createEmailVerificationUrl({
+      callbackUrl,
+      email,
+      origin: new URL(request.url).origin,
+      token: verificationToken.token,
+    });
 
-    return Response.json({ user }, { status: 201 });
+    let emailSent = true;
+
+    try {
+      await sendVerificationEmail({
+        email,
+        name: user.name,
+        verificationUrl,
+      });
+    } catch (error) {
+      emailSent = false;
+      console.error("Unable to send verification email.", error);
+    }
+
+    return Response.json({ emailSent, user }, { status: 201 });
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       return Response.json(

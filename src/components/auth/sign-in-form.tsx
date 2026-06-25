@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { signIn } from "next-auth/react";
 
+import { ResendVerificationForm } from "@/components/auth/resend-verification-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -23,9 +24,13 @@ function GitHubIcon() {
   );
 }
 
-function getAuthErrorMessage(error?: string) {
+function getAuthErrorMessage(error?: string, code?: string) {
   if (!error) {
     return "";
+  }
+
+  if (error === "CredentialsSignin" && code === "email_unverified") {
+    return "Verify your email before signing in.";
   }
 
   if (error === "CredentialsSignin") {
@@ -37,17 +42,24 @@ function getAuthErrorMessage(error?: string) {
 
 export function SignInForm({
   callbackUrl,
+  initialCode,
   initialError,
   registered,
+  verified,
 }: {
   callbackUrl: string;
+  initialCode?: string;
   initialError?: string;
   registered: boolean;
+  verified: boolean;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(() => getAuthErrorMessage(initialError));
+  const [error, setError] = useState(() =>
+    getAuthErrorMessage(initialError, initialCode)
+  );
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
   const [isPending, setIsPending] = useState(false);
 
   const registerHref = useMemo(
@@ -57,44 +69,53 @@ export function SignInForm({
 
   const handleCredentialsSubmit: React.ComponentProps<"form">["onSubmit"] =
     async (event) => {
-    event.preventDefault();
-    setError("");
+      event.preventDefault();
+      setError("");
+      setUnverifiedEmail("");
 
-    const normalizedEmail = email.trim().toLowerCase();
+      const normalizedEmail = email.trim().toLowerCase();
 
-    if (!emailPattern.test(normalizedEmail)) {
-      setError("Enter a valid email address.");
-      return;
-    }
+      if (!emailPattern.test(normalizedEmail)) {
+        setError("Enter a valid email address.");
+        return;
+      }
 
-    if (!password) {
-      setError("Enter your password.");
-      return;
-    }
+      if (!password) {
+        setError("Enter your password.");
+        return;
+      }
 
-    setIsPending(true);
-    const result = await signIn("credentials", {
-      callbackUrl,
-      email: normalizedEmail,
-      password,
-      redirect: false,
-    });
-    setIsPending(false);
+      setIsPending(true);
+      const result = await signIn("credentials", {
+        callbackUrl,
+        email: normalizedEmail,
+        password,
+        redirect: false,
+      });
+      setIsPending(false);
 
-    if (result?.error) {
-      setError(getAuthErrorMessage(result.error));
-      return;
-    }
+      if (result?.error) {
+        setError(getAuthErrorMessage(result.error, result.code));
+        if (result.code === "email_unverified") {
+          setUnverifiedEmail(normalizedEmail);
+        }
+        return;
+      }
 
-    router.push(result?.url ?? callbackUrl);
-    router.refresh();
+      router.push(result?.url ?? callbackUrl);
+      router.refresh();
     };
 
   return (
     <div className="space-y-5">
       {registered && (
         <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
-          Account created. Sign in to continue.
+          Account created. Check your email to verify your account.
+        </p>
+      )}
+      {verified && (
+        <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+          Email verified. Sign in to continue.
         </p>
       )}
       {error && (
@@ -104,6 +125,12 @@ export function SignInForm({
         >
           {error}
         </p>
+      )}
+      {unverifiedEmail && (
+        <ResendVerificationForm
+          callbackUrl={callbackUrl}
+          initialEmail={unverifiedEmail}
+        />
       )}
 
       <form className="space-y-4" onSubmit={handleCredentialsSubmit}>

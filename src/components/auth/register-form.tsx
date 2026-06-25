@@ -27,6 +27,21 @@ async function readError(response: Response) {
   return "Unable to create account.";
 }
 
+async function readRegistrationResult(response: Response) {
+  const body: unknown = await response.json().catch(() => null);
+
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "emailSent" in body &&
+    typeof body.emailSent === "boolean"
+  ) {
+    return { emailSent: body.emailSent };
+  }
+
+  return { emailSent: true };
+}
+
 export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -79,6 +94,7 @@ export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
     const response = await fetch("/api/auth/register", {
       body: JSON.stringify({
         confirmPassword,
+        callbackUrl,
         email: normalizedEmail,
         name: trimmedName,
         password,
@@ -93,9 +109,14 @@ export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
       return;
     }
 
-    router.push(
-      `/sign-in?registered=1&callbackUrl=${encodeURIComponent(callbackUrl)}`
-    );
+    const result = await readRegistrationResult(response);
+    const verifyEmailParams = new URLSearchParams({
+      callbackUrl,
+      email: normalizedEmail,
+      sent: result.emailSent ? "1" : "0",
+    });
+
+    router.push(`/verify-email?${verifyEmailParams.toString()}`);
   };
 
   return (
