@@ -1,24 +1,13 @@
-# Current Feature: Forgot Password
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Add a forgot password link to the existing sign-in flow.
-- Add a request reset flow that accepts an email address and sends a password reset link.
-- Use the existing verification token model to store password reset tokens.
-- Add a reset password flow that validates the token, handles invalid or expired links, and updates the user's password.
-- Reuse the existing email sending infrastructure and auth UI patterns where practical.
-- Avoid revealing whether an email address belongs to an account during reset requests.
-
 ## Notes
-
-- Feature request: "create a forgot password link and functinality. Use the existing verification token model for password."
-- The implementation should coexist with the existing email verification token usage without token collision between verification and password reset flows.
-- The current auth stack includes Auth.js credentials sign-in, Prisma users, verification tokens, Resend email helpers, and custom sign-in/register UI.
 
 ## History
 
@@ -134,3 +123,11 @@ Keep this updated. Earliest to Latest
   - Kept token creation, email sending, resend, and sign-in blocking behavior active when enabled
   - Documented the flag in `.env.example` and `README.md`
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and `git diff --check`
+- **Forgot Password** (June 25, 2026)
+  - Completed on branch `forgot-password`
+  - Added forgot-password and reset-password auth pages with matching client forms
+  - Added reset request and password reset API routes
+  - Reused the verification token model with scoped identifiers for email verification and password reset tokens
+  - Added Resend password reset email support using the shared email helper
+  - Avoided account enumeration in reset requests and validated reset tokens before bcrypt hashing
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, `git diff --check`, and local API checks
