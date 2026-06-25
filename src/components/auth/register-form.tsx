@@ -30,16 +30,28 @@ async function readError(response: Response) {
 async function readRegistrationResult(response: Response) {
   const body: unknown = await response.json().catch(() => null);
 
+  let emailSent = true;
+  let verificationRequired = true;
+
   if (
     typeof body === "object" &&
     body !== null &&
     "emailSent" in body &&
     typeof body.emailSent === "boolean"
   ) {
-    return { emailSent: body.emailSent };
+    emailSent = body.emailSent;
   }
 
-  return { emailSent: true };
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "verificationRequired" in body &&
+    typeof body.verificationRequired === "boolean"
+  ) {
+    verificationRequired = body.verificationRequired;
+  }
+
+  return { emailSent, verificationRequired };
 }
 
 export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
@@ -110,6 +122,14 @@ export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
     }
 
     const result = await readRegistrationResult(response);
+
+    if (!result.verificationRequired) {
+      router.push(
+        `/sign-in?registered=1&callbackUrl=${encodeURIComponent(callbackUrl)}`
+      );
+      return;
+    }
+
     const verifyEmailParams = new URLSearchParams({
       callbackUrl,
       email: normalizedEmail,

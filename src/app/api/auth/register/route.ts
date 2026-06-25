@@ -4,6 +4,7 @@ import {
   createEmailVerificationToken,
   createEmailVerificationUrl,
   getSafeCallbackUrl,
+  isEmailVerificationEnabled,
 } from "@/lib/auth/email-verification";
 import { sendVerificationEmail } from "@/lib/email/resend";
 import { prisma } from "@/lib/prisma";
@@ -78,10 +79,12 @@ export async function POST(request: Request) {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
+  const emailVerificationEnabled = isEmailVerificationEnabled();
 
   try {
     const user = await prisma.user.create({
       data: {
+        emailVerified: emailVerificationEnabled ? null : new Date(),
         name,
         email,
         passwordHash,
@@ -92,6 +95,14 @@ export async function POST(request: Request) {
         email: true,
       },
     });
+
+    if (!emailVerificationEnabled) {
+      return Response.json(
+        { emailSent: false, verificationRequired: false, user },
+        { status: 201 }
+      );
+    }
+
     const verificationToken = await createEmailVerificationToken(email);
     const verificationUrl = createEmailVerificationUrl({
       callbackUrl,
@@ -113,7 +124,10 @@ export async function POST(request: Request) {
       console.error("Unable to send verification email.", error);
     }
 
-    return Response.json({ emailSent, user }, { status: 201 });
+    return Response.json(
+      { emailSent, verificationRequired: true, user },
+      { status: 201 }
+    );
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       return Response.json(

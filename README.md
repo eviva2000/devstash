@@ -93,6 +93,13 @@ If Prisma Migrate needs a separate shadow database, also set:
 SHADOW_DATABASE_URL="postgresql://USER:PASSWORD@HOST.neon.tech/SHADOW_DB?sslmode=require"
 ```
 
+Email verification is enabled by default. To disable it for local development
+while Resend is not configured for your domain, set:
+
+```bash
+EMAIL_VERIFICATION_ENABLED=false
+```
+
 Run database migrations:
 
 ```bash

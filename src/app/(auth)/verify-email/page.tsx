@@ -4,7 +4,10 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { ResendVerificationForm } from "@/components/auth/resend-verification-form";
-import { getSafeCallbackUrl } from "@/lib/auth/email-verification";
+import {
+  getSafeCallbackUrl,
+  isEmailVerificationEnabled,
+} from "@/lib/auth/email-verification";
 
 type SearchParams = Promise<{
   callbackUrl?: string | string[];
@@ -61,6 +64,15 @@ export default async function VerifyEmailPage({
   const session = await auth();
   const params = await searchParams;
   const callbackUrl = getSafeCallbackUrl(getParam(params.callbackUrl));
+
+  if (!isEmailVerificationEnabled()) {
+    const signInParams = new URLSearchParams({
+      callbackUrl,
+      registered: "1",
+    });
+
+    redirect(`/sign-in?${signInParams.toString()}`);
+  }
 
   if (session?.user) {
     redirect(callbackUrl);

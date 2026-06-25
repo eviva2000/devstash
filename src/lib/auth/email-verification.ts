@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 const VERIFICATION_TOKEN_BYTES = 32;
 const VERIFICATION_TOKEN_TTL_HOURS = 24;
+const EMAIL_VERIFICATION_DISABLED_VALUES = new Set(["0", "false", "no", "off"]);
 
 export type VerifyEmailTokenResult = "verified" | "expired" | "invalid";
 
@@ -13,6 +14,16 @@ function hashToken(token: string) {
 
 export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+export function isEmailVerificationEnabled() {
+  const value = process.env.EMAIL_VERIFICATION_ENABLED;
+
+  if (!value) {
+    return true;
+  }
+
+  return !EMAIL_VERIFICATION_DISABLED_VALUES.has(value.trim().toLowerCase());
 }
 
 export function getSafeCallbackUrl(value?: string) {

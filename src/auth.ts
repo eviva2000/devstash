@@ -5,6 +5,7 @@ import Credentials from "next-auth/providers/credentials";
 import type { Provider } from "next-auth/providers";
 
 import authConfig from "@/auth.config";
+import { isEmailVerificationEnabled } from "@/lib/auth/email-verification";
 import { prisma } from "@/lib/prisma";
 
 function getProviderId(provider: Provider): string | undefined {
@@ -68,7 +69,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           return null;
         }
 
-        if (!user.emailVerified) {
+        if (isEmailVerificationEnabled() && !user.emailVerified) {
           throw new EmailUnverifiedError();
         }
 

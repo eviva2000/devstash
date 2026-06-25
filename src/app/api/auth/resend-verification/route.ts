@@ -2,6 +2,7 @@ import {
   createEmailVerificationToken,
   createEmailVerificationUrl,
   getSafeCallbackUrl,
+  isEmailVerificationEnabled,
   normalizeEmail,
 } from "@/lib/auth/email-verification";
 import { sendVerificationEmail } from "@/lib/email/resend";
@@ -30,6 +31,10 @@ export async function POST(request: Request) {
 
   if (!email) {
     return Response.json({ error: "Email is required." }, { status: 400 });
+  }
+
+  if (!isEmailVerificationEnabled()) {
+    return Response.json({ ok: true, verificationRequired: false });
   }
 
   const user = await prisma.user.findUnique({

@@ -1,13 +1,23 @@
-# Current Feature
+# Current Feature: Email Verification Toggle
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
+- Add a simple configuration flag to enable or disable the email verification requirement.
+- Let local development continue without a linked Resend domain by disabling verification through configuration.
+- When verification is disabled, allow newly registered email/password users to sign in without clicking an email link.
+- Keep the existing verification behavior available when the flag is enabled.
+- Make the chosen configuration easy to understand for future development and deployment.
+
 ## Notes
+
+- Feature request: "Add a flag that can easily toggle the email verification system. right now we have no domain linked to Resend. I want to be abale to disable that. we can use an env variable but I'm open to other options"
+- Preferred starting option: use an environment variable, unless existing project patterns point to a better configuration approach.
+- The implementation should account for the current Resend-backed registration and credentials sign-in flow.
 
 ## History
 
