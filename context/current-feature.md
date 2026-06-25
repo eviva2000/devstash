@@ -1,13 +1,24 @@
-# Current Feature
+# Current Feature: Forgot Password
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
+- Add a forgot password link to the existing sign-in flow.
+- Add a request reset flow that accepts an email address and sends a password reset link.
+- Use the existing verification token model to store password reset tokens.
+- Add a reset password flow that validates the token, handles invalid or expired links, and updates the user's password.
+- Reuse the existing email sending infrastructure and auth UI patterns where practical.
+- Avoid revealing whether an email address belongs to an account during reset requests.
+
 ## Notes
+
+- Feature request: "create a forgot password link and functinality. Use the existing verification token model for password."
+- The implementation should coexist with the existing email verification token usage without token collision between verification and password reset flows.
+- The current auth stack includes Auth.js credentials sign-in, Prisma users, verification tokens, Resend email helpers, and custom sign-in/register UI.
 
 ## History
 

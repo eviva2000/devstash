@@ -9,6 +9,7 @@ type SearchParams = Promise<{
   callbackUrl?: string | string[];
   error?: string | string[];
   registered?: string | string[];
+  reset?: string | string[];
   verified?: string | string[];
 }>;
 
@@ -56,6 +57,7 @@ export default async function SignInPage({
         initialCode={getParam(params.code)}
         initialError={getParam(params.error)}
         registered={getParam(params.registered) === "1"}
+        reset={getParam(params.reset) === "1"}
         verified={getParam(params.verified) === "1"}
       />
     </AuthPageShell>

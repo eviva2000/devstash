@@ -45,12 +45,14 @@ export function SignInForm({
   initialCode,
   initialError,
   registered,
+  reset,
   verified,
 }: {
   callbackUrl: string;
   initialCode?: string;
   initialError?: string;
   registered: boolean;
+  reset: boolean;
   verified: boolean;
 }) {
   const router = useRouter();
@@ -64,6 +66,10 @@ export function SignInForm({
 
   const registerHref = useMemo(
     () => `/register?callbackUrl=${encodeURIComponent(callbackUrl)}`,
+    [callbackUrl]
+  );
+  const forgotPasswordHref = useMemo(
+    () => `/forgot-password?callbackUrl=${encodeURIComponent(callbackUrl)}`,
     [callbackUrl]
   );
 
@@ -118,6 +124,11 @@ export function SignInForm({
           Email verified. Sign in to continue.
         </p>
       )}
+      {reset && (
+        <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+          Password reset. Sign in with your new password.
+        </p>
+      )}
       {error && (
         <p
           aria-live="polite"
@@ -149,9 +160,17 @@ export function SignInForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="password">
-            Password
-          </label>
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-sm font-medium" htmlFor="password">
+              Password
+            </label>
+            <Link
+              className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
+              href={forgotPasswordHref}
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Input
             autoComplete="current-password"
             id="password"
