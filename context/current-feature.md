@@ -1,24 +1,13 @@
-# Current Feature: Profile Page
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Create a protected `/profile` route.
-- Display user email, name, avatar, and account creation date.
-- Show usage stats for total items, total collections, and item counts by type.
-- Add account actions for changing password and deleting the account with confirmation.
-- Follow existing codebase patterns for data fetching and components.
-
 ## Notes
-
-- Source spec: `context/features/profile-spec.md`
-- Use GitHub avatar from OAuth when available; otherwise generate initials from name or email.
-- Show the change password action only for email/password users, not GitHub OAuth users.
-- Item type breakdown should cover snippets, prompts, notes, commands, links, files, and images.
 
 ## History
 
@@ -142,3 +131,11 @@ Keep this updated. Earliest to Latest
   - Added Resend password reset email support using the shared email helper
   - Avoided account enumeration in reset requests and validated reset tokens before bcrypt hashing
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, `git diff --check`, and local API checks
+- **Profile Page** (June 29, 2026)
+  - Completed on branch `profile-page`
+  - Expanded `/profile` into a protected profile page with user identity, avatar, account creation date, and account provider details
+  - Added database-backed usage stats for total items, total collections, and item type breakdown counts
+  - Added profile account actions for email/password password changes through a modal and delete-account confirmation
+  - Added authenticated profile API routes for password updates and account deletion
+  - Added `src/lib/db/profile.ts` for profile-specific Prisma data fetching
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `git diff --check`, `npm run build`, and a `/profile` smoke test
