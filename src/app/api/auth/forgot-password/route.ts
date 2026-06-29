@@ -1,17 +1,29 @@
 import {
   createPasswordResetToken,
   createPasswordResetUrl,
+  getAppOrigin,
   getSafeCallbackUrl,
   normalizeEmail,
 } from "@/lib/auth/email-verification";
 import { sendPasswordResetEmail } from "@/lib/email/resend";
 import { prisma } from "@/lib/prisma";
+import {
+  checkRateLimit,
+  getClientIp,
+  tooManyRequestsResponse,
+} from "@/lib/rate-limit";
 
 function getStringValue(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
 export async function POST(request: Request) {
+  const rateLimit = await checkRateLimit("forgotPassword", getClientIp(request));
+
+  if (!rateLimit.success) {
+    return tooManyRequestsResponse(rateLimit.reset);
+  }
+
   let body: unknown;
 
   try {
@@ -50,7 +62,7 @@ export async function POST(request: Request) {
     const resetUrl = createPasswordResetUrl({
       callbackUrl,
       email,
-      origin: new URL(request.url).origin,
+      origin: getAppOrigin(request),
       token: passwordResetToken.token,
     });
 

@@ -7,6 +7,7 @@ import type { Provider } from "next-auth/providers";
 import authConfig from "@/auth.config";
 import { isEmailVerificationEnabled } from "@/lib/auth/email-verification";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";
 
 function getProviderId(provider: Provider): string | undefined {
   if (typeof provider === "function") {
@@ -24,6 +25,10 @@ class EmailUnverifiedError extends CredentialsSignin {
   code = "email_unverified";
 }
 
+class RateLimitedError extends CredentialsSignin {
+  code = "rate_limited";
+}
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
@@ -35,7 +40,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email =
           typeof credentials.email === "string"
             ? credentials.email.trim().toLowerCase()
@@ -45,6 +50,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
         if (!email || !password) {
           return null;
+        }
+
+        const loginKey = `${getClientIp(request)}:${email}`;
+        const rateLimit = await checkRateLimit("login", loginKey);
+
+        if (!rateLimit.success) {
+          throw new RateLimitedError();
         }
 
         const user = await prisma.user.findUnique({
@@ -72,6 +84,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         if (isEmailVerificationEnabled() && !user.emailVerified) {
           throw new EmailUnverifiedError();
         }
+
+        await resetRateLimit("login", loginKey);
 
         return {
           id: user.id,

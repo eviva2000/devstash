@@ -35,6 +35,29 @@ export function isEmailVerificationEnabled() {
   return !EMAIL_VERIFICATION_DISABLED_VALUES.has(value.trim().toLowerCase());
 }
 
+/**
+ * Resolve the canonical application origin for token-bearing email links.
+ * Uses APP_URL when set; never trusts the request origin in production so a
+ * spoofed Host/forwarded-host cannot redirect reset/verification tokens.
+ */
+export function getAppOrigin(request: Request): string {
+  const configured = process.env.APP_URL?.trim();
+
+  if (configured) {
+    try {
+      return new URL(configured).origin;
+    } catch {
+      throw new Error("APP_URL must be a valid absolute URL.");
+    }
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("APP_URL must be set in production for secure email links.");
+  }
+
+  return new URL(request.url).origin;
+}
+
 export function getSafeCallbackUrl(value?: string) {
   if (!value || value.startsWith("//")) {
     return "/dashboard";

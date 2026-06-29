@@ -3,11 +3,17 @@ import bcrypt from "bcryptjs";
 import {
   createEmailVerificationToken,
   createEmailVerificationUrl,
+  getAppOrigin,
   getSafeCallbackUrl,
   isEmailVerificationEnabled,
 } from "@/lib/auth/email-verification";
 import { sendVerificationEmail } from "@/lib/email/resend";
 import { prisma } from "@/lib/prisma";
+import {
+  checkRateLimit,
+  getClientIp,
+  tooManyRequestsResponse,
+} from "@/lib/rate-limit";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -29,6 +35,12 @@ function isUniqueConstraintError(error: unknown): boolean {
 }
 
 export async function POST(request: Request) {
+  const rateLimit = await checkRateLimit("register", getClientIp(request));
+
+  if (!rateLimit.success) {
+    return tooManyRequestsResponse(rateLimit.reset);
+  }
+
   let body: unknown;
 
   try {
@@ -107,7 +119,7 @@ export async function POST(request: Request) {
     const verificationUrl = createEmailVerificationUrl({
       callbackUrl,
       email,
-      origin: new URL(request.url).origin,
+      origin: getAppOrigin(request),
       token: verificationToken.token,
     });
 

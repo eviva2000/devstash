@@ -1,12 +1,18 @@
 import {
   createEmailVerificationToken,
   createEmailVerificationUrl,
+  getAppOrigin,
   getSafeCallbackUrl,
   isEmailVerificationEnabled,
   normalizeEmail,
 } from "@/lib/auth/email-verification";
 import { sendVerificationEmail } from "@/lib/email/resend";
 import { prisma } from "@/lib/prisma";
+import {
+  checkRateLimit,
+  getClientIp,
+  tooManyRequestsResponse,
+} from "@/lib/rate-limit";
 
 function getStringValue(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -33,6 +39,15 @@ export async function POST(request: Request) {
     return Response.json({ error: "Email is required." }, { status: 400 });
   }
 
+  const rateLimit = await checkRateLimit(
+    "resendVerification",
+    `${getClientIp(request)}:${email}`
+  );
+
+  if (!rateLimit.success) {
+    return tooManyRequestsResponse(rateLimit.reset);
+  }
+
   if (!isEmailVerificationEnabled()) {
     return Response.json({ ok: true, verificationRequired: false });
   }
@@ -54,7 +69,7 @@ export async function POST(request: Request) {
   const verificationUrl = createEmailVerificationUrl({
     callbackUrl,
     email,
-    origin: new URL(request.url).origin,
+    origin: getAppOrigin(request),
     token: verificationToken.token,
   });
 
