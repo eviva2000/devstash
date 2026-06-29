@@ -1,13 +1,24 @@
-# Current Feature
+# Current Feature: Profile Page
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
+- Create a protected `/profile` route.
+- Display user email, name, avatar, and account creation date.
+- Show usage stats for total items, total collections, and item counts by type.
+- Add account actions for changing password and deleting the account with confirmation.
+- Follow existing codebase patterns for data fetching and components.
+
 ## Notes
+
+- Source spec: `context/features/profile-spec.md`
+- Use GitHub avatar from OAuth when available; otherwise generate initials from name or email.
+- Show the change password action only for email/password users, not GitHub OAuth users.
+- Item type breakdown should cover snippets, prompts, notes, commands, links, files, and images.
 
 ## History
 
