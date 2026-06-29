@@ -139,3 +139,10 @@ Keep this updated. Earliest to Latest
   - Added authenticated profile API routes for password updates and account deletion
   - Added `src/lib/db/profile.ts` for profile-specific Prisma data fetching
   - Verified with `npx tsc --noEmit`, `npm run lint`, `git diff --check`, `npm run build`, and a `/profile` smoke test
+- **Rate Limiting for Auth** (June 29, 2026)
+  - Completed on branch `rate-limiting-for-auth`
+  - Added `@upstash/ratelimit` + `@upstash/redis` and a reusable `src/lib/rate-limit.ts` sliding-window utility that fails open
+  - Rate-limited login (5/15m IP+email), register (3/1h IP), forgot-password (3/1h IP), reset-password (5/15m IP), and resend-verification (3/15m IP+email)
+  - Returned 429 with `{ error }` JSON and `Retry-After`; reset login limit on success; surfaced `rate_limited` in the sign-in form
+  - Replaced request-derived origins with a canonical `APP_URL` via `getAppOrigin()` for all verification/reset links
+  - Added Upstash and `APP_URL` env vars; verified with `npx tsc --noEmit`, `npm run lint`, and `npm run build`
