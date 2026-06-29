@@ -33,6 +33,10 @@ function getAuthErrorMessage(error?: string, code?: string) {
     return "Verify your email before signing in.";
   }
 
+  if (error === "CredentialsSignin" && code === "rate_limited") {
+    return "Too many sign-in attempts. Please try again later.";
+  }
+
   if (error === "CredentialsSignin") {
     return "Email or password is incorrect.";
   }

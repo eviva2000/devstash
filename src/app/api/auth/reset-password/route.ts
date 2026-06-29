@@ -4,6 +4,11 @@ import {
   resetPasswordWithToken,
   validatePasswordResetToken,
 } from "@/lib/auth/email-verification";
+import {
+  checkRateLimit,
+  getClientIp,
+  tooManyRequestsResponse,
+} from "@/lib/rate-limit";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -16,6 +21,12 @@ function getPasswordValue(value: unknown): string {
 }
 
 export async function POST(request: Request) {
+  const rateLimit = await checkRateLimit("resetPassword", getClientIp(request));
+
+  if (!rateLimit.success) {
+    return tooManyRequestsResponse(rateLimit.reset);
+  }
+
   let body: unknown;
 
   try {
