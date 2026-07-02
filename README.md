@@ -134,6 +134,9 @@ Open [http://localhost:3000](http://localhost:3000) for the root page or [http:/
 | `npm run build` | Create a production build |
 | `npm run start` | Start the production server |
 | `npm run lint` | Run ESLint |
+| `npm run test` | Run Vitest unit tests once for server actions, route handlers, and utilities |
+| `npm run test:watch` | Run Vitest in watch mode |
+| `npm run test:coverage` | Run Vitest with V8 coverage output |
 | `npm run prisma:generate` | Generate the Prisma client |
 | `npm run db:migrate` | Run Prisma migrations in development |
 | `npm run db:studio` | Open Prisma Studio without launching a browser |
@@ -150,7 +153,7 @@ src/
   components/ui/             Shared UI primitives
   features/dashboard/        Dashboard data, types, and utilities
   generated/prisma/          Generated Prisma client
-  lib/                       Shared helpers
+  lib/                       Shared helpers and utility tests
 
 prisma/
   schema.prisma              Database schema

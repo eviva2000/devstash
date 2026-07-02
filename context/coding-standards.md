@@ -46,6 +46,7 @@ Example v4 configuration:
 @theme {
   --color-primary: oklch(50% 0.2 250);
 }
+```
 
 ## File Organization
 
@@ -89,9 +90,15 @@ Example v4 configuration:
 - Return `{ success, data, error }` pattern from actions
 - Display user-friendly error messages via toast
 
+## Testing
+
+- Use Vitest for unit tests of server actions, route handlers, and utilities
+- Keep Vitest in the Node environment; do not add component tests unless explicitly requested
+- Co-locate tests as `*.test.ts` next to the server or utility module under `src/app`, `src/features`, or `src/lib`
+- Run `npm run test` for unit tests and `npm run test:coverage` when coverage output is needed
+
 ## Code Quality
 
 - No commented-out code unless specified
 - No unused imports or variables
 - Keep functions under 50 lines when possible
-```
