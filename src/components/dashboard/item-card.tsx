@@ -7,11 +7,11 @@ import type {
 } from "@/features/dashboard/dashboard-types";
 import {
   formatDate,
-  getTypeBorderStyle,
+  getTypeLeftBorderStyle,
   getTypeColorStyle,
-  typeBorderColorMap,
   typeColorMap,
   typeIconMap,
+  typeLeftBorderColorMap,
 } from "@/features/dashboard/dashboard-utils";
 import { cn } from "@/lib/utils";
 
@@ -33,20 +33,21 @@ export function ItemCard({
     ? typeColorMap[type.color as keyof typeof typeColorMap] ?? typeColorMap.zinc
     : typeColorMap.zinc;
   const borderClassName = type
-    ? typeBorderColorMap[type.color as keyof typeof typeBorderColorMap] ??
-      "border-border"
-    : "border-border";
+    ? typeLeftBorderColorMap[
+        type.color as keyof typeof typeLeftBorderColorMap
+      ] ?? "border-l-border"
+    : "border-l-border";
   const visibleTags = item.tags.slice(0, type ? 2 : 3);
 
   return (
     <button
       aria-label={`Open item details for ${item.title}`}
       className={cn(
-        "group flex min-h-44 w-full flex-col rounded-md border bg-card p-4 text-left text-card-foreground transition-colors hover:border-muted-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        "group flex min-h-44 w-full flex-col rounded-md border border-l-4 border-border bg-card p-4 text-left text-card-foreground transition-colors hover:border-muted-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
         borderClassName
       )}
       onClick={onOpen}
-      style={getTypeBorderStyle(type?.color)}
+      style={getTypeLeftBorderStyle(type?.color)}
       type="button"
     >
       <div className="flex items-start gap-3">

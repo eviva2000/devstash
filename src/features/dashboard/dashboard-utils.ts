@@ -43,6 +43,16 @@ export const typeBorderColorMap = {
   cyan: "border-cyan-500/50",
 };
 
+export const typeLeftBorderColorMap = {
+  blue: "border-l-blue-500/50",
+  purple: "border-l-purple-500/50",
+  zinc: "border-l-zinc-500/50",
+  green: "border-l-emerald-500/50",
+  orange: "border-l-orange-500/50",
+  pink: "border-l-pink-500/50",
+  cyan: "border-l-cyan-500/50",
+};
+
 const hexColorPattern = /^#[0-9a-f]{6}$/i;
 
 export function getTypeBorderStyle(color?: string | null) {
@@ -51,6 +61,14 @@ export function getTypeBorderStyle(color?: string | null) {
   }
 
   return { borderColor: `${color}80` };
+}
+
+export function getTypeLeftBorderStyle(color?: string | null) {
+  if (!color || !hexColorPattern.test(color)) {
+    return undefined;
+  }
+
+  return { borderLeftColor: `${color}80` };
 }
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
