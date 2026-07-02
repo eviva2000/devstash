@@ -155,3 +155,15 @@ Keep this updated. Earliest to Latest
   - Updated item cards to show a type-colored left border
   - Protected `/items/*` routes through `src/proxy.ts`
   - Verified with `npx tsc --noEmit`, `npm run lint`, `git diff --check`, and `npm run build`
+- **Vitest Unit Testing Setup** (July 2, 2026)
+  - Added Vitest 4 with V8 coverage for Node-based unit testing
+  - Scoped test discovery to server actions, route handlers, feature utilities, and shared utilities; component tests remain excluded
+  - Added `npm run test`, `npm run test:watch`, and `npm run test:coverage`
+  - Added initial utility tests for query limit validation and rate limit response helpers
+  - Updated workflow and coding docs so unit tests are part of feature verification
+  - Verified with `npm run test`, `npm run test:coverage`, `npm run lint`, and `npm run build`
+- **Responsive Three Column Item Listing** (July 2, 2026)
+  - Completed on branch `responsive-three-column-item-listing`
+  - Updated `/items/[type]` item lists to keep one column by default, two columns from `md`, and three columns from `xl`
+  - Preserved the existing dashboard item card presentation and responsive spacing
+  - Verified with `git diff --check`, `npm run lint`, `npm test`, and `npm run build`
