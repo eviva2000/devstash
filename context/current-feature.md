@@ -1,23 +1,13 @@
-# Current Feature: Items List View
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Create a dynamic `/items/[type]` route for type-specific item lists such as `/items/snippets` and `/items/notes`.
-- Fetch and display items filtered by item type.
-- Render the filtered items in a responsive grid of `ItemCard` components.
-- Use two columns on medium and larger viewports.
-- Show each card with a left border colored by its item type.
-- Follow the existing codebase patterns for routing, data access, and UI composition.
-
 ## Notes
-
-- Loaded from `context/features/item-list-view-spec.md`.
-- The page should support dynamic item type slugs from the URL.
 
 ## History
 
@@ -156,3 +146,12 @@ Keep this updated. Earliest to Latest
   - Returned 429 with `{ error }` JSON and `Retry-After`; reset login limit on success; surfaced `rate_limited` in the sign-in form
   - Replaced request-derived origins with a canonical `APP_URL` via `getAppOrigin()` for all verification/reset links
   - Added Upstash and `APP_URL` env vars; verified with `npx tsc --noEmit`, `npm run lint`, and `npm run build`
+- **Items List View** (July 2, 2026)
+  - Completed on branch `items-list-view`
+  - Added the dynamic `/items/[type]` route for authenticated item type lists
+  - Added database helpers to resolve item type slugs and fetch user items filtered by type
+  - Supported plural URL examples such as `/items/snippets` by falling back to singular seeded slugs
+  - Reused dashboard sidebar, header, item cards, and item detail drawer for the item list page
+  - Updated item cards to show a type-colored left border
+  - Protected `/items/*` routes through `src/proxy.ts`
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `git diff --check`, and `npm run build`
