@@ -1,13 +1,30 @@
-# Current Feature
+# Current Feature: Item Drawer Edit Mode
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
+- Add inline edit mode to the existing item drawer when the pencil/Edit button is clicked.
+- Replace the drawer action bar with Save and Cancel controls while editing.
+- Let Cancel discard local changes and return to view mode.
+- Let Save validate and persist changes, return to view mode, refresh drawer data, and refresh the underlying page data.
+- Add save success and error toast notifications.
+- Add controlled edit fields for title, description, tags, and relevant type-specific fields.
+- Keep item type, collection, created date, and updated date display-only while editing.
+- Add `updateItem(itemId, data)` in `src/actions/items.ts` with Zod validation and `{ success, data, error }` responses.
+- Add an `updateItem` database helper in `src/lib/db/items.ts` that validates ownership and updates tags by replacing existing tag connections.
+- Return the updated item detail so the drawer can update without an extra fetch.
+
 ## Notes
+
+- Spec source: `context/features/item-drawer-edit-spec.md`
+- Editable type-specific fields: content for snippet, prompt, command, and note; language for snippet and command; URL for link.
+- Client-side title validation is only a UX guard; server-side Zod validation is the source of truth.
+- Keep the implementation simple with controlled inputs and no form library.
+- The content textarea does not need to be a code editor.
 
 ## History
 

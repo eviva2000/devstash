@@ -63,6 +63,15 @@ type DbDashboardItemType = Prisma.ItemTypeGetPayload<{
   select: typeof itemTypeSelect;
 }>;
 
+export type UpdateItemData = {
+  title: string;
+  description: string | null;
+  content: string | null;
+  language: string | null;
+  url: string | null;
+  tags: string[];
+};
+
 function toDashboardCollection(
   collection: NonNullable<DbDashboardItem["collection"]>
 ): DashboardCollection {
@@ -196,6 +205,64 @@ export async function getItemDetailById(
   return item ? toDashboardItemDetail(item) : null;
 }
 
+export async function updateItem(
+  userId: string,
+  itemId: string,
+  data: UpdateItemData
+): Promise<DashboardItemDetail | null> {
+  return prisma.$transaction(async (tx) => {
+    const existingItem = await tx.item.findFirst({
+      where: { id: itemId, userId },
+      select: {
+        id: true,
+        type: {
+          select: { slug: true },
+        },
+      },
+    });
+
+    if (!existingItem) {
+      return null;
+    }
+
+    const tags = normalizeTags(data.tags);
+    const supportedData = getSupportedUpdateData(existingItem.type.slug, data);
+    const updatedItem = await tx.item.update({
+      where: { id: itemId },
+      data: {
+        title: supportedData.title,
+        description: supportedData.description,
+        content: supportedData.content,
+        language: supportedData.language,
+        url: supportedData.url,
+        tags: {
+          deleteMany: {},
+          create: tags.map((tag) => ({
+            tag: {
+              connectOrCreate: {
+                where: {
+                  userId_slug: {
+                    userId,
+                    slug: tag.slug,
+                  },
+                },
+                create: {
+                  name: tag.name,
+                  slug: tag.slug,
+                  userId,
+                },
+              },
+            },
+          })),
+        },
+      },
+      include: itemDetailInclude,
+    });
+
+    return toDashboardItemDetail(updatedItem);
+  });
+}
+
 export async function getItemStats(
   userId: string
 ): Promise<DashboardItemStats> {
@@ -229,4 +296,49 @@ function getItemTypeSlugCandidates(slug: string) {
   }
 
   return Array.from(new Set(candidates));
+}
+
+function normalizeTags(tags: string[]) {
+  const normalizedTags = tags
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0)
+    .map((name) => ({ name, slug: slugify(name) }));
+
+  return Array.from(
+    new Map(normalizedTags.map((tag) => [tag.slug, tag])).values()
+  );
+}
+
+function slugify(value: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "tag"
+  );
+}
+
+function getSupportedUpdateData(
+  itemTypeSlug: string,
+  data: UpdateItemData
+): UpdateItemData {
+  return {
+    ...data,
+    content: doesTypeSupportContent(itemTypeSlug) ? data.content : null,
+    language: doesTypeSupportLanguage(itemTypeSlug) ? data.language : null,
+    url: doesTypeSupportUrl(itemTypeSlug) ? data.url : null,
+  };
+}
+
+function doesTypeSupportContent(slug: string) {
+  return ["snippet", "prompt", "command", "note"].includes(slug);
+}
+
+function doesTypeSupportLanguage(slug: string) {
+  return ["snippet", "command"].includes(slug);
+}
+
+function doesTypeSupportUrl(slug: string) {
+  return slug === "link";
 }

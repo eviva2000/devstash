@@ -4,15 +4,22 @@ import {
   Check,
   Copy,
   FileText,
+  Loader2,
   Pencil,
   Pin,
+  Save,
   Star,
   Trash2,
   X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type React from "react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
+import { updateItem } from "@/actions/items";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type {
   DashboardCollection,
   DashboardItem,
+  DashboardItemDetail,
   DashboardItemType,
 } from "@/features/dashboard/dashboard-types";
 import {
@@ -55,6 +63,15 @@ type ItemDetailResponse = {
   error?: string;
 };
 
+type EditFormState = {
+  title: string;
+  description: string;
+  tags: string;
+  content: string;
+  language: string;
+  url: string;
+};
+
 export function ItemContentDrawer({
   isOpen,
   item,
@@ -70,12 +87,19 @@ export function ItemContentDrawer({
   onClosed?: () => void;
   type?: DashboardItemType;
 }) {
+  const router = useRouter();
   const [itemDetail, setItemDetail] = useState<ItemDetail | null>(null);
   const [loadError, setLoadError] = useState<{
     itemId: string;
     message: string;
   } | null>(null);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editForm, setEditForm] = useState<EditFormState>(() =>
+    getEditFormState(null)
+  );
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (!isOpen || !itemId) {
@@ -102,6 +126,8 @@ export function ItemContentDrawer({
 
         setItemDetail(payload.item);
         setLoadError(null);
+        setIsEditing(false);
+        setFormError("");
       } catch (fetchError) {
         if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
           return;
@@ -129,6 +155,10 @@ export function ItemContentDrawer({
   const displayCollection = activeDetail?.collection ?? item?.collection ?? null;
   const displayItem = activeDetail ?? item ?? null;
   const hasCopied = copiedItemId === itemId;
+  const supportsContent = doesTypeSupportContent(displayType?.slug);
+  const supportsLanguage = doesTypeSupportLanguage(displayType?.slug);
+  const supportsUrl = doesTypeSupportUrl(displayType?.slug);
+  const isSaveDisabled = isSaving || editForm.title.trim().length === 0;
   const Icon = displayType
     ? typeIconMap[displayType.icon as keyof typeof typeIconMap] ?? FileText
     : FileText;
@@ -161,12 +191,73 @@ export function ItemContentDrawer({
     }, 1600);
   }
 
+  function handleClose() {
+    setIsEditing(false);
+    setFormError("");
+    onClose();
+  }
+
+  function startEditing() {
+    if (!activeDetail) {
+      return;
+    }
+
+    setEditForm(getEditFormState(activeDetail));
+    setFormError("");
+    setIsEditing(true);
+  }
+
+  function cancelEditing() {
+    setEditForm(getEditFormState(activeDetail));
+    setFormError("");
+    setIsEditing(false);
+  }
+
+  async function handleSave() {
+    if (!itemId || !activeDetail) {
+      return;
+    }
+
+    setIsSaving(true);
+    setFormError("");
+
+    let result: Awaited<ReturnType<typeof updateItem>>;
+    try {
+      result = await updateItem(itemId, {
+        title: editForm.title,
+        description: editForm.description,
+        tags: parseTags(editForm.tags),
+        content: supportsContent ? editForm.content : null,
+        language: supportsLanguage ? editForm.language : null,
+        url: supportsUrl ? editForm.url : null,
+      });
+    } catch (error) {
+      console.error("Failed to save item.", error);
+      result = { success: false, error: "Unable to update item. Try again." };
+    } finally {
+      setIsSaving(false);
+    }
+
+    if (!result.success) {
+      setFormError(result.error);
+      toast.error(result.error);
+      return;
+    }
+
+    const updatedItem = toItemDetail(result.data);
+    setItemDetail(updatedItem);
+    setEditForm(getEditFormState(updatedItem));
+    setIsEditing(false);
+    toast.success("Item saved.");
+    router.refresh();
+  }
+
   return (
     <Sheet
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
-          onClose();
+          handleClose();
         }
       }}
       onOpenChangeComplete={(open) => {
@@ -210,7 +301,7 @@ export function ItemContentDrawer({
               </SheetHeader>
               <Button
                 aria-label="Close item details"
-                onClick={onClose}
+                onClick={handleClose}
                 size="icon"
                 type="button"
                 variant="ghost"
@@ -220,72 +311,98 @@ export function ItemContentDrawer({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 border-y border-border px-8 py-4">
-            <Button
-              aria-label={
-                displayItem?.isFavorite
-                  ? "Item is favorited"
-                  : "Item is not favorited"
-              }
-              aria-pressed={displayItem?.isFavorite ?? false}
-              className={cn(
-                displayItem?.isFavorite &&
-                  "text-amber-400 hover:text-amber-300"
-              )}
-              size="icon"
-              title="Favorite"
-              type="button"
-              variant="outline"
-            >
-              <Star
+          {isEditing ? (
+            <div className="flex shrink-0 items-center gap-2 border-y border-border px-8 py-4">
+              <Button
+                disabled={isSaving}
+                onClick={cancelEditing}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                <X />
+                Cancel
+              </Button>
+              <Button
+                className="ml-auto"
+                disabled={isSaveDisabled}
+                onClick={handleSave}
+                size="sm"
+                type="button"
+              >
+                {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
+                Save
+              </Button>
+            </div>
+          ) : (
+            <div className="flex shrink-0 items-center gap-2 border-y border-border px-8 py-4">
+              <Button
+                aria-label={
+                  displayItem?.isFavorite
+                    ? "Item is favorited"
+                    : "Item is not favorited"
+                }
+                aria-pressed={displayItem?.isFavorite ?? false}
                 className={cn(
-                  displayItem?.isFavorite && "fill-amber-400 text-amber-400"
+                  displayItem?.isFavorite &&
+                    "text-amber-400 hover:text-amber-300"
                 )}
-              />
-            </Button>
-            <Button
-              aria-label={displayItem?.isPinned ? "Item is pinned" : "Pin item"}
-              aria-pressed={displayItem?.isPinned ?? false}
-              size="icon"
-              title="Pin"
-              type="button"
-              variant="outline"
-            >
-              <Pin className={cn(displayItem?.isPinned && "fill-foreground")} />
-            </Button>
-            <Button
-              disabled={!copyValue || isLoading}
-              onClick={handleCopy}
-              size="sm"
-              title="Copy item content"
-              type="button"
-              variant="outline"
-            >
-              {hasCopied ? <Check /> : <Copy />}
-              {hasCopied ? "Copied" : "Copy"}
-            </Button>
-            <Button
-              aria-label="Edit item"
-              disabled
-              size="icon"
-              title="Edit"
-              type="button"
-              variant="ghost"
-            >
-              <Pencil />
-            </Button>
-            <Button
-              aria-label="Delete item"
-              className="ml-auto"
-              disabled
-              size="icon"
-              title="Delete"
-              type="button"
-              variant="destructive"
-            >
-              <Trash2 />
-            </Button>
-          </div>
+                size="icon"
+                title="Favorite"
+                type="button"
+                variant="outline"
+              >
+                <Star
+                  className={cn(
+                    displayItem?.isFavorite && "fill-amber-400 text-amber-400"
+                  )}
+                />
+              </Button>
+              <Button
+                aria-label={displayItem?.isPinned ? "Item is pinned" : "Pin item"}
+                aria-pressed={displayItem?.isPinned ?? false}
+                size="icon"
+                title="Pin"
+                type="button"
+                variant="outline"
+              >
+                <Pin className={cn(displayItem?.isPinned && "fill-foreground")} />
+              </Button>
+              <Button
+                disabled={!copyValue || isLoading}
+                onClick={handleCopy}
+                size="sm"
+                title="Copy item content"
+                type="button"
+                variant="outline"
+              >
+                {hasCopied ? <Check /> : <Copy />}
+                {hasCopied ? "Copied" : "Copy"}
+              </Button>
+              <Button
+                aria-label="Edit item"
+                disabled={!activeDetail}
+                onClick={startEditing}
+                size="icon"
+                title="Edit"
+                type="button"
+                variant="ghost"
+              >
+                <Pencil />
+              </Button>
+              <Button
+                aria-label="Delete item"
+                className="ml-auto"
+                disabled
+                size="icon"
+                title="Delete"
+                type="button"
+                variant="destructive"
+              >
+                <Trash2 />
+              </Button>
+            </div>
+          )}
 
           <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6">
             {isLoading && <ItemDrawerSkeleton />}
@@ -296,7 +413,22 @@ export function ItemContentDrawer({
               </div>
             )}
 
-            {!isLoading && !activeError && activeDetail && (
+            {!isLoading && !activeError && activeDetail && isEditing && (
+              <ItemDrawerEditForm
+                collection={displayCollection}
+                error={formError}
+                form={editForm}
+                item={activeDetail}
+                isSaving={isSaving}
+                onChange={setEditForm}
+                supportsContent={supportsContent}
+                supportsLanguage={supportsLanguage}
+                supportsUrl={supportsUrl}
+                type={displayType}
+              />
+            )}
+
+            {!isLoading && !activeError && activeDetail && !isEditing && (
               <ItemDrawerDetails
                 collection={displayCollection}
                 item={activeDetail}
@@ -307,6 +439,171 @@ export function ItemContentDrawer({
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function ItemDrawerEditForm({
+  collection,
+  error,
+  form,
+  item,
+  isSaving,
+  onChange,
+  supportsContent,
+  supportsLanguage,
+  supportsUrl,
+  type,
+}: {
+  collection: DashboardCollection | null;
+  error: string;
+  form: EditFormState;
+  item: ItemDetail;
+  isSaving: boolean;
+  onChange: React.Dispatch<React.SetStateAction<EditFormState>>;
+  supportsContent: boolean;
+  supportsLanguage: boolean;
+  supportsUrl: boolean;
+  type?: DashboardItemType;
+}) {
+  return (
+    <div className="space-y-7">
+      {error && (
+        <p
+          aria-live="polite"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          {error}
+        </p>
+      )}
+
+      <section className="space-y-4">
+        <EditField label="Title" required>
+          <Input
+            disabled={isSaving}
+            onChange={(event) =>
+              onChange((current) => ({
+                ...current,
+                title: event.target.value,
+              }))
+            }
+            required
+            value={form.title}
+          />
+        </EditField>
+
+        <EditField label="Description">
+          <EditTextarea
+            disabled={isSaving}
+            onChange={(value) =>
+              onChange((current) => ({ ...current, description: value }))
+            }
+            rows={4}
+            value={form.description}
+          />
+        </EditField>
+
+        <EditField label="Tags">
+          <Input
+            disabled={isSaving}
+            onChange={(event) =>
+              onChange((current) => ({ ...current, tags: event.target.value }))
+            }
+            placeholder="react, terminal, workflow"
+            value={form.tags}
+          />
+        </EditField>
+
+        {supportsContent && (
+          <EditField label="Content">
+            <EditTextarea
+              disabled={isSaving}
+              onChange={(value) =>
+                onChange((current) => ({ ...current, content: value }))
+              }
+              rows={9}
+              value={form.content}
+            />
+          </EditField>
+        )}
+
+        {supportsLanguage && (
+          <EditField label="Language">
+            <Input
+              disabled={isSaving}
+              onChange={(event) =>
+                onChange((current) => ({
+                  ...current,
+                  language: event.target.value,
+                }))
+              }
+              value={form.language}
+            />
+          </EditField>
+        )}
+
+        {supportsUrl && (
+          <EditField label="URL">
+            <Input
+              disabled={isSaving}
+              onChange={(event) =>
+                onChange((current) => ({ ...current, url: event.target.value }))
+              }
+              type="url"
+              value={form.url}
+            />
+          </EditField>
+        )}
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2">
+        <DrawerMeta label="Type" value={type?.name ?? "Unknown"} />
+        <DrawerMeta label="Collection" value={collection?.name ?? "Unsorted"} />
+        <DrawerMeta label="Created" value={formatApiDate(item.createdAt)} />
+        <DrawerMeta label="Updated" value={formatApiDate(item.updatedAt)} />
+      </section>
+    </div>
+  );
+}
+
+function EditField({
+  children,
+  label,
+  required = false,
+}: {
+  children: React.ReactNode;
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <label className="block space-y-2">
+      <span className="text-sm font-medium text-muted-foreground">
+        {label}
+        {required && <span className="text-destructive"> *</span>}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function EditTextarea({
+  disabled,
+  onChange,
+  rows,
+  value,
+}: {
+  disabled: boolean;
+  onChange: (value: string) => void;
+  rows: number;
+  value: string;
+}) {
+  return (
+    <textarea
+      className="min-h-24 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.value)}
+      rows={rows}
+      value={value}
+    />
   );
 }
 
@@ -450,4 +747,49 @@ function formatFileSize(bytes: number) {
   }
 
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getEditFormState(item: ItemDetail | null): EditFormState {
+  return {
+    title: item?.title ?? "",
+    description: item?.description ?? "",
+    tags: item?.tags.join(", ") ?? "",
+    content: item?.content ?? "",
+    language: item?.language ?? "",
+    url: item?.url ?? "",
+  };
+}
+
+function parseTags(value: string) {
+  return value
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+}
+
+function doesTypeSupportContent(slug?: string) {
+  return slug
+    ? ["snippet", "prompt", "command", "note"].includes(slug)
+    : false;
+}
+
+function doesTypeSupportLanguage(slug?: string) {
+  return slug ? ["snippet", "command"].includes(slug) : false;
+}
+
+function doesTypeSupportUrl(slug?: string) {
+  return slug === "link";
+}
+
+function toItemDetail(item: DashboardItemDetail | ItemDetail): ItemDetail {
+  return {
+    ...item,
+    createdAt: toIsoString(item.createdAt),
+    updatedAt: toIsoString(item.updatedAt),
+    lastUsedAt: item.lastUsedAt ? toIsoString(item.lastUsedAt) : null,
+  };
+}
+
+function toIsoString(value: Date | string) {
+  return value instanceof Date ? value.toISOString() : value;
 }
