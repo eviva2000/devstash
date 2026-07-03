@@ -1,6 +1,7 @@
 import type {
   DashboardCollection,
   DashboardItem,
+  DashboardItemDetail,
   DashboardItemStats,
 } from "@/features/dashboard/dashboard-types";
 import type { Prisma } from "@/generated/prisma/client";
@@ -45,7 +46,18 @@ const itemInclude = {
   },
 } as const;
 
+const itemDetailInclude = {
+  ...itemInclude,
+  type: {
+    select: itemTypeSelect,
+  },
+} as const;
+
 type DbDashboardItem = Prisma.ItemGetPayload<{ include: typeof itemInclude }>;
+
+type DbDashboardItemDetail = Prisma.ItemGetPayload<{
+  include: typeof itemDetailInclude;
+}>;
 
 type DbDashboardItemType = Prisma.ItemTypeGetPayload<{
   select: typeof itemTypeSelect;
@@ -80,6 +92,19 @@ function toDashboardItem(item: DbDashboardItem): DashboardItem {
     tags: item.tags.map(({ tag }) => tag.name),
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
+  };
+}
+
+function toDashboardItemDetail(item: DbDashboardItemDetail): DashboardItemDetail {
+  return {
+    ...toDashboardItem(item),
+    contentType: item.contentType,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileMimeType: item.fileMimeType,
+    fileSize: item.fileSize,
+    lastUsedAt: item.lastUsedAt,
+    type: item.type,
   };
 }
 
@@ -157,6 +182,18 @@ export async function getItemsByTypeSlug(
   });
 
   return { itemType, items: items.map(toDashboardItem) };
+}
+
+export async function getItemDetailById(
+  userId: string,
+  itemId: string
+): Promise<DashboardItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    include: itemDetailInclude,
+  });
+
+  return item ? toDashboardItemDetail(item) : null;
 }
 
 export async function getItemStats(

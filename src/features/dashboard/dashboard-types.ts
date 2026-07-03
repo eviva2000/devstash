@@ -37,6 +37,16 @@ export type DashboardItem = {
   updatedAt: Date;
 };
 
+export type DashboardItemDetail = DashboardItem & {
+  contentType: string;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileMimeType?: string | null;
+  fileSize?: number | null;
+  lastUsedAt?: Date | null;
+  type: DashboardItemType;
+};
+
 export type DashboardData = {
   collectionById: Map<string, DashboardCollection>;
   favoriteCollections: DashboardCollection[];

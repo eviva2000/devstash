@@ -47,9 +47,6 @@ export function DashboardMain({
   const selectedType = selectedItem
     ? data.typeById.get(selectedItem.typeId)
     : undefined;
-  const selectedCollection = selectedItem
-    ? getCollection(data, selectedItem.collectionId)
-    : undefined;
 
   const openItemDrawer = (itemId: string) => {
     setSelectedItemId(itemId);
@@ -158,11 +155,11 @@ export function DashboardMain({
       </div>
 
       <ItemContentDrawer
-        collection={selectedCollection}
         isOpen={isItemDrawerOpen}
         item={selectedItem}
+        itemId={selectedItemId}
         onClose={closeItemDrawer}
-        onExited={() => setSelectedItemId(null)}
+        onClosed={() => setSelectedItemId(null)}
         type={selectedType}
       />
     </div>

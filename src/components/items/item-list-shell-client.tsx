@@ -87,10 +87,6 @@ export function ItemListShellClient({
   const selectedItem = selectedItemId
     ? items.find((item) => item.id === selectedItemId)
     : undefined;
-  const selectedCollection = selectedItem?.collectionId
-    ? collectionById.get(selectedItem.collectionId)
-    : undefined;
-
   const openItemDrawer = (itemId: string) => {
     setSelectedItemId(itemId);
     setIsItemDrawerOpen(true);
@@ -173,11 +169,11 @@ export function ItemListShellClient({
       </section>
 
       <ItemContentDrawer
-        collection={selectedCollection}
         isOpen={isItemDrawerOpen}
         item={selectedItem}
+        itemId={selectedItemId}
         onClose={closeItemDrawer}
-        onExited={() => setSelectedItemId(null)}
+        onClosed={() => setSelectedItemId(null)}
         type={itemType}
       />
     </main>
