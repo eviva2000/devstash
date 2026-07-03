@@ -1,26 +1,13 @@
-# Current Feature: Item Drawer
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Add a right-side shadcn Sheet drawer as the item detail view, with no separate item detail page.
-- Open the drawer when an item card is clicked on both the dashboard and item list pages.
-- Fetch full item detail data on click through `/api/items/[id]` with an authenticated database query in `src/lib/db/items.ts`.
-- Show a skeleton/loading state while item detail data is loading.
-- Render drawer details for the current item, including content, collections, language, and other available full-detail fields.
-- Add the drawer action bar with Favorite, Pin, Copy, Edit, and right-aligned Delete controls using the requested icons and active favorite styling.
-- Keep the interaction snappy by fetching on click without page navigation.
-
 ## Notes
-
-- Spec source: `context/features/item-drawer-spec.md`
-- Visual reference: `context/screenshots/dashboard-ui-drawer.png`
-- Pages are server components, so drawer open state should live in a client wrapper component.
-- Extras such as a code editor and item-specific richer behavior are intentionally deferred; this feature focuses on the drawer details display.
 
 ## History
 
@@ -180,3 +167,9 @@ Keep this updated. Earliest to Latest
   - Updated `/items/[type]` item lists to keep one column by default, two columns from `md`, and three columns from `xl`
   - Preserved the existing dashboard item card presentation and responsive spacing
   - Verified with `git diff --check`, `npm run lint`, `npm test`, and `npm run build`
+- **Item Drawer** (July 3, 2026)
+  - Completed on branch `item-drawer`
+  - Added a right-side Sheet drawer for item detail display from dashboard and item list cards
+  - Added authenticated `/api/items/[id]` detail fetching backed by `getItemDetailById`
+  - Rendered drawer loading, error, metadata, content, tags, collection, URL, file, and action bar states
+  - Verified with `npm run lint`, `npm test`, `git diff --check`, and `npm run build`
