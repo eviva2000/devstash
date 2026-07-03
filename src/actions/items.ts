@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -60,6 +61,9 @@ export async function updateItem(
     if (!updatedItem) {
       return { success: false, error: "Item not found." };
     }
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/items/${updatedItem.type.slug}`);
 
     return { success: true, data: updatedItem };
   } catch (error) {

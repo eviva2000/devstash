@@ -228,7 +228,7 @@ export async function updateItem(
     const tags = normalizeTags(data.tags);
     const supportedData = getSupportedUpdateData(existingItem.type.slug, data);
     const updatedItem = await tx.item.update({
-      where: { id: itemId },
+      where: { id: itemId, userId },
       data: {
         title: supportedData.title,
         description: supportedData.description,
