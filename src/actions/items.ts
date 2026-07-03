@@ -14,25 +14,38 @@ type UpdateItemResult =
   | { success: true; data: DashboardItemDetail }
   | { success: false; error: string };
 
-const nullableTrimmedString = z.preprocess(
-  (value) => (typeof value === "string" ? value.trim() || null : value ?? null),
-  z.string().nullable()
-);
+const nullableTrimmedString = (max: number) =>
+  z.preprocess(
+    (value) => (typeof value === "string" ? value.trim() || null : value ?? null),
+    z.string().max(max, `Must be ${max} characters or fewer.`).nullable()
+  );
 
 const nullableUrlString = z.preprocess(
   (value) => (typeof value === "string" ? value.trim() || null : value ?? null),
-  z.string().url("Enter a valid URL.").nullable()
+  z
+    .string()
+    .url("Enter a valid URL.")
+    .max(2048, "URL is too long.")
+    .refine(
+      (value) => /^https?:\/\//i.test(value),
+      "URL must start with http:// or https://"
+    )
+    .nullable()
 );
 
 const updateItemSchema = z.object({
-  title: z.string().trim().min(1, "Title is required."),
-  description: nullableTrimmedString,
-  content: nullableTrimmedString,
-  language: nullableTrimmedString,
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required.")
+    .max(200, "Title is too long."),
+  description: nullableTrimmedString(2000),
+  content: nullableTrimmedString(50000),
+  language: nullableTrimmedString(50),
   url: nullableUrlString,
   tags: z
-    .array(z.string().trim().min(1))
-    .transform((tags) => Array.from(new Set(tags))),
+    .array(z.string().trim().min(1).max(50, "Tag is too long."))
+    .max(30, "Too many tags."),
 });
 
 export async function updateItem(
@@ -44,6 +57,10 @@ export async function updateItem(
 
     if (!session?.user?.id) {
       return { success: false, error: "You must be signed in to update items." };
+    }
+
+    if (!/^c[a-z0-9]{24}$/.test(itemId)) {
+      return { success: false, error: "Item not found." };
     }
 
     const parsedData = updateItemSchema.safeParse(data);

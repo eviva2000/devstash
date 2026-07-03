@@ -127,6 +127,7 @@ export function ItemContentDrawer({
         setItemDetail(payload.item);
         setLoadError(null);
         setIsEditing(false);
+        setEditForm(getEditFormState(payload.item));
         setFormError("");
       } catch (fetchError) {
         if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
@@ -233,7 +234,11 @@ export function ItemContentDrawer({
       });
     } catch (error) {
       console.error("Failed to save item.", error);
-      result = { success: false, error: "Unable to update item. Try again." };
+      const message =
+        process.env.NODE_ENV === "development" && error instanceof Error
+          ? error.message
+          : "Unable to update item. Try again.";
+      result = { success: false, error: message };
     } finally {
       setIsSaving(false);
     }
