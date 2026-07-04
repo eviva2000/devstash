@@ -1,27 +1,17 @@
-# Current Feature: Item Create
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Add a modal dialog for creating new items from the top bar "New Item" button.
-- Use the shadcn Dialog component for the create-item flow.
-- Include a type selector for snippet, prompt, command, note, and link.
-- Show fields based on the selected type: title, description, and tags for all types; content and language for snippet/command; content for prompt/note; URL for link.
-- Require title for all items and URL for links.
-- Add a Zod-validated `createItem` server action.
-- Add a `createItem` query function in `src/lib/db/items.ts`.
-- On successful creation, show a toast, close the modal, and refresh affected item views.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Loaded from `context/features/item-create-spec.md`.
-- Overview: add new items via a modal dialog opened from the dashboard top bar "New Item" button.
 
 ## History
 
@@ -202,3 +192,12 @@ Keep this updated. Earliest to Latest
   - Added an ownership-scoped Prisma delete helper for items and tests for action and database delete behavior
   - Showed Sonner success and error toasts, closed the drawer after successful deletion, and refreshed affected item views
   - Verified with `git diff --check`, `npm test`, `npm run lint`, and `npm run build`
+- **Item Create** (July 4, 2026)
+  - Completed on branch `item-create`
+  - Added a compact shadcn-style create item Dialog launched from the dashboard and item list top bar
+  - Added a Select-based item type picker for snippet, prompt, command, note, and link creation
+  - Rendered type-specific fields for content, language, and URL while keeping title, description, and tags available across item types
+  - Added an authenticated Zod-validated `createItem` server action with success revalidation for dashboard and typed item views
+  - Added a Prisma-backed create item helper with system type lookup, content type assignment, supported field filtering, and tag connect-or-create handling
+  - Added focused Vitest coverage for create action validation/errors and database create behavior
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `git diff --check`, and `npm run build`
