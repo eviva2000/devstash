@@ -1,21 +1,40 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi, type Mock } from "vitest";
+import type { Session } from "next-auth";
 
 import { auth } from "@/auth";
 import type { DashboardItemDetail } from "@/features/dashboard/dashboard-types";
-import { updateItem as updateItemRecord } from "@/lib/db/items";
+import {
+  deleteItem as deleteItemRecord,
+  getItemDetailById,
+  updateItem as updateItemRecord,
+} from "@/lib/db/items";
+import { revalidatePath } from "next/cache";
 
-import { updateItem } from "./items";
+import { deleteItem, updateItem } from "./items";
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
 vi.mock("@/lib/db/items", () => ({
+  deleteItem: vi.fn(),
+  getItemDetailById: vi.fn(),
   updateItem: vi.fn(),
 }));
 
-const authMock = vi.mocked(auth);
+type AuthSession = Session | null;
+
+const authMock = vi.mocked(auth) as unknown as Mock<() => Promise<AuthSession>>;
+const deleteItemRecordMock = vi.mocked(deleteItemRecord);
+const getItemDetailByIdMock = vi.mocked(getItemDetailById);
+const revalidatePathMock = vi.mocked(revalidatePath);
 const updateItemRecordMock = vi.mocked(updateItemRecord);
+
+const VALID_ITEM_ID = "cm00000000000000000000000";
 
 describe("updateItem", () => {
   beforeEach(() => {
@@ -25,7 +44,7 @@ describe("updateItem", () => {
   test("rejects unauthenticated updates", async () => {
     authMock.mockResolvedValue(null);
 
-    await expect(updateItem("item-1", validUpdateInput())).resolves.toEqual({
+    await expect(updateItem(VALID_ITEM_ID, validUpdateInput())).resolves.toEqual({
       success: false,
       error: "You must be signed in to update items.",
     });
@@ -36,7 +55,7 @@ describe("updateItem", () => {
     authMock.mockResolvedValue(sessionForUser("user-1"));
 
     await expect(
-      updateItem("item-1", {
+      updateItem(VALID_ITEM_ID, {
         ...validUpdateInput(),
         title: "   ",
       })
@@ -53,7 +72,7 @@ describe("updateItem", () => {
     updateItemRecordMock.mockResolvedValue(updatedItem);
 
     await expect(
-      updateItem("item-1", {
+      updateItem(VALID_ITEM_ID, {
         title: "  Updated title  ",
         description: "   ",
         content: "  console.log('devstash')  ",
@@ -62,21 +81,23 @@ describe("updateItem", () => {
         tags: [" TypeScript ", "Next.js", "TypeScript"],
       })
     ).resolves.toEqual({ success: true, data: updatedItem });
-    expect(updateItemRecordMock).toHaveBeenCalledWith("user-1", "item-1", {
+    expect(updateItemRecordMock).toHaveBeenCalledWith("user-1", VALID_ITEM_ID, {
       title: "Updated title",
       description: null,
       content: "console.log('devstash')",
       language: null,
       url: null,
-      tags: ["TypeScript", "Next.js"],
+      tags: ["TypeScript", "Next.js", "TypeScript"],
     });
+    expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/items/snippet");
   });
 
   test("returns an item-not-found error when the database helper returns null", async () => {
     authMock.mockResolvedValue(sessionForUser("user-1"));
     updateItemRecordMock.mockResolvedValue(null);
 
-    await expect(updateItem("missing-item", validUpdateInput())).resolves.toEqual({
+    await expect(updateItem(VALID_ITEM_ID, validUpdateInput())).resolves.toEqual({
       success: false,
       error: "Item not found.",
     });
@@ -87,12 +108,90 @@ describe("updateItem", () => {
     authMock.mockResolvedValue(sessionForUser("user-1"));
     updateItemRecordMock.mockRejectedValue(new Error("database unavailable"));
 
-    await expect(updateItem("item-1", validUpdateInput())).resolves.toEqual({
+    await expect(updateItem(VALID_ITEM_ID, validUpdateInput())).resolves.toEqual({
       success: false,
       error: "Unable to update item. Try again.",
     });
     expect(consoleError).toHaveBeenCalledWith(
       "Failed to update item.",
+      expect.any(Error)
+    );
+  });
+});
+
+describe("deleteItem", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("rejects unauthenticated deletes", async () => {
+    authMock.mockResolvedValue(null);
+
+    await expect(deleteItem(VALID_ITEM_ID)).resolves.toEqual({
+      success: false,
+      error: "You must be signed in to delete items.",
+    });
+    expect(getItemDetailByIdMock).not.toHaveBeenCalled();
+    expect(deleteItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  test("rejects invalid item IDs before reading from the database", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+
+    await expect(deleteItem("item-1")).resolves.toEqual({
+      success: false,
+      error: "Item not found.",
+    });
+    expect(getItemDetailByIdMock).not.toHaveBeenCalled();
+    expect(deleteItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  test("returns an item-not-found error when the item is missing or not owned by the user", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    getItemDetailByIdMock.mockResolvedValue(null);
+
+    await expect(deleteItem(VALID_ITEM_ID)).resolves.toEqual({
+      success: false,
+      error: "Item not found.",
+    });
+    expect(getItemDetailByIdMock).toHaveBeenCalledWith("user-1", VALID_ITEM_ID);
+    expect(deleteItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  test("deletes the owned item and revalidates affected item lists", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    getItemDetailByIdMock.mockResolvedValue(itemDetail());
+    deleteItemRecordMock.mockResolvedValue(true);
+
+    await expect(deleteItem(VALID_ITEM_ID)).resolves.toEqual({ success: true });
+    expect(deleteItemRecordMock).toHaveBeenCalledWith("user-1", VALID_ITEM_ID);
+    expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/items/snippet");
+  });
+
+  test("returns an item-not-found error when deletion affects no records", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    getItemDetailByIdMock.mockResolvedValue(itemDetail());
+    deleteItemRecordMock.mockResolvedValue(false);
+
+    await expect(deleteItem(VALID_ITEM_ID)).resolves.toEqual({
+      success: false,
+      error: "Item not found.",
+    });
+  });
+
+  test("returns a generic error when deletion fails unexpectedly", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    getItemDetailByIdMock.mockResolvedValue(itemDetail());
+    deleteItemRecordMock.mockRejectedValue(new Error("database unavailable"));
+
+    await expect(deleteItem(VALID_ITEM_ID)).resolves.toEqual({
+      success: false,
+      error: "Unable to delete item. Try again.",
+    });
+    expect(consoleError).toHaveBeenCalledWith(
+      "Failed to delete item.",
       expect.any(Error)
     );
   });
@@ -109,7 +208,7 @@ function validUpdateInput() {
   };
 }
 
-function sessionForUser(userId: string): Awaited<ReturnType<typeof auth>> {
+function sessionForUser(userId: string): Session {
   return {
     user: {
       id: userId,

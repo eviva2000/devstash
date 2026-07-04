@@ -6,12 +6,18 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import type { DashboardItemDetail } from "@/features/dashboard/dashboard-types";
 import {
+  deleteItem as deleteItemRecord,
+  getItemDetailById,
   updateItem as updateItemRecord,
   type UpdateItemData,
 } from "@/lib/db/items";
 
 type UpdateItemResult =
   | { success: true; data: DashboardItemDetail }
+  | { success: false; error: string };
+
+type DeleteItemResult =
+  | { success: true }
   | { success: false; error: string };
 
 const nullableTrimmedString = (max: number) =>
@@ -86,6 +92,40 @@ export async function updateItem(
   } catch (error) {
     console.error("Failed to update item.", error);
     return { success: false, error: "Unable to update item. Try again." };
+  }
+}
+
+export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return { success: false, error: "You must be signed in to delete items." };
+    }
+
+    if (!/^c[a-z0-9]{24}$/.test(itemId)) {
+      return { success: false, error: "Item not found." };
+    }
+
+    const existingItem = await getItemDetailById(session.user.id, itemId);
+
+    if (!existingItem) {
+      return { success: false, error: "Item not found." };
+    }
+
+    const deleted = await deleteItemRecord(session.user.id, itemId);
+
+    if (!deleted) {
+      return { success: false, error: "Item not found." };
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/items/${existingItem.type.slug}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete item.", error);
+    return { success: false, error: "Unable to delete item. Try again." };
   }
 }
 

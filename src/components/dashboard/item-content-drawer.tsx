@@ -17,7 +17,17 @@ import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { updateItem } from "@/actions/items";
+import { deleteItem, updateItem } from "@/actions/items";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -96,6 +106,8 @@ export function ItemContentDrawer({
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<EditFormState>(() =>
     getEditFormState(null)
   );
@@ -195,6 +207,7 @@ export function ItemContentDrawer({
   function handleClose() {
     setIsEditing(false);
     setFormError("");
+    setIsDeleteDialogOpen(false);
     onClose();
   }
 
@@ -254,6 +267,38 @@ export function ItemContentDrawer({
     setEditForm(getEditFormState(updatedItem));
     setIsEditing(false);
     toast.success("Item saved.");
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    if (!itemId) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    let result: Awaited<ReturnType<typeof deleteItem>>;
+    try {
+      result = await deleteItem(itemId);
+    } catch (error) {
+      console.error("Failed to delete item.", error);
+      const message =
+        process.env.NODE_ENV === "development" && error instanceof Error
+          ? error.message
+          : "Unable to delete item. Try again.";
+      result = { success: false, error: message };
+    } finally {
+      setIsDeleting(false);
+    }
+
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+
+    setIsDeleteDialogOpen(false);
+    toast.success("Item deleted.");
+    onClose();
     router.refresh();
   }
 
@@ -395,17 +440,58 @@ export function ItemContentDrawer({
               >
                 <Pencil />
               </Button>
-              <Button
-                aria-label="Delete item"
-                className="ml-auto"
-                disabled
-                size="icon"
-                title="Delete"
-                type="button"
-                variant="destructive"
+              <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={(open) => {
+                  if (isDeleting) {
+                    return;
+                  }
+                  setIsDeleteDialogOpen(open);
+                }}
               >
-                <Trash2 />
-              </Button>
+                <Button
+                  aria-label="Delete item"
+                  className="ml-auto"
+                  disabled={!activeDetail}
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  size="icon"
+                  title="Delete"
+                  type="button"
+                  variant="destructive"
+                >
+                  <Trash2 />
+                </Button>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this item?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {displayItem?.title
+                        ? `"${displayItem.title}" will be permanently deleted. This action cannot be undone.`
+                        : "This item will be permanently deleted. This action cannot be undone."}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeleting}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={isDeleting}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        void handleDelete();
+                      }}
+                      variant="destructive"
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <Trash2 />
+                      )}
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           )}
 
