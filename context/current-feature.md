@@ -1,32 +1,17 @@
-# Current Feature: Delete Item Functionality
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
 
-- Add the ability to delete an item from the item detail drawer action bar.
-- Show a shadcn confirmation dialog (AlertDialog) before deleting, since deletion is destructive and hard to reverse.
-- Add a `deleteItem` Zod/ownership-checked server action mirroring the existing `updateItem` pattern in `src/actions/items.ts`.
-- Add a `deleteItem` database helper in `src/lib/db/items.ts` with `userId` ownership scoping.
-- Show a Sonner success toast on successful deletion (reusing the existing toaster in `src/components/ui/sonner.tsx`).
-- Close the drawer and refresh the affected lists after a successful delete (`revalidatePath` for `/dashboard` and `/items/[type]`).
-- Handle and surface delete errors gracefully (e.g. an error toast) without leaving the UI in a broken state.
-
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-
-- Inline feature request (no spec file): "create the delete functionality for items. There should be a shadcn confirmation and a toast on success."
-- The item detail drawer lives at `src/components/dashboard/item-content-drawer.tsx` and already has an edit-mode action bar to hook the delete control into.
-- Follow the existing `updateItem` server action conventions: `"use server"`, session check via `auth()`, CUID validation of `itemId`, `{ success, ... }` result shape, `revalidatePath` on success.
-- The shadcn AlertDialog component is not yet installed (current `ui/` has button, input, badge, skeleton, sheet, sonner) — it will need to be added.
-- Prisma `Item` delete should be scoped by `userId` so a user can only delete their own items; related tag join rows should cascade per the existing schema.
-- Verify with `npm run lint`, `npm test`, `git diff --check`, and `npm run build` per the project workflow.
 
 ## History
 
@@ -200,3 +185,10 @@ Keep this updated. Earliest to Latest
   - Enforced type-specific editable fields server-side by nulling unsupported content, language, and URL values before update
   - Added Sonner toast notifications through a shadcn-style toaster component
   - Verified with `npm run lint`, `npm test`, `git diff --check`, and `npm run build`
+- **Delete Item Functionality** (July 4, 2026)
+  - Completed on branch `delete-item-functionality`
+  - Added a destructive delete action to the item detail drawer with a confirmation AlertDialog
+  - Added authenticated `deleteItem` server action handling CUID validation, ownership checks, success revalidation, and graceful errors
+  - Added an ownership-scoped Prisma delete helper for items and tests for action and database delete behavior
+  - Showed Sonner success and error toasts, closed the drawer after successful deletion, and refreshed affected item views
+  - Verified with `git diff --check`, `npm test`, `npm run lint`, and `npm run build`
