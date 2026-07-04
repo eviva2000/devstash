@@ -6,11 +6,17 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import type { DashboardItemDetail } from "@/features/dashboard/dashboard-types";
 import {
+  createItem as createItemRecord,
   deleteItem as deleteItemRecord,
   getItemDetailById,
   updateItem as updateItemRecord,
+  type CreateItemData,
   type UpdateItemData,
 } from "@/lib/db/items";
+
+type CreateItemResult =
+  | { success: true; data: DashboardItemDetail }
+  | { success: false; error: string };
 
 type UpdateItemResult =
   | { success: true; data: DashboardItemDetail }
@@ -53,6 +59,56 @@ const updateItemSchema = z.object({
     .array(z.string().trim().min(1).max(50, "Tag is too long."))
     .max(30, "Too many tags."),
 });
+
+const createItemSchema = updateItemSchema
+  .extend({
+    typeSlug: z.enum(["snippet", "prompt", "command", "note", "link"], {
+      error: "Choose a valid item type.",
+    }),
+  })
+  .superRefine((data, context) => {
+    if (data.typeSlug === "link" && !data.url) {
+      context.addIssue({
+        code: "custom",
+        message: "URL is required for links.",
+        path: ["url"],
+      });
+    }
+  });
+
+export async function createItem(data: unknown): Promise<CreateItemResult> {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return { success: false, error: "You must be signed in to create items." };
+    }
+
+    const parsedData = createItemSchema.safeParse(data);
+
+    if (!parsedData.success) {
+      return {
+        success: false,
+        error: getValidationErrorMessage(parsedData.error),
+      };
+    }
+
+    const createData: CreateItemData = parsedData.data;
+    const createdItem = await createItemRecord(session.user.id, createData);
+
+    if (!createdItem) {
+      return { success: false, error: "Choose a valid item type." };
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/items/${createdItem.type.slug}`);
+
+    return { success: true, data: createdItem };
+  } catch (error) {
+    console.error("Failed to create item.", error);
+    return { success: false, error: "Unable to create item. Try again." };
+  }
+}
 
 export async function updateItem(
   itemId: string,

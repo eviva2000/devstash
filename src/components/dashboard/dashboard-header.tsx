@@ -1,13 +1,19 @@
-import { FolderOpen, Menu, Plus, Search } from "lucide-react";
+import { FolderOpen, Menu, Search } from "lucide-react";
 
+import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { DashboardItemType } from "@/features/dashboard/dashboard-types";
 
 export function DashboardHeader({
+  initialCreateTypeSlug,
   isMobileDrawerOpen,
+  itemTypes,
   onOpenMobileDrawer,
 }: {
+  initialCreateTypeSlug?: string;
   isMobileDrawerOpen: boolean;
+  itemTypes: DashboardItemType[];
   onOpenMobileDrawer: () => void;
 }) {
   return (
@@ -43,10 +49,10 @@ export function DashboardHeader({
         New Collection
       </Button>
 
-      <Button className="ml-auto sm:ml-0" type="button">
-        <Plus data-icon="inline-start" />
-        New Item
-      </Button>
+      <ItemCreateDialog
+        initialTypeSlug={initialCreateTypeSlug}
+        itemTypes={itemTypes}
+      />
     </header>
   );
 }

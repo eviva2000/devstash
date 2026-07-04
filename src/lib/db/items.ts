@@ -4,6 +4,7 @@ import type {
   DashboardItemDetail,
   DashboardItemStats,
 } from "@/features/dashboard/dashboard-types";
+import { ItemContentType } from "@/generated/prisma/client";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { validateQueryLimit } from "@/lib/db/query-limits";
@@ -70,6 +71,10 @@ export type UpdateItemData = {
   language: string | null;
   url: string | null;
   tags: string[];
+};
+
+export type CreateItemData = UpdateItemData & {
+  typeSlug: string;
 };
 
 function toDashboardCollection(
@@ -203,6 +208,59 @@ export async function getItemDetailById(
   });
 
   return item ? toDashboardItemDetail(item) : null;
+}
+
+export async function createItem(
+  userId: string,
+  data: CreateItemData
+): Promise<DashboardItemDetail | null> {
+  return prisma.$transaction(async (tx) => {
+    const itemType = await tx.itemType.findFirst({
+      where: { slug: data.typeSlug, isSystem: true },
+      select: { id: true, slug: true },
+    });
+
+    if (!itemType) {
+      return null;
+    }
+
+    const tags = normalizeTags(data.tags);
+    const supportedData = getSupportedUpdateData(itemType.slug, data);
+    const createdItem = await tx.item.create({
+      data: {
+        title: supportedData.title,
+        description: supportedData.description,
+        contentType: getContentTypeForItemType(itemType.slug),
+        content: supportedData.content,
+        language: supportedData.language,
+        url: supportedData.url,
+        userId,
+        typeId: itemType.id,
+        tags: {
+          create: tags.map((tag) => ({
+            tag: {
+              connectOrCreate: {
+                where: {
+                  userId_slug: {
+                    userId,
+                    slug: tag.slug,
+                  },
+                },
+                create: {
+                  name: tag.name,
+                  slug: tag.slug,
+                  userId,
+                },
+              },
+            },
+          })),
+        },
+      },
+      include: itemDetailInclude,
+    });
+
+    return toDashboardItemDetail(createdItem);
+  });
 }
 
 export async function updateItem(
@@ -352,4 +410,8 @@ function doesTypeSupportLanguage(slug: string) {
 
 function doesTypeSupportUrl(slug: string) {
   return slug === "link";
+}
+
+function getContentTypeForItemType(slug: string) {
+  return doesTypeSupportUrl(slug) ? ItemContentType.URL : ItemContentType.TEXT;
 }

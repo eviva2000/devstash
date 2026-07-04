@@ -4,13 +4,14 @@ import type { Session } from "next-auth";
 import { auth } from "@/auth";
 import type { DashboardItemDetail } from "@/features/dashboard/dashboard-types";
 import {
+  createItem as createItemRecord,
   deleteItem as deleteItemRecord,
   getItemDetailById,
   updateItem as updateItemRecord,
 } from "@/lib/db/items";
 import { revalidatePath } from "next/cache";
 
-import { deleteItem, updateItem } from "./items";
+import { createItem, deleteItem, updateItem } from "./items";
 
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
@@ -21,6 +22,7 @@ vi.mock("@/auth", () => ({
 }));
 
 vi.mock("@/lib/db/items", () => ({
+  createItem: vi.fn(),
   deleteItem: vi.fn(),
   getItemDetailById: vi.fn(),
   updateItem: vi.fn(),
@@ -29,12 +31,114 @@ vi.mock("@/lib/db/items", () => ({
 type AuthSession = Session | null;
 
 const authMock = vi.mocked(auth) as unknown as Mock<() => Promise<AuthSession>>;
+const createItemRecordMock = vi.mocked(createItemRecord);
 const deleteItemRecordMock = vi.mocked(deleteItemRecord);
 const getItemDetailByIdMock = vi.mocked(getItemDetailById);
 const revalidatePathMock = vi.mocked(revalidatePath);
 const updateItemRecordMock = vi.mocked(updateItemRecord);
 
 const VALID_ITEM_ID = "cm00000000000000000000000";
+
+describe("createItem", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("rejects unauthenticated creates", async () => {
+    authMock.mockResolvedValue(null);
+
+    await expect(createItem(validCreateInput())).resolves.toEqual({
+      success: false,
+      error: "You must be signed in to create items.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  test("returns the first validation error without creating an item", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+
+    await expect(
+      createItem({
+        ...validCreateInput(),
+        title: "   ",
+      })
+    ).resolves.toEqual({
+      success: false,
+      error: "Title is required.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  test("requires a URL when creating links", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+
+    await expect(
+      createItem({
+        ...validCreateInput(),
+        typeSlug: "link",
+        url: "   ",
+      })
+    ).resolves.toEqual({
+      success: false,
+      error: "URL is required for links.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  test("passes normalized create data to the database helper", async () => {
+    const createdItem = itemDetail();
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    createItemRecordMock.mockResolvedValue(createdItem);
+
+    await expect(
+      createItem({
+        typeSlug: "snippet",
+        title: "  New snippet  ",
+        description: "   ",
+        content: "  const value = true  ",
+        language: "",
+        url: "   ",
+        tags: [" TypeScript ", "Next.js", "TypeScript"],
+      })
+    ).resolves.toEqual({ success: true, data: createdItem });
+    expect(createItemRecordMock).toHaveBeenCalledWith("user-1", {
+      typeSlug: "snippet",
+      title: "New snippet",
+      description: null,
+      content: "const value = true",
+      language: null,
+      url: null,
+      tags: ["TypeScript", "Next.js", "TypeScript"],
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/items/snippet");
+  });
+
+  test("returns a valid-type error when the database helper cannot resolve the type", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    createItemRecordMock.mockResolvedValue(null);
+
+    await expect(createItem(validCreateInput())).resolves.toEqual({
+      success: false,
+      error: "Choose a valid item type.",
+    });
+  });
+
+  test("returns a generic error when create fails unexpectedly", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    createItemRecordMock.mockRejectedValue(new Error("database unavailable"));
+
+    await expect(createItem(validCreateInput())).resolves.toEqual({
+      success: false,
+      error: "Unable to create item. Try again.",
+    });
+    expect(consoleError).toHaveBeenCalledWith(
+      "Failed to create item.",
+      expect.any(Error)
+    );
+  });
+});
 
 describe("updateItem", () => {
   beforeEach(() => {
@@ -200,6 +304,18 @@ describe("deleteItem", () => {
 function validUpdateInput() {
   return {
     title: "Updated item",
+    description: "Useful item",
+    content: "content",
+    language: "typescript",
+    url: null,
+    tags: ["Next.js"],
+  };
+}
+
+function validCreateInput() {
+  return {
+    typeSlug: "snippet",
+    title: "New item",
     description: "Useful item",
     content: "content",
     language: "typescript",

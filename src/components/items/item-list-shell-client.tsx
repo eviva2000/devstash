@@ -111,7 +111,9 @@ export function ItemListShellClient({
 
       <section className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader
+          initialCreateTypeSlug={itemType.slug}
           isMobileDrawerOpen={isMobileDrawerOpen}
+          itemTypes={itemTypes}
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
         />
 
