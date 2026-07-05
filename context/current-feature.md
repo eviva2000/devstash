@@ -1,28 +1,17 @@
-# Current Feature: Markdown Editor
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Create a `MarkdownEditor` component with Write and Preview tabs.
-- Replace textareas with `MarkdownEditor` for notes and prompts only.
-- Keep the existing `CodeEditor` behavior for snippets and commands unchanged.
-- Use `react-markdown` with `remark-gfm` for GitHub Flavored Markdown support.
-- Match the existing dark editor styling, including header, copy button, and fluid max-400px height.
-- Support readonly display mode and editable mode.
-- In readonly mode, show only Preview; in edit mode, default to Write with Preview available.
-- Style markdown preview content for headings, code, inline code, lists, blockquotes, links, and tables.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Spec: `context/features/markdown-editor-spec.md`
-- Overview: Add a dark-themed Markdown editor for note and prompt content with write/preview support.
-- Integration points: new item dialog, item drawer edit mode, and item drawer view mode.
 
 ## History
 
@@ -219,3 +208,10 @@ Keep this updated. Earliest to Latest
   - Added a type-specific create action on supported `/items/[type]` pages that preselects the active item type in the create dialog
   - Added `@monaco-editor/react` and `monaco-editor`
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, and Playwright MCP smoke tests
+- **Markdown Editor** (July 5, 2026)
+  - Completed on branch `markdown-editor`
+  - Added a dark-themed `MarkdownEditor` for note and prompt content with Write and Preview tabs, copy support, readonly Preview mode, and fluid max-400px height
+  - Rendered GitHub Flavored Markdown with `react-markdown` and `remark-gfm`
+  - Styled markdown previews for headings, code, inline code, lists, blockquotes, links, tables, and horizontal rules
+  - Replaced note and prompt content textareas with the markdown editor in create, drawer display, and drawer edit flows while keeping snippets and commands on `CodeEditor`
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, and `git diff --check`
