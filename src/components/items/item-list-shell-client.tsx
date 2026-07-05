@@ -4,6 +4,7 @@ import { Inbox } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
 import {
   DesktopSidebar,
   MobileDrawer,
@@ -92,6 +93,8 @@ export function ItemListShellClient({
     setIsItemDrawerOpen(true);
   };
   const closeItemDrawer = () => setIsItemDrawerOpen(false);
+  const canCreateActiveType = doesTypeSupportCreate(itemType.slug);
+  const createButtonLabel = `New ${toTitleCase(itemType.name)}`;
 
   return (
     <main className="flex min-h-screen overflow-hidden bg-background text-foreground">
@@ -130,6 +133,13 @@ export function ItemListShellClient({
                     {items.length} {items.length === 1 ? "item" : "items"}
                   </p>
                 </div>
+                {canCreateActiveType && (
+                  <ItemCreateDialog
+                    initialTypeSlug={itemType.slug}
+                    itemTypes={itemTypes}
+                    triggerLabel={createButtonLabel}
+                  />
+                )}
               </div>
             </div>
 
@@ -180,4 +190,16 @@ export function ItemListShellClient({
       />
     </main>
   );
+}
+
+function toTitleCase(value: string) {
+  return value
+    .trim()
+    .split(/\s+/)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(" ");
+}
+
+function doesTypeSupportCreate(slug: string) {
+  return ["snippet", "prompt", "command", "note", "link"].includes(slug);
 }

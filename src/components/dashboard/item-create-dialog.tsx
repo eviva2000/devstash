@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
+import { CodeEditor } from "@/components/dashboard/code-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,9 +48,13 @@ const supportedTypeSlugs = ["snippet", "prompt", "command", "note", "link"];
 export function ItemCreateDialog({
   initialTypeSlug,
   itemTypes,
+  triggerClassName,
+  triggerLabel = "New Item",
 }: {
   initialTypeSlug?: string;
   itemTypes: DashboardItemType[];
+  triggerClassName?: string;
+  triggerLabel?: string;
 }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -71,6 +76,7 @@ export function ItemCreateDialog({
     availableTypes.find((type) => type.slug === form.typeSlug) ??
     availableTypes[0];
   const supportsContent = doesTypeSupportContent(form.typeSlug);
+  const usesCodeEditor = doesTypeUseCodeEditor(form.typeSlug);
   const supportsLanguage = doesTypeSupportLanguage(form.typeSlug);
   const supportsUrl = doesTypeSupportUrl(form.typeSlug);
   const isSubmitDisabled =
@@ -138,12 +144,12 @@ export function ItemCreateDialog({
   return (
     <>
       <Button
-        className="ml-auto sm:ml-0"
+        className={triggerClassName ?? "ml-auto sm:ml-0"}
         onClick={openDialog}
         type="button"
       >
         <Plus data-icon="inline-start" />
-        New Item
+        {triggerLabel}
       </Button>
 
       <Dialog
@@ -259,14 +265,27 @@ export function ItemCreateDialog({
                   </CreateField>
 
                   {supportsContent && (
-                    <CreateField label="Content">
-                      <CreateTextarea
-                        disabled={isSaving}
-                        onChange={(content) => updateForm({ content })}
-                        rows={5}
-                        value={form.content}
-                      />
-                    </CreateField>
+                    usesCodeEditor ? (
+                      <CreateFieldBlock label="Content">
+                        <CodeEditor
+                          ariaLabel="Content"
+                          disabled={isSaving}
+                          language={form.language}
+                          minHeight={260}
+                          onChange={(content) => updateForm({ content })}
+                          value={form.content}
+                        />
+                      </CreateFieldBlock>
+                    ) : (
+                      <CreateField label="Content">
+                        <CreateTextarea
+                          disabled={isSaving}
+                          onChange={(content) => updateForm({ content })}
+                          rows={5}
+                          value={form.content}
+                        />
+                      </CreateField>
+                    )
                   )}
 
                   {supportsLanguage && (
@@ -368,6 +387,23 @@ function CreateField({
   );
 }
 
+function CreateFieldBlock({
+  children,
+  label,
+  required = false,
+}: {
+  children: React.ReactNode;
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="block space-y-1.5">
+      <FieldLabel required={required}>{label}</FieldLabel>
+      {children}
+    </div>
+  );
+}
+
 function FieldLabel({
   children,
   required = false,
@@ -429,6 +465,10 @@ function doesTypeSupportContent(slug: string) {
 }
 
 function doesTypeSupportLanguage(slug: string) {
+  return ["snippet", "command"].includes(slug);
+}
+
+function doesTypeUseCodeEditor(slug: string) {
   return ["snippet", "command"].includes(slug);
 }
 

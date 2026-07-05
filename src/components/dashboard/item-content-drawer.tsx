@@ -18,6 +18,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { deleteItem, updateItem } from "@/actions/items";
+import { CodeEditor } from "@/components/dashboard/code-editor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -169,6 +170,7 @@ export function ItemContentDrawer({
   const displayItem = activeDetail ?? item ?? null;
   const hasCopied = copiedItemId === itemId;
   const supportsContent = doesTypeSupportContent(displayType?.slug);
+  const usesCodeEditor = doesTypeUseCodeEditor(displayType?.slug);
   const supportsLanguage = doesTypeSupportLanguage(displayType?.slug);
   const supportsUrl = doesTypeSupportUrl(displayType?.slug);
   const isSaveDisabled = isSaving || editForm.title.trim().length === 0;
@@ -516,6 +518,7 @@ export function ItemContentDrawer({
                 supportsLanguage={supportsLanguage}
                 supportsUrl={supportsUrl}
                 type={displayType}
+                usesCodeEditor={usesCodeEditor}
               />
             )}
 
@@ -524,6 +527,7 @@ export function ItemContentDrawer({
                 collection={displayCollection}
                 item={activeDetail}
                 type={displayType}
+                usesCodeEditor={usesCodeEditor}
               />
             )}
           </div>
@@ -544,6 +548,7 @@ function ItemDrawerEditForm({
   supportsLanguage,
   supportsUrl,
   type,
+  usesCodeEditor,
 }: {
   collection: DashboardCollection | null;
   error: string;
@@ -555,6 +560,7 @@ function ItemDrawerEditForm({
   supportsLanguage: boolean;
   supportsUrl: boolean;
   type?: DashboardItemType;
+  usesCodeEditor: boolean;
 }) {
   return (
     <div className="space-y-7">
@@ -605,16 +611,31 @@ function ItemDrawerEditForm({
         </EditField>
 
         {supportsContent && (
-          <EditField label="Content">
-            <EditTextarea
-              disabled={isSaving}
-              onChange={(value) =>
-                onChange((current) => ({ ...current, content: value }))
-              }
-              rows={9}
-              value={form.content}
-            />
-          </EditField>
+          usesCodeEditor ? (
+            <EditFieldBlock label="Content">
+              <CodeEditor
+                ariaLabel="Content"
+                disabled={isSaving}
+                language={form.language}
+                minHeight={300}
+                onChange={(value) =>
+                  onChange((current) => ({ ...current, content: value }))
+                }
+                value={form.content}
+              />
+            </EditFieldBlock>
+          ) : (
+            <EditField label="Content">
+              <EditTextarea
+                disabled={isSaving}
+                onChange={(value) =>
+                  onChange((current) => ({ ...current, content: value }))
+                }
+                rows={9}
+                value={form.content}
+              />
+            </EditField>
+          )
         )}
 
         {supportsLanguage && (
@@ -676,6 +697,26 @@ function EditField({
   );
 }
 
+function EditFieldBlock({
+  children,
+  label,
+  required = false,
+}: {
+  children: React.ReactNode;
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="block space-y-2">
+      <span className="text-sm font-medium text-muted-foreground">
+        {label}
+        {required && <span className="text-destructive"> *</span>}
+      </span>
+      {children}
+    </div>
+  );
+}
+
 function EditTextarea({
   disabled,
   onChange,
@@ -702,10 +743,12 @@ function ItemDrawerDetails({
   collection,
   item,
   type,
+  usesCodeEditor,
 }: {
   collection: DashboardCollection | null;
   item: ItemDetail;
   type?: DashboardItemType;
+  usesCodeEditor: boolean;
 }) {
   return (
     <div className="space-y-7">
@@ -769,9 +812,18 @@ function ItemDrawerDetails({
       {item.content && (
         <section className="space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground">Content</h3>
-          <pre className="max-h-[360px] overflow-auto rounded-md border border-border bg-card p-4 text-sm leading-6 text-card-foreground">
-            <code>{item.content}</code>
-          </pre>
+          {usesCodeEditor ? (
+            <CodeEditor
+              ariaLabel="Content"
+              language={item.language}
+              readOnly
+              value={item.content}
+            />
+          ) : (
+            <pre className="max-h-[360px] overflow-auto rounded-md border border-border bg-card p-4 text-sm leading-6 text-card-foreground">
+              <code>{item.content}</code>
+            </pre>
+          )}
         </section>
       )}
 
@@ -865,6 +917,10 @@ function doesTypeSupportContent(slug?: string) {
 }
 
 function doesTypeSupportLanguage(slug?: string) {
+  return slug ? ["snippet", "command"].includes(slug) : false;
+}
+
+function doesTypeUseCodeEditor(slug?: string) {
   return slug ? ["snippet", "command"].includes(slug) : false;
 }
 

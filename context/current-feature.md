@@ -1,17 +1,26 @@
-# Current Feature
+# Current Feature: Code Editor
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Add a Monaco-backed `CodeEditor` component using a dark theme.
+- Use `CodeEditor` for snippet and command content fields, while keeping textareas for notes, prompts, links, and other non-code item types.
+- Support both readonly display mode and editable mode.
+- Add macOS-style red/yellow/green window dots in the editor chrome.
+- Add an editor header with the current language and a quick copy button.
+- Keep the editor height fluid with a maximum height of 400px.
+- Style the editor scrollbar so it fits the app theme.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Spec: `context/features/code-editor-spec.md`
+- Overview: Add Monaco Editor for snippets and commands with copy support and macOS-style window styling.
 
 ## History
 
