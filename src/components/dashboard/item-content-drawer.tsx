@@ -19,6 +19,7 @@ import { toast } from "sonner";
 
 import { deleteItem, updateItem } from "@/actions/items";
 import { CodeEditor } from "@/components/dashboard/code-editor";
+import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -171,6 +172,7 @@ export function ItemContentDrawer({
   const hasCopied = copiedItemId === itemId;
   const supportsContent = doesTypeSupportContent(displayType?.slug);
   const usesCodeEditor = doesTypeUseCodeEditor(displayType?.slug);
+  const usesMarkdownEditor = doesTypeUseMarkdownEditor(displayType?.slug);
   const supportsLanguage = doesTypeSupportLanguage(displayType?.slug);
   const supportsUrl = doesTypeSupportUrl(displayType?.slug);
   const isSaveDisabled = isSaving || editForm.title.trim().length === 0;
@@ -519,6 +521,7 @@ export function ItemContentDrawer({
                 supportsUrl={supportsUrl}
                 type={displayType}
                 usesCodeEditor={usesCodeEditor}
+                usesMarkdownEditor={usesMarkdownEditor}
               />
             )}
 
@@ -528,6 +531,7 @@ export function ItemContentDrawer({
                 item={activeDetail}
                 type={displayType}
                 usesCodeEditor={usesCodeEditor}
+                usesMarkdownEditor={usesMarkdownEditor}
               />
             )}
           </div>
@@ -549,6 +553,7 @@ function ItemDrawerEditForm({
   supportsUrl,
   type,
   usesCodeEditor,
+  usesMarkdownEditor,
 }: {
   collection: DashboardCollection | null;
   error: string;
@@ -561,6 +566,7 @@ function ItemDrawerEditForm({
   supportsUrl: boolean;
   type?: DashboardItemType;
   usesCodeEditor: boolean;
+  usesMarkdownEditor: boolean;
 }) {
   return (
     <div className="space-y-7">
@@ -617,6 +623,18 @@ function ItemDrawerEditForm({
                 ariaLabel="Content"
                 disabled={isSaving}
                 language={form.language}
+                minHeight={300}
+                onChange={(value) =>
+                  onChange((current) => ({ ...current, content: value }))
+                }
+                value={form.content}
+              />
+            </EditFieldBlock>
+          ) : usesMarkdownEditor ? (
+            <EditFieldBlock label="Content">
+              <MarkdownEditor
+                ariaLabel="Content"
+                disabled={isSaving}
                 minHeight={300}
                 onChange={(value) =>
                   onChange((current) => ({ ...current, content: value }))
@@ -744,11 +762,13 @@ function ItemDrawerDetails({
   item,
   type,
   usesCodeEditor,
+  usesMarkdownEditor,
 }: {
   collection: DashboardCollection | null;
   item: ItemDetail;
   type?: DashboardItemType;
   usesCodeEditor: boolean;
+  usesMarkdownEditor: boolean;
 }) {
   return (
     <div className="space-y-7">
@@ -819,6 +839,8 @@ function ItemDrawerDetails({
               readOnly
               value={item.content}
             />
+          ) : usesMarkdownEditor ? (
+            <MarkdownEditor ariaLabel="Content" readOnly value={item.content} />
           ) : (
             <pre className="max-h-[360px] overflow-auto rounded-md border border-border bg-card p-4 text-sm leading-6 text-card-foreground">
               <code>{item.content}</code>
@@ -922,6 +944,10 @@ function doesTypeSupportLanguage(slug?: string) {
 
 function doesTypeUseCodeEditor(slug?: string) {
   return slug ? ["snippet", "command"].includes(slug) : false;
+}
+
+function doesTypeUseMarkdownEditor(slug?: string) {
+  return slug ? ["prompt", "note"].includes(slug) : false;
 }
 
 function doesTypeSupportUrl(slug?: string) {

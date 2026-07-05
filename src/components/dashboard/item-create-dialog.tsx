@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
 import { CodeEditor } from "@/components/dashboard/code-editor";
+import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -77,6 +78,7 @@ export function ItemCreateDialog({
     availableTypes[0];
   const supportsContent = doesTypeSupportContent(form.typeSlug);
   const usesCodeEditor = doesTypeUseCodeEditor(form.typeSlug);
+  const usesMarkdownEditor = doesTypeUseMarkdownEditor(form.typeSlug);
   const supportsLanguage = doesTypeSupportLanguage(form.typeSlug);
   const supportsUrl = doesTypeSupportUrl(form.typeSlug);
   const isSubmitDisabled =
@@ -276,6 +278,16 @@ export function ItemCreateDialog({
                           value={form.content}
                         />
                       </CreateFieldBlock>
+                    ) : usesMarkdownEditor ? (
+                      <CreateFieldBlock label="Content">
+                        <MarkdownEditor
+                          ariaLabel="Content"
+                          disabled={isSaving}
+                          minHeight={260}
+                          onChange={(content) => updateForm({ content })}
+                          value={form.content}
+                        />
+                      </CreateFieldBlock>
                     ) : (
                       <CreateField label="Content">
                         <CreateTextarea
@@ -470,6 +482,10 @@ function doesTypeSupportLanguage(slug: string) {
 
 function doesTypeUseCodeEditor(slug: string) {
   return ["snippet", "command"].includes(slug);
+}
+
+function doesTypeUseMarkdownEditor(slug: string) {
+  return ["prompt", "note"].includes(slug);
 }
 
 function doesTypeSupportUrl(slug: string) {
