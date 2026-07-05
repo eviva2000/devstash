@@ -1,26 +1,17 @@
-# Current Feature: Code Editor
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Add a Monaco-backed `CodeEditor` component using a dark theme.
-- Use `CodeEditor` for snippet and command content fields, while keeping textareas for notes, prompts, links, and other non-code item types.
-- Support both readonly display mode and editable mode.
-- Add macOS-style red/yellow/green window dots in the editor chrome.
-- Add an editor header with the current language and a quick copy button.
-- Keep the editor height fluid with a maximum height of 400px.
-- Style the editor scrollbar so it fits the app theme.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Spec: `context/features/code-editor-spec.md`
-- Overview: Add Monaco Editor for snippets and commands with copy support and macOS-style window styling.
 
 ## History
 
@@ -210,3 +201,10 @@ Keep this updated. Earliest to Latest
   - Added a Prisma-backed create item helper with system type lookup, content type assignment, supported field filtering, and tag connect-or-create handling
   - Added focused Vitest coverage for create action validation/errors and database create behavior
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `git diff --check`, and `npm run build`
+- **Code Editor** (July 5, 2026)
+  - Completed on branch `code-editor`
+  - Added a Monaco-backed `CodeEditor` for snippet and command content with a dark theme, macOS-style window dots, language label, copy button, themed scrollbar, and fluid max-400px height
+  - Replaced snippet and command content textareas with the code editor in create, drawer display, and drawer edit flows while keeping textareas for prompts, notes, links, and other non-code types
+  - Added a type-specific create action on supported `/items/[type]` pages that preselects the active item type in the create dialog
+  - Added `@monaco-editor/react` and `monaco-editor`
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, and Playwright MCP smoke tests
