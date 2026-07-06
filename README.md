@@ -47,7 +47,7 @@ Tags provide flexible cross-cutting organization across collections and item typ
 
 
 
-The root route `/` currently renders a minimal DevStash page. The product overview still defines a fuller future route structure, including marketing, auth, app, collections, tags, settings, and billing pages.
+The app currently includes the root page, custom auth screens, the authenticated dashboard, typed item list pages, profile settings, item detail APIs, upload APIs, and supporting auth/profile endpoints.
 
 ## Tech Stack
 
@@ -147,27 +147,71 @@ Open [http://localhost:3000](http://localhost:3000) for the root page or [http:/
 
 ```text
 src/
+  actions/
+    items.ts                    Server actions for item create, update, and delete
+    items.test.ts               Unit tests for item server actions
   app/
-    page.tsx                 Root page
-    dashboard/               Current dashboard route
-  components/ui/             Shared UI primitives
-  features/dashboard/        Dashboard data, types, and utilities
-  generated/prisma/          Generated Prisma client
-  lib/                       Shared helpers and utility tests
+    (auth)/                     Custom auth pages
+      forgot-password/
+      register/
+      reset-password/
+      sign-in/
+      verify-email/
+    api/
+      auth/                     Auth.js and auth lifecycle route handlers
+      items/[id]/               Item detail API
+      items/[id]/download/      Authenticated file download and image preview proxy
+      profile/                  Account and password API routes
+      uploads/                  Authenticated Cloudflare R2 upload/delete API
+    dashboard/                  Authenticated dashboard route, loading, and error UI
+    items/[type]/               Typed item list route
+    profile/                    Authenticated profile page
+    globals.css                 Global Tailwind styles
+    layout.tsx                  Root layout and providers
+    page.tsx                    Root page
+  components/
+    auth/                       Auth form components and shared auth shell
+    dashboard/                  Dashboard shell, cards, editors, drawer, create dialog, upload UI
+    items/                      Typed item list shell components
+    profile/                    Profile account action components
+    ui/                         shadcn-style UI primitives
+    user-avatar.tsx             Shared user avatar component
+  features/
+    dashboard/                  Dashboard data adapters, types, and utilities
+  generated/prisma/             Generated Prisma client output
+  lib/
+    auth/                       Auth-specific helpers
+    db/                         Prisma data access helpers and DB utility tests
+    email/                      Resend email integration
+    storage/                    Cloudflare R2 storage helpers
+    file-uploads.ts             Upload validation and file metadata helpers
+    icon-map.ts                 Lucide icon lookup map
+    prisma.ts                   Shared Prisma client
+    rate-limit.ts               Upstash rate limit helper
+    utils.ts                    Shared UI utilities
+  types/
+    next-auth.d.ts              Auth.js session/JWT type augmentation
 
 prisma/
-  schema.prisma              Database schema
-  seed.ts                    Demo data seed script
-  migrations/                Prisma migrations
+  schema.prisma                 Database schema
+  seed.ts                       Demo data seed script
+  migrations/                   Prisma migrations
+    20260515143000_init/
+    20260621120000_unique_system_item_type_slugs/
+    20260706120000_item_upload_records/
 
 context/
-  project-overview.md        Product and architecture overview
-  current-feature.md         Implementation history
-  features/                  Feature specs
-  screenshots/               Dashboard reference screenshots
+  project-overview.md           Product and architecture overview
+  current-feature.md            Current feature tracker and implementation history
+  coding-standards.md           Project coding conventions
+  ai-interaction.md             AI collaboration notes
+  features/                     Feature specs
+  research/                     Research notes and helper skill
+  screenshots/                  Dashboard reference screenshots
 
 scripts/
-  test-db.ts                 Database smoke test
+  delete-non-demo-users.ts      Dry-run-first cleanup helper for non-demo users
+  test-db.ts                    Database smoke test
 ```
 
 ## MVP Scope
@@ -180,13 +224,14 @@ The MVP is planned around:
 - Collections
 - Tags
 - Favorites and pinned items
-- Basic full-text search
 - Markdown editor for text-based items
-- Syntax highlighting for snippets
+- Syntax highlighting for snippets and commands
+- File and image uploads
+- Basic full-text search
 - Free tier limits
 - Dark mode-first UI
 
-Near-term additions include recently used items, file uploads, URL metadata extraction, file import, JSON export, and basic AI auto-tagging for Pro users.
+Near-term additions include recently used items, URL metadata extraction, file import, JSON export, and basic AI auto-tagging for Pro users.
 
 ## Planned Architecture
 
@@ -213,3 +258,12 @@ The main product and technical planning documents live in `context/`:
 - `context/features/dashboard-phase-1-spec.md`
 - `context/features/dashboard-phase-2-spec.md`
 - `context/features/dashboard-phase-3-spec.md`
+- `context/features/item-list-view-spec.md`
+- `context/features/item-drawer-spec.md`
+- `context/features/item-drawer-edit-spec.md`
+- `context/features/item-create-spec.md`
+- `context/features/code-editor-spec.md`
+- `context/features/markdown-editor-spec.md`
+- `context/features/file-image-spec.md`
+- `context/features/profile-spec.md`
+- `context/features/rate-limiting-spec.md`
