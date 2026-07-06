@@ -1,33 +1,17 @@
-# Current Feature: File Upload with Cloudflare R2
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
 
-- Create an upload API route that stores files/images in Cloudflare R2
-- Keep all Prisma/DB access in `src/lib/db/items.ts`
-- Build a `FileUpload` component with drag-and-drop and upload progress
-- Update the create item modal to use `FileUpload` for file/image item types
-- Delete files from R2 when their items are deleted
-- Create a download proxy API route to avoid CORS issues
-- Add a download button in `ItemDrawer` for file types
-- Show image preview for images and file info for files
-
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-
-- Spec: `context/features/file-image-spec.md`
-- File constraints:
-  - Images: max 5 MB — `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`
-  - Files: max 10 MB — `.pdf`, `.txt`, `.md`, `.json`, `.yaml`, `.yml`, `.xml`, `.csv`, `.toml`, `.ini`
-- Allowed image MIME types: `image/png`, `image/jpeg`, `image/gif`, `image/webp`, `image/svg+xml`
-- Allowed file MIME types: `application/pdf`, `text/plain`, `text/markdown`, `application/json`, `application/x-yaml`, `text/yaml`, `application/xml`, `text/xml`, `text/csv`, `application/toml` (`.ini` uses `text/plain`)
 
 ## History
 
@@ -231,3 +215,13 @@ Keep this updated. Earliest to Latest
   - Styled markdown previews for headings, code, inline code, lists, blockquotes, links, tables, and horizontal rules
   - Replaced note and prompt content textareas with the markdown editor in create, drawer display, and drawer edit flows while keeping snippets and commands on `CodeEditor`
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, and `git diff --check`
+- **File Upload with Cloudflare R2** (July 6, 2026)
+  - Completed on branch `file-upload-cloudflare-r2`
+  - Added authenticated Cloudflare R2 uploads for file and image items with shared validation, drag-and-drop upload UI, and upload progress
+  - Added pending upload records and single-use upload tokens so server-issued records bind uploaded R2 objects to item creation
+  - Added the Prisma `ItemUpload` model, migration, and generated Prisma client updates
+  - Added an authenticated download proxy route for file downloads and inline image previews
+  - Updated item creation, item listing create affordances, and the item drawer for file/image upload, preview, metadata, and download states
+  - Deletes now attempt R2 cleanup for attached item files, and pending uploads clean up on remove, cancel, or replacement
+  - Added focused Vitest coverage for upload/download routes, server actions, DB helpers, and file validation utilities
+  - Verified with `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`, and `git diff --check`
