@@ -8,6 +8,11 @@ import { ItemContentType } from "@/generated/prisma/client";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { validateQueryLimit } from "@/lib/db/query-limits";
+import type {
+  StoredFileMetadata,
+  UploadedFileMetadata,
+  UploadItemType,
+} from "@/lib/file-uploads";
 
 const MAX_ITEM_QUERY_LIMIT = 50;
 
@@ -64,6 +69,8 @@ type DbDashboardItemType = Prisma.ItemTypeGetPayload<{
   select: typeof itemTypeSelect;
 }>;
 
+type DbItemUpload = Prisma.ItemUploadGetPayload<object>;
+
 export type UpdateItemData = {
   title: string;
   description: string | null;
@@ -75,6 +82,7 @@ export type UpdateItemData = {
 
 export type CreateItemData = UpdateItemData & {
   typeSlug: string;
+  file?: { uploadToken: string } | null;
 };
 
 function toDashboardCollection(
@@ -226,6 +234,17 @@ export async function createItem(
 
     const tags = normalizeTags(data.tags);
     const supportedData = getSupportedUpdateData(itemType.slug, data);
+    const supportedFile = await consumeSupportedFileUpload(
+      tx,
+      userId,
+      itemType.slug,
+      data.file
+    );
+
+    if (doesTypeSupportFile(itemType.slug) && !supportedFile) {
+      return null;
+    }
+
     const createdItem = await tx.item.create({
       data: {
         title: supportedData.title,
@@ -234,6 +253,10 @@ export async function createItem(
         content: supportedData.content,
         language: supportedData.language,
         url: supportedData.url,
+        fileUrl: supportedFile?.fileUrl ?? null,
+        fileName: supportedFile?.fileName ?? null,
+        fileMimeType: supportedFile?.fileMimeType ?? null,
+        fileSize: supportedFile?.fileSize ?? null,
         userId,
         typeId: itemType.id,
         tags: {
@@ -261,6 +284,63 @@ export async function createItem(
 
     return toDashboardItemDetail(createdItem);
   });
+}
+
+export async function createPendingItemUpload(
+  userId: string,
+  itemTypeSlug: UploadItemType,
+  file: StoredFileMetadata
+): Promise<UploadedFileMetadata> {
+  const upload = await prisma.itemUpload.create({
+    data: {
+      userId,
+      itemTypeSlug,
+      fileUrl: file.fileUrl,
+      fileName: file.fileName,
+      fileMimeType: file.fileMimeType,
+      fileSize: file.fileSize,
+    },
+  });
+
+  return toUploadedFileMetadata(upload);
+}
+
+export async function getPendingItemUpload(
+  userId: string,
+  uploadToken: string
+): Promise<StoredFileMetadata | null> {
+  const upload = await prisma.itemUpload.findFirst({
+    where: {
+      id: uploadToken,
+      userId,
+      consumedAt: null,
+    },
+  });
+
+  return upload ? toStoredFileMetadata(upload) : null;
+}
+
+export async function deletePendingItemUpload(
+  userId: string,
+  uploadToken: string
+): Promise<StoredFileMetadata | null> {
+  const upload = await prisma.itemUpload.findFirst({
+    where: {
+      id: uploadToken,
+      userId,
+      consumedAt: null,
+    },
+  });
+
+  if (!upload) {
+    return null;
+  }
+
+  await prisma.itemUpload.delete({
+    where: { id: upload.id },
+  });
+
+  return toStoredFileMetadata(upload);
 }
 
 export async function updateItem(
@@ -412,6 +492,82 @@ function doesTypeSupportUrl(slug: string) {
   return slug === "link";
 }
 
+function doesTypeSupportFile(slug: string) {
+  return ["file", "image"].includes(slug);
+}
+
 function getContentTypeForItemType(slug: string) {
-  return doesTypeSupportUrl(slug) ? ItemContentType.URL : ItemContentType.TEXT;
+  if (doesTypeSupportUrl(slug)) {
+    return ItemContentType.URL;
+  }
+
+  if (doesTypeSupportFile(slug)) {
+    return ItemContentType.FILE;
+  }
+
+  return ItemContentType.TEXT;
+}
+
+async function consumeSupportedFileUpload(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  itemTypeSlug: string,
+  file?: { uploadToken: string } | null
+): Promise<StoredFileMetadata | null> {
+  if (!doesTypeSupportFile(itemTypeSlug)) {
+    return null;
+  }
+
+  if (!file?.uploadToken) {
+    return null;
+  }
+
+  const upload = await tx.itemUpload.findFirst({
+    where: {
+      id: file.uploadToken,
+      userId,
+      itemTypeSlug,
+      consumedAt: null,
+    },
+  });
+
+  if (!upload) {
+    return null;
+  }
+
+  const consumed = await tx.itemUpload.updateMany({
+    where: {
+      id: upload.id,
+      userId,
+      itemTypeSlug,
+      consumedAt: null,
+    },
+    data: {
+      consumedAt: new Date(),
+    },
+  });
+
+  if (consumed.count === 0) {
+    return null;
+  }
+
+  return toStoredFileMetadata(upload);
+}
+
+function toUploadedFileMetadata(upload: DbItemUpload): UploadedFileMetadata {
+  return {
+    uploadToken: upload.id,
+    fileName: upload.fileName,
+    fileMimeType: upload.fileMimeType,
+    fileSize: upload.fileSize,
+  };
+}
+
+function toStoredFileMetadata(upload: DbItemUpload): StoredFileMetadata {
+  return {
+    fileUrl: upload.fileUrl,
+    fileName: upload.fileName,
+    fileMimeType: upload.fileMimeType,
+    fileSize: upload.fileSize,
+  };
 }

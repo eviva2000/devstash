@@ -3,6 +3,7 @@
 import {
   Check,
   Copy,
+  Download,
   FileText,
   Loader2,
   Pencil,
@@ -12,6 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import NextImage from "next/image";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -30,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
@@ -187,7 +189,7 @@ export function ItemContentDrawer({
     () =>
       activeDetail?.content ??
       activeDetail?.url ??
-      activeDetail?.fileUrl ??
+      activeDetail?.fileName ??
       displayItem?.description ??
       displayItem?.title ??
       "",
@@ -433,6 +435,15 @@ export function ItemContentDrawer({
                 {hasCopied ? <Check /> : <Copy />}
                 {hasCopied ? "Copied" : "Copy"}
               </Button>
+              {activeDetail?.fileUrl && (
+                <a
+                  className={buttonVariants({ size: "sm", variant: "outline" })}
+                  href={getDownloadUrl(activeDetail)}
+                >
+                  <Download />
+                  Download
+                </a>
+              )}
               <Button
                 aria-label="Edit item"
                 disabled={!activeDetail}
@@ -809,7 +820,19 @@ function ItemDrawerDetails({
       {(item.fileName || item.fileUrl) && (
         <section className="space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground">File</h3>
-          <div className="rounded-md border border-border bg-card p-3 text-sm">
+          <div className="space-y-3 rounded-md border border-border bg-card p-3 text-sm">
+            {isImageItem(item) && item.fileUrl && (
+              <div className="relative h-72 overflow-hidden rounded-md border border-border bg-background">
+                <NextImage
+                  alt={item.fileName ?? item.title}
+                  className="object-contain"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 456px"
+                  src={`${getDownloadUrl(item)}?preview=1`}
+                  unoptimized
+                />
+              </div>
+            )}
             <p className="font-medium">{item.fileName ?? "Attached file"}</p>
             <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
               {item.fileMimeType && <span>{item.fileMimeType}</span>}
@@ -817,12 +840,11 @@ function ItemDrawerDetails({
             </div>
             {item.fileUrl && (
               <a
-                className="mt-2 block truncate text-primary hover:underline"
-                href={item.fileUrl}
-                rel="noreferrer"
-                target="_blank"
+                className={buttonVariants({ size: "sm", variant: "outline" })}
+                href={getDownloadUrl(item)}
               >
-                {item.fileUrl}
+                <Download />
+                Download
               </a>
             )}
           </div>
@@ -912,6 +934,14 @@ function formatFileSize(bytes: number) {
   }
 
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getDownloadUrl(item: Pick<ItemDetail, "id">) {
+  return `/api/items/${encodeURIComponent(item.id)}/download`;
+}
+
+function isImageItem(item: ItemDetail) {
+  return item.fileMimeType?.startsWith("image/") ?? false;
 }
 
 function getEditFormState(item: ItemDetail | null): EditFormState {

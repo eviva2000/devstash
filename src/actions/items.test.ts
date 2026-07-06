@@ -9,6 +9,7 @@ import {
   getItemDetailById,
   updateItem as updateItemRecord,
 } from "@/lib/db/items";
+import { deleteR2Object } from "@/lib/storage/r2";
 import { revalidatePath } from "next/cache";
 
 import { createItem, deleteItem, updateItem } from "./items";
@@ -28,11 +29,16 @@ vi.mock("@/lib/db/items", () => ({
   updateItem: vi.fn(),
 }));
 
+vi.mock("@/lib/storage/r2", () => ({
+  deleteR2Object: vi.fn(),
+}));
+
 type AuthSession = Session | null;
 
 const authMock = vi.mocked(auth) as unknown as Mock<() => Promise<AuthSession>>;
 const createItemRecordMock = vi.mocked(createItemRecord);
 const deleteItemRecordMock = vi.mocked(deleteItemRecord);
+const deleteR2ObjectMock = vi.mocked(deleteR2Object);
 const getItemDetailByIdMock = vi.mocked(getItemDetailById);
 const revalidatePathMock = vi.mocked(revalidatePath);
 const updateItemRecordMock = vi.mocked(updateItemRecord);
@@ -112,6 +118,69 @@ describe("createItem", () => {
     });
     expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
     expect(revalidatePathMock).toHaveBeenCalledWith("/items/snippet");
+  });
+
+  test("requires uploaded metadata when creating file items", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+
+    await expect(
+      createItem({
+        ...validCreateInput(),
+        typeSlug: "file",
+        file: null,
+      })
+    ).resolves.toEqual({
+      success: false,
+      error: "Upload a file first.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  test("passes uploaded file metadata to the database helper", async () => {
+    const createdItem = itemDetail({
+      contentType: "FILE",
+      fileUrl: "users/user-1/upload.pdf",
+      fileName: "upload.pdf",
+      fileMimeType: "application/pdf",
+      fileSize: 2048,
+      type: {
+        id: "type-file",
+        name: "File",
+        slug: "file",
+        icon: "File",
+        color: "#6b7280",
+        isSystem: true,
+      },
+    });
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    createItemRecordMock.mockResolvedValue(createdItem);
+
+    await expect(
+      createItem({
+        typeSlug: "file",
+        title: "Upload",
+        description: "",
+        content: "ignored",
+        language: "ignored",
+        url: "   ",
+        tags: [],
+        file: {
+          uploadToken: "cm11111111111111111111111",
+        },
+      })
+    ).resolves.toEqual({ success: true, data: createdItem });
+    expect(createItemRecordMock).toHaveBeenCalledWith("user-1", {
+      typeSlug: "file",
+      title: "Upload",
+      description: null,
+      content: "ignored",
+      language: "ignored",
+      url: null,
+      tags: [],
+      file: {
+        uploadToken: "cm11111111111111111111111",
+      },
+    });
   });
 
   test("returns a valid-type error when the database helper cannot resolve the type", async () => {
@@ -269,8 +338,32 @@ describe("deleteItem", () => {
 
     await expect(deleteItem(VALID_ITEM_ID)).resolves.toEqual({ success: true });
     expect(deleteItemRecordMock).toHaveBeenCalledWith("user-1", VALID_ITEM_ID);
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled();
     expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
     expect(revalidatePathMock).toHaveBeenCalledWith("/items/snippet");
+  });
+
+  test("deletes an attached R2 object after deleting the owned item", async () => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    getItemDetailByIdMock.mockResolvedValue(
+      itemDetail({
+        fileUrl: "users/user-1/upload.pdf",
+        type: {
+          id: "type-file",
+          name: "File",
+          slug: "file",
+          icon: "File",
+          color: "#6b7280",
+          isSystem: true,
+        },
+      })
+    );
+    deleteItemRecordMock.mockResolvedValue(true);
+    deleteR2ObjectMock.mockResolvedValue(undefined);
+
+    await expect(deleteItem(VALID_ITEM_ID)).resolves.toEqual({ success: true });
+    expect(deleteR2ObjectMock).toHaveBeenCalledWith("users/user-1/upload.pdf");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/items/file");
   });
 
   test("returns an item-not-found error when deletion affects no records", async () => {
@@ -336,7 +429,9 @@ function sessionForUser(userId: string): Session {
   };
 }
 
-function itemDetail(): DashboardItemDetail {
+function itemDetail(
+  overrides: Partial<DashboardItemDetail> = {}
+): DashboardItemDetail {
   const createdAt = new Date("2026-07-03T10:00:00.000Z");
   const updatedAt = new Date("2026-07-03T10:15:00.000Z");
 
@@ -369,5 +464,6 @@ function itemDetail(): DashboardItemDetail {
       color: "#22c55e",
       isSystem: true,
     },
+    ...overrides,
   };
 }

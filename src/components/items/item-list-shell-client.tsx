@@ -201,5 +201,7 @@ function toTitleCase(value: string) {
 }
 
 function doesTypeSupportCreate(slug: string) {
-  return ["snippet", "prompt", "command", "note", "link"].includes(slug);
+  return ["snippet", "prompt", "command", "note", "link", "file", "image"].includes(
+    slug
+  );
 }

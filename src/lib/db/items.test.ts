@@ -3,7 +3,13 @@ import { beforeEach, describe, expect, test, vi, type Mock } from "vitest";
 import { ItemContentType } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
-import { createItem, deleteItem } from "./items";
+import {
+  createItem,
+  createPendingItemUpload,
+  deleteItem,
+  deletePendingItemUpload,
+  getPendingItemUpload,
+} from "./items";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -11,17 +17,29 @@ vi.mock("@/lib/prisma", () => ({
     item: {
       deleteMany: vi.fn(),
     },
+    itemUpload: {
+      create: vi.fn(),
+      delete: vi.fn(),
+      findFirst: vi.fn(),
+    },
   },
 }));
 
 const transactionMock = prisma.$transaction as unknown as Mock;
 const deleteManyMock = vi.mocked(prisma.item.deleteMany);
+const itemUploadCreateMock = vi.mocked(prisma.itemUpload.create);
+const itemUploadDeleteMock = vi.mocked(prisma.itemUpload.delete);
+const itemUploadFindFirstMock = vi.mocked(prisma.itemUpload.findFirst);
 const transactionClient = {
   itemType: {
     findFirst: vi.fn(),
   },
   item: {
     create: vi.fn(),
+  },
+  itemUpload: {
+    findFirst: vi.fn(),
+    updateMany: vi.fn(),
   },
 };
 
@@ -84,6 +102,10 @@ describe("createItem", () => {
         content: "const value = true",
         language: "typescript",
         url: null,
+        fileUrl: null,
+        fileName: null,
+        fileMimeType: null,
+        fileSize: null,
         userId: "user-1",
         typeId: "type-1",
         tags: {
@@ -136,9 +158,112 @@ describe("createItem", () => {
         content: null,
         language: null,
         url: "https://example.com",
+        fileUrl: null,
+        fileName: null,
+        fileMimeType: null,
+        fileSize: null,
       }),
       include: expect.any(Object),
     });
+  });
+
+  test("creates a file item with uploaded metadata and clears unsupported fields", async () => {
+    transactionClient.itemType.findFirst.mockResolvedValue({
+      id: "type-file",
+      slug: "file",
+    });
+    transactionClient.itemUpload.findFirst.mockResolvedValue(itemUpload());
+    transactionClient.itemUpload.updateMany.mockResolvedValue({ count: 1 });
+    transactionClient.item.create.mockResolvedValue(
+      dbItem({
+        contentType: ItemContentType.FILE,
+        content: null,
+        language: null,
+        type: {
+          id: "type-file",
+          name: "File",
+          slug: "file",
+          icon: "File",
+          color: "#6b7280",
+          isSystem: true,
+        },
+        typeId: "type-file",
+        fileUrl: "users/user-1/upload.pdf",
+        fileName: "upload.pdf",
+        fileMimeType: "application/pdf",
+        fileSize: 2048,
+      })
+    );
+
+    await createItem("user-1", {
+      typeSlug: "file",
+      title: "Upload",
+      description: null,
+      content: "ignored",
+      language: "ignored",
+      url: "https://example.com",
+      tags: [],
+      file: {
+        uploadToken: "cm11111111111111111111111",
+      },
+    });
+
+    expect(transactionClient.itemUpload.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: "cm11111111111111111111111",
+        userId: "user-1",
+        itemTypeSlug: "file",
+        consumedAt: null,
+      },
+    });
+    expect(transactionClient.itemUpload.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "cm11111111111111111111111",
+        userId: "user-1",
+        itemTypeSlug: "file",
+        consumedAt: null,
+      },
+      data: {
+        consumedAt: expect.any(Date),
+      },
+    });
+    expect(transactionClient.item.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        contentType: ItemContentType.FILE,
+        content: null,
+        language: null,
+        url: null,
+        fileUrl: "users/user-1/upload.pdf",
+        fileName: "upload.pdf",
+        fileMimeType: "application/pdf",
+        fileSize: 2048,
+      }),
+      include: expect.any(Object),
+    });
+  });
+
+  test("returns null when a file upload token is missing or already consumed", async () => {
+    transactionClient.itemType.findFirst.mockResolvedValue({
+      id: "type-file",
+      slug: "file",
+    });
+    transactionClient.itemUpload.findFirst.mockResolvedValue(null);
+
+    await expect(
+      createItem("user-1", {
+        typeSlug: "file",
+        title: "Upload",
+        description: null,
+        content: null,
+        language: null,
+        url: null,
+        tags: [],
+        file: {
+          uploadToken: "cm11111111111111111111111",
+        },
+      })
+    ).resolves.toBeNull();
+    expect(transactionClient.item.create).not.toHaveBeenCalled();
   });
 
   test("returns null when the requested system type does not exist", async () => {
@@ -156,6 +281,72 @@ describe("createItem", () => {
       })
     ).resolves.toBeNull();
     expect(transactionClient.item.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("pending item uploads", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("creates a pending upload record and returns a client token", async () => {
+    itemUploadCreateMock.mockResolvedValue(itemUpload());
+
+    await expect(
+      createPendingItemUpload("user-1", "file", {
+        fileUrl: "users/user-1/upload.pdf",
+        fileName: "upload.pdf",
+        fileMimeType: "application/pdf",
+        fileSize: 2048,
+      })
+    ).resolves.toEqual({
+      uploadToken: "cm11111111111111111111111",
+      fileName: "upload.pdf",
+      fileMimeType: "application/pdf",
+      fileSize: 2048,
+    });
+    expect(itemUploadCreateMock).toHaveBeenCalledWith({
+      data: {
+        userId: "user-1",
+        itemTypeSlug: "file",
+        fileUrl: "users/user-1/upload.pdf",
+        fileName: "upload.pdf",
+        fileMimeType: "application/pdf",
+        fileSize: 2048,
+      },
+    });
+  });
+
+  test("reads and deletes only unconsumed uploads owned by the user", async () => {
+    itemUploadFindFirstMock.mockResolvedValue(itemUpload());
+    itemUploadDeleteMock.mockResolvedValue(itemUpload());
+
+    await expect(
+      getPendingItemUpload("user-1", "cm11111111111111111111111")
+    ).resolves.toEqual({
+      fileUrl: "users/user-1/upload.pdf",
+      fileName: "upload.pdf",
+      fileMimeType: "application/pdf",
+      fileSize: 2048,
+    });
+    await expect(
+      deletePendingItemUpload("user-1", "cm11111111111111111111111")
+    ).resolves.toEqual({
+      fileUrl: "users/user-1/upload.pdf",
+      fileName: "upload.pdf",
+      fileMimeType: "application/pdf",
+      fileSize: 2048,
+    });
+    expect(itemUploadFindFirstMock).toHaveBeenCalledWith({
+      where: {
+        id: "cm11111111111111111111111",
+        userId: "user-1",
+        consumedAt: null,
+      },
+    });
+    expect(itemUploadDeleteMock).toHaveBeenCalledWith({
+      where: { id: "cm11111111111111111111111" },
+    });
   });
 });
 
@@ -274,5 +465,20 @@ function baseDbItem(): MockDbItem {
       color: "#22c55e",
       isSystem: true,
     },
+  };
+}
+
+function itemUpload() {
+  return {
+    id: "cm11111111111111111111111",
+    userId: "user-1",
+    itemTypeSlug: "file",
+    fileUrl: "users/user-1/upload.pdf",
+    fileName: "upload.pdf",
+    fileMimeType: "application/pdf",
+    fileSize: 2048,
+    consumedAt: null,
+    createdAt: new Date("2026-07-06T10:00:00.000Z"),
+    updatedAt: new Date("2026-07-06T10:00:00.000Z"),
   };
 }

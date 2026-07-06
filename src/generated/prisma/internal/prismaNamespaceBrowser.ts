@@ -56,6 +56,7 @@ export const ModelName = {
   Session: 'Session',
   VerificationToken: 'VerificationToken',
   Item: 'Item',
+  ItemUpload: 'ItemUpload',
   ItemType: 'ItemType',
   Collection: 'Collection',
   Tag: 'Tag',
@@ -156,6 +157,22 @@ export const ItemScalarFieldEnum = {
 } as const
 
 export type ItemScalarFieldEnum = (typeof ItemScalarFieldEnum)[keyof typeof ItemScalarFieldEnum]
+
+
+export const ItemUploadScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  itemTypeSlug: 'itemTypeSlug',
+  fileUrl: 'fileUrl',
+  fileName: 'fileName',
+  fileMimeType: 'fileMimeType',
+  fileSize: 'fileSize',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ItemUploadScalarFieldEnum = (typeof ItemUploadScalarFieldEnum)[keyof typeof ItemUploadScalarFieldEnum]
 
 
 export const ItemTypeScalarFieldEnum = {

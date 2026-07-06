@@ -39,6 +39,7 @@ model User {
   accounts             Account[]
   sessions             Session[]
   items                Item[]
+  itemUploads          ItemUpload[]
   itemTypes            ItemType[]
   collections          Collection[]
   tags                 Tag[]
@@ -121,6 +122,25 @@ model Item {
   @@index([collectionId])
   @@index([lastUsedAt])
   @@map("items")
+}
+
+model ItemUpload {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemTypeSlug String    @map("item_type_slug")
+  fileUrl      String    @unique @map("file_url")
+  fileName     String    @map("file_name")
+  fileMimeType String    @map("file_mime_type")
+  fileSize     Int       @map("file_size")
+  consumedAt   DateTime? @map("consumed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([userId, itemTypeSlug])
+  @@index([consumedAt])
+  @@map("item_uploads")
 }
 
 model ItemType {

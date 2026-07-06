@@ -241,6 +241,7 @@ export type UserWhereInput = {
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   items?: Prisma.ItemListRelationFilter
+  itemUploads?: Prisma.ItemUploadListRelationFilter
   itemTypes?: Prisma.ItemTypeListRelationFilter
   collections?: Prisma.CollectionListRelationFilter
   tags?: Prisma.TagListRelationFilter
@@ -262,6 +263,7 @@ export type UserOrderByWithRelationInput = {
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   items?: Prisma.ItemOrderByRelationAggregateInput
+  itemUploads?: Prisma.ItemUploadOrderByRelationAggregateInput
   itemTypes?: Prisma.ItemTypeOrderByRelationAggregateInput
   collections?: Prisma.CollectionOrderByRelationAggregateInput
   tags?: Prisma.TagOrderByRelationAggregateInput
@@ -286,6 +288,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   items?: Prisma.ItemListRelationFilter
+  itemUploads?: Prisma.ItemUploadListRelationFilter
   itemTypes?: Prisma.ItemTypeListRelationFilter
   collections?: Prisma.CollectionListRelationFilter
   tags?: Prisma.TagListRelationFilter
@@ -343,6 +346,7 @@ export type UserCreateInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   items?: Prisma.ItemCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
   tags?: Prisma.TagCreateNestedManyWithoutUserInput
@@ -364,6 +368,7 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   items?: Prisma.ItemUncheckedCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadUncheckedCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeUncheckedCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutUserInput
@@ -385,6 +390,7 @@ export type UserUpdateInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUpdateManyWithoutUserNestedInput
@@ -406,6 +412,7 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUncheckedUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUncheckedUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUncheckedUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUncheckedUpdateManyWithoutUserNestedInput
@@ -577,6 +584,20 @@ export type UserUpdateOneRequiredWithoutItemsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutItemsInput, Prisma.UserUpdateWithoutItemsInput>, Prisma.UserUncheckedUpdateWithoutItemsInput>
 }
 
+export type UserCreateNestedOneWithoutItemUploadsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutItemUploadsInput, Prisma.UserUncheckedCreateWithoutItemUploadsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutItemUploadsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutItemUploadsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutItemUploadsInput, Prisma.UserUncheckedCreateWithoutItemUploadsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutItemUploadsInput
+  upsert?: Prisma.UserUpsertWithoutItemUploadsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutItemUploadsInput, Prisma.UserUpdateWithoutItemUploadsInput>, Prisma.UserUncheckedUpdateWithoutItemUploadsInput>
+}
+
 export type UserCreateNestedOneWithoutItemTypesInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutItemTypesInput, Prisma.UserUncheckedCreateWithoutItemTypesInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutItemTypesInput
@@ -636,6 +657,7 @@ export type UserCreateWithoutAccountsInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   items?: Prisma.ItemCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
   tags?: Prisma.TagCreateNestedManyWithoutUserInput
@@ -656,6 +678,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   items?: Prisma.ItemUncheckedCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadUncheckedCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeUncheckedCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutUserInput
@@ -692,6 +715,7 @@ export type UserUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUpdateManyWithoutUserNestedInput
@@ -712,6 +736,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUncheckedUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUncheckedUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUncheckedUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUncheckedUpdateManyWithoutUserNestedInput
@@ -732,6 +757,7 @@ export type UserCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   items?: Prisma.ItemCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
   tags?: Prisma.TagCreateNestedManyWithoutUserInput
@@ -752,6 +778,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   items?: Prisma.ItemUncheckedCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadUncheckedCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeUncheckedCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutUserInput
@@ -788,6 +815,7 @@ export type UserUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUpdateManyWithoutUserNestedInput
@@ -808,6 +836,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUncheckedUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUncheckedUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUncheckedUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUncheckedUpdateManyWithoutUserNestedInput
@@ -828,6 +857,7 @@ export type UserCreateWithoutItemsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
   tags?: Prisma.TagCreateNestedManyWithoutUserInput
@@ -848,6 +878,7 @@ export type UserUncheckedCreateWithoutItemsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadUncheckedCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeUncheckedCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutUserInput
@@ -884,6 +915,7 @@ export type UserUpdateWithoutItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUpdateManyWithoutUserNestedInput
@@ -904,6 +936,107 @@ export type UserUncheckedUpdateWithoutItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUncheckedUpdateManyWithoutUserNestedInput
+  itemTypes?: Prisma.ItemTypeUncheckedUpdateManyWithoutUserNestedInput
+  collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
+  tags?: Prisma.TagUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutItemUploadsInput = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  passwordHash?: string | null
+  plan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  items?: Prisma.ItemCreateNestedManyWithoutUserInput
+  itemTypes?: Prisma.ItemTypeCreateNestedManyWithoutUserInput
+  collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
+  tags?: Prisma.TagCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutItemUploadsInput = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  passwordHash?: string | null
+  plan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  items?: Prisma.ItemUncheckedCreateNestedManyWithoutUserInput
+  itemTypes?: Prisma.ItemTypeUncheckedCreateNestedManyWithoutUserInput
+  collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
+  tags?: Prisma.TagUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutItemUploadsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutItemUploadsInput, Prisma.UserUncheckedCreateWithoutItemUploadsInput>
+}
+
+export type UserUpsertWithoutItemUploadsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutItemUploadsInput, Prisma.UserUncheckedUpdateWithoutItemUploadsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutItemUploadsInput, Prisma.UserUncheckedCreateWithoutItemUploadsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutItemUploadsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutItemUploadsInput, Prisma.UserUncheckedUpdateWithoutItemUploadsInput>
+}
+
+export type UserUpdateWithoutItemUploadsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  items?: Prisma.ItemUpdateManyWithoutUserNestedInput
+  itemTypes?: Prisma.ItemTypeUpdateManyWithoutUserNestedInput
+  collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
+  tags?: Prisma.TagUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutItemUploadsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  items?: Prisma.ItemUncheckedUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUncheckedUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUncheckedUpdateManyWithoutUserNestedInput
@@ -925,6 +1058,7 @@ export type UserCreateWithoutItemTypesInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   items?: Prisma.ItemCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
   tags?: Prisma.TagCreateNestedManyWithoutUserInput
 }
@@ -945,6 +1079,7 @@ export type UserUncheckedCreateWithoutItemTypesInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   items?: Prisma.ItemUncheckedCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadUncheckedCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutUserInput
 }
@@ -981,6 +1116,7 @@ export type UserUpdateWithoutItemTypesInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUpdateManyWithoutUserNestedInput
 }
@@ -1001,6 +1137,7 @@ export type UserUncheckedUpdateWithoutItemTypesInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUncheckedUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUncheckedUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1021,6 +1158,7 @@ export type UserCreateWithoutCollectionsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   items?: Prisma.ItemCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeCreateNestedManyWithoutUserInput
   tags?: Prisma.TagCreateNestedManyWithoutUserInput
 }
@@ -1041,6 +1179,7 @@ export type UserUncheckedCreateWithoutCollectionsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   items?: Prisma.ItemUncheckedCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadUncheckedCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeUncheckedCreateNestedManyWithoutUserInput
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1077,6 +1216,7 @@ export type UserUpdateWithoutCollectionsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUpdateManyWithoutUserNestedInput
 }
@@ -1097,6 +1237,7 @@ export type UserUncheckedUpdateWithoutCollectionsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUncheckedUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUncheckedUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUncheckedUpdateManyWithoutUserNestedInput
   tags?: Prisma.TagUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1117,6 +1258,7 @@ export type UserCreateWithoutTagsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   items?: Prisma.ItemCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
 }
@@ -1137,6 +1279,7 @@ export type UserUncheckedCreateWithoutTagsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   items?: Prisma.ItemUncheckedCreateNestedManyWithoutUserInput
+  itemUploads?: Prisma.ItemUploadUncheckedCreateNestedManyWithoutUserInput
   itemTypes?: Prisma.ItemTypeUncheckedCreateNestedManyWithoutUserInput
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1173,6 +1316,7 @@ export type UserUpdateWithoutTagsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
 }
@@ -1193,6 +1337,7 @@ export type UserUncheckedUpdateWithoutTagsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   items?: Prisma.ItemUncheckedUpdateManyWithoutUserNestedInput
+  itemUploads?: Prisma.ItemUploadUncheckedUpdateManyWithoutUserNestedInput
   itemTypes?: Prisma.ItemTypeUncheckedUpdateManyWithoutUserNestedInput
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1206,6 +1351,7 @@ export type UserCountOutputType = {
   accounts: number
   sessions: number
   items: number
+  itemUploads: number
   itemTypes: number
   collections: number
   tags: number
@@ -1215,6 +1361,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   items?: boolean | UserCountOutputTypeCountItemsArgs
+  itemUploads?: boolean | UserCountOutputTypeCountItemUploadsArgs
   itemTypes?: boolean | UserCountOutputTypeCountItemTypesArgs
   collections?: boolean | UserCountOutputTypeCountCollectionsArgs
   tags?: boolean | UserCountOutputTypeCountTagsArgs
@@ -1249,6 +1396,13 @@ export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.E
  */
 export type UserCountOutputTypeCountItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ItemWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountItemUploadsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ItemUploadWhereInput
 }
 
 /**
@@ -1289,6 +1443,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   items?: boolean | Prisma.User$itemsArgs<ExtArgs>
+  itemUploads?: boolean | Prisma.User$itemUploadsArgs<ExtArgs>
   itemTypes?: boolean | Prisma.User$itemTypesArgs<ExtArgs>
   collections?: boolean | Prisma.User$collectionsArgs<ExtArgs>
   tags?: boolean | Prisma.User$tagsArgs<ExtArgs>
@@ -1345,6 +1500,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   items?: boolean | Prisma.User$itemsArgs<ExtArgs>
+  itemUploads?: boolean | Prisma.User$itemUploadsArgs<ExtArgs>
   itemTypes?: boolean | Prisma.User$itemTypesArgs<ExtArgs>
   collections?: boolean | Prisma.User$collectionsArgs<ExtArgs>
   tags?: boolean | Prisma.User$tagsArgs<ExtArgs>
@@ -1359,6 +1515,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     items: Prisma.$ItemPayload<ExtArgs>[]
+    itemUploads: Prisma.$ItemUploadPayload<ExtArgs>[]
     itemTypes: Prisma.$ItemTypePayload<ExtArgs>[]
     collections: Prisma.$CollectionPayload<ExtArgs>[]
     tags: Prisma.$TagPayload<ExtArgs>[]
@@ -1773,6 +1930,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   items<T extends Prisma.User$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  itemUploads<T extends Prisma.User$itemUploadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$itemUploadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ItemUploadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   itemTypes<T extends Prisma.User$itemTypesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$itemTypesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ItemTypePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   collections<T extends Prisma.User$collectionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$collectionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tags<T extends Prisma.User$tagsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2279,6 +2437,30 @@ export type User$itemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
   take?: number
   skip?: number
   distinct?: Prisma.ItemScalarFieldEnum | Prisma.ItemScalarFieldEnum[]
+}
+
+/**
+ * User.itemUploads
+ */
+export type User$itemUploadsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ItemUpload
+   */
+  select?: Prisma.ItemUploadSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ItemUpload
+   */
+  omit?: Prisma.ItemUploadOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ItemUploadInclude<ExtArgs> | null
+  where?: Prisma.ItemUploadWhereInput
+  orderBy?: Prisma.ItemUploadOrderByWithRelationInput | Prisma.ItemUploadOrderByWithRelationInput[]
+  cursor?: Prisma.ItemUploadWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ItemUploadScalarFieldEnum | Prisma.ItemUploadScalarFieldEnum[]
 }
 
 /**

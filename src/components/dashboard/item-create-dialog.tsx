@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
 import { CodeEditor } from "@/components/dashboard/code-editor";
+import { FileUpload } from "@/components/dashboard/file-upload";
 import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,7 @@ import {
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
+import type { UploadedFileMetadata, UploadItemType } from "@/lib/file-uploads";
 import { cn } from "@/lib/utils";
 
 type CreateItemFormState = {
@@ -42,9 +44,18 @@ type CreateItemFormState = {
   content: string;
   language: string;
   url: string;
+  file: UploadedFileMetadata | null;
 };
 
-const supportedTypeSlugs = ["snippet", "prompt", "command", "note", "link"];
+const supportedTypeSlugs = [
+  "snippet",
+  "prompt",
+  "command",
+  "note",
+  "link",
+  "file",
+  "image",
+];
 
 export function ItemCreateDialog({
   initialTypeSlug,
@@ -81,11 +92,13 @@ export function ItemCreateDialog({
   const usesMarkdownEditor = doesTypeUseMarkdownEditor(form.typeSlug);
   const supportsLanguage = doesTypeSupportLanguage(form.typeSlug);
   const supportsUrl = doesTypeSupportUrl(form.typeSlug);
+  const supportsFileUpload = doesTypeSupportFileUpload(form.typeSlug);
   const isSubmitDisabled =
     isSaving ||
     availableTypes.length === 0 ||
     form.title.trim().length === 0 ||
-    (supportsUrl && form.url.trim().length === 0);
+    (supportsUrl && form.url.trim().length === 0) ||
+    (supportsFileUpload && !form.file);
 
   function updateForm(patch: Partial<CreateItemFormState>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -98,7 +111,11 @@ export function ItemCreateDialog({
     setIsOpen(true);
   }
 
-  function closeDialog() {
+  function closeDialog({ cleanupUpload = true } = {}) {
+    if (cleanupUpload && form.file) {
+      void cleanupPendingUpload(form.file.uploadToken);
+    }
+
     setIsOpen(false);
     setForm(getInitialForm(defaultTypeSlug));
     setFormError("");
@@ -120,6 +137,7 @@ export function ItemCreateDialog({
         content: supportsContent ? form.content : null,
         language: supportsLanguage ? form.language : null,
         url: supportsUrl ? form.url : null,
+        file: supportsFileUpload ? form.file : null,
       });
     } catch (error) {
       console.error("Failed to create item.", error);
@@ -139,7 +157,7 @@ export function ItemCreateDialog({
     }
 
     toast.success("Item created.");
-    closeDialog();
+    closeDialog({ cleanupUpload: false });
     router.refresh();
   }
 
@@ -198,7 +216,14 @@ export function ItemCreateDialog({
                     disabled={isSaving || availableTypes.length === 0}
                     onValueChange={(value) => {
                       if (value) {
-                        updateForm({ typeSlug: value });
+                        if (form.file) {
+                          void cleanupPendingUpload(form.file.uploadToken);
+                        }
+
+                        updateForm({
+                          typeSlug: value,
+                          file: null,
+                        });
                       }
                     }}
                     value={form.typeSlug}
@@ -325,6 +350,25 @@ export function ItemCreateDialog({
                       />
                     </CreateField>
                   )}
+
+                  {supportsFileUpload && (
+                    <CreateFieldBlock label="Upload" required>
+                      <FileUpload
+                        disabled={isSaving}
+                        itemType={form.typeSlug as UploadItemType}
+                        onChange={(file) => {
+                          updateForm({
+                            file,
+                            title:
+                              form.title.trim().length === 0 && file
+                                ? getTitleFromFileName(file.fileName)
+                                : form.title,
+                          });
+                        }}
+                        value={form.file}
+                      />
+                    </CreateFieldBlock>
+                  )}
                 </section>
               </div>
             </div>
@@ -332,7 +376,7 @@ export function ItemCreateDialog({
             <DialogFooter className="p-3">
               <Button
                 disabled={isSaving}
-                onClick={closeDialog}
+                onClick={() => closeDialog()}
                 type="button"
                 variant="outline"
               >
@@ -462,6 +506,7 @@ function getInitialForm(typeSlug: string): CreateItemFormState {
     content: "",
     language: "",
     url: "",
+    file: null,
   };
 }
 
@@ -490,4 +535,23 @@ function doesTypeUseMarkdownEditor(slug: string) {
 
 function doesTypeSupportUrl(slug: string) {
   return slug === "link";
+}
+
+function doesTypeSupportFileUpload(slug: string) {
+  return ["file", "image"].includes(slug);
+}
+
+function getTitleFromFileName(fileName: string) {
+  return fileName.replace(/\.[^.]+$/, "");
+}
+
+async function cleanupPendingUpload(uploadToken: string) {
+  await fetch("/api/uploads", {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ uploadToken }),
+  });
 }

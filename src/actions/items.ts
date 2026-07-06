@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import type { DashboardItemDetail } from "@/features/dashboard/dashboard-types";
+import { deleteR2Object } from "@/lib/storage/r2";
 import {
   createItem as createItemRecord,
   deleteItem as deleteItemRecord,
@@ -62,9 +63,17 @@ const updateItemSchema = z.object({
 
 const createItemSchema = updateItemSchema
   .extend({
-    typeSlug: z.enum(["snippet", "prompt", "command", "note", "link"], {
+    typeSlug: z.enum(["snippet", "prompt", "command", "note", "link", "file", "image"], {
       error: "Choose a valid item type.",
     }),
+    file: z
+      .object({
+        uploadToken: z
+          .string()
+          .regex(/^c[a-z0-9]{24}$/, "Upload a file first."),
+      })
+      .nullable()
+      .optional(),
   })
   .superRefine((data, context) => {
     if (data.typeSlug === "link" && !data.url) {
@@ -72,6 +81,14 @@ const createItemSchema = updateItemSchema
         code: "custom",
         message: "URL is required for links.",
         path: ["url"],
+      });
+    }
+
+    if ((data.typeSlug === "file" || data.typeSlug === "image") && !data.file) {
+      context.addIssue({
+        code: "custom",
+        message: "Upload a file first.",
+        path: ["file"],
       });
     }
   });
@@ -97,6 +114,10 @@ export async function createItem(data: unknown): Promise<CreateItemResult> {
     const createdItem = await createItemRecord(session.user.id, createData);
 
     if (!createdItem) {
+      if (parsedData.data.typeSlug === "file" || parsedData.data.typeSlug === "image") {
+        return { success: false, error: "Upload a file first." };
+      }
+
       return { success: false, error: "Choose a valid item type." };
     }
 
@@ -173,6 +194,14 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
 
     if (!deleted) {
       return { success: false, error: "Item not found." };
+    }
+
+    if (existingItem.fileUrl) {
+      try {
+        await deleteR2Object(existingItem.fileUrl);
+      } catch (error) {
+        console.error("Failed to delete file from R2.", error);
+      }
     }
 
     revalidatePath("/dashboard");
