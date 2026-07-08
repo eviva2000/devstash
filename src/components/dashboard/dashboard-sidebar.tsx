@@ -4,14 +4,12 @@ import type { ComponentType, CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import {
   ChevronDown,
-  Clock,
   FileText,
   Folder,
   Layers3,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
-  Pin,
   Settings,
   Star,
 } from "lucide-react";
@@ -49,7 +47,7 @@ export function DesktopSidebar({
   return (
     <aside
       className={cn(
-        "hidden shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 md:flex md:flex-col",
+        "sticky top-0 hidden h-screen shrink-0 overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 md:flex md:flex-col",
         isCollapsed ? "w-24" : "w-64"
       )}
     >
@@ -167,7 +165,7 @@ function SidebarContent({
         </Button>
       </div>
 
-      <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-4">
+      <nav className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 py-4">
         <div className="space-y-1">
           <SidebarLink
             count={data.totalItemsCount}
@@ -175,30 +173,6 @@ function SidebarContent({
             icon={Layers3}
             isCollapsed={compact}
             label="Dashboard"
-            onClick={onClose}
-          />
-          <SidebarLink
-            count={data.favoriteItemsCount}
-            href="/items/favorites"
-            icon={Star}
-            isCollapsed={compact}
-            label="Favorites"
-            onClick={onClose}
-          />
-          <SidebarLink
-            count={data.pinnedItemsCount}
-            href="/items/pinned"
-            icon={Pin}
-            isCollapsed={compact}
-            label="Pinned"
-            onClick={onClose}
-          />
-          <SidebarLink
-            count={data.recentItemsCount}
-            href="/items/recent"
-            icon={Clock}
-            isCollapsed={compact}
-            label="Recent"
             onClick={onClose}
           />
         </div>

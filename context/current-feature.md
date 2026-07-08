@@ -1,17 +1,21 @@
-# Current Feature
+# Current Feature: Fixed Sidebar Scroll
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Keep the desktop sidebar fixed in place while dashboard and item-list content scrolls.
+- Prevent the desktop sidebar from vertically scrolling when the main dashboard section scrolls.
+- Preserve mobile drawer behavior.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Requested inline: make the sidebar fixed and not vertically scrollable when scrolling dashboard content.
 
 ## History
 

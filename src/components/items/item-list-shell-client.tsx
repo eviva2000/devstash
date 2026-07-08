@@ -104,7 +104,7 @@ export function ItemListShellClient({
     item.collectionId ? collectionById.get(item.collectionId) : undefined;
 
   return (
-    <main className="flex min-h-screen overflow-hidden bg-background text-foreground">
+    <main className="flex h-screen overflow-hidden bg-background text-foreground">
       <DesktopSidebar
         data={sidebarData}
         isCollapsed={isCollapsed}
