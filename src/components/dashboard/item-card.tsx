@@ -1,5 +1,7 @@
+import type { KeyboardEvent } from "react";
 import { FileText, Pin, Star } from "lucide-react";
 
+import { ItemQuickCopyButton } from "@/components/items/item-quick-copy-button";
 import type {
   DashboardCollection,
   DashboardItem,
@@ -38,17 +40,29 @@ export function ItemCard({
       ] ?? "border-l-border"
     : "border-l-border";
   const visibleTags = item.tags.slice(0, type ? 2 : 3);
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onOpen();
+    }
+  };
 
   return (
-    <button
+    <div
       aria-label={`Open item details for ${item.title}`}
       className={cn(
-        "group flex min-h-44 w-full flex-col rounded-md border border-l-4 border-border bg-card p-4 text-left text-card-foreground transition-colors hover:border-muted-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        "group flex min-h-44 w-full cursor-pointer flex-col rounded-md border border-l-4 border-border bg-card p-4 text-left text-card-foreground transition-colors hover:border-muted-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
         borderClassName
       )}
       onClick={onOpen}
+      onKeyDown={handleKeyDown}
+      role="button"
       style={getTypeLeftBorderStyle(type?.color)}
-      type="button"
+      tabIndex={0}
     >
       <div className="flex items-start gap-3">
         <span
@@ -72,6 +86,7 @@ export function ItemCard({
             {item.description}
           </p>
         </div>
+        <ItemQuickCopyButton item={item} />
       </div>
 
       {(type || visibleTags.length > 0) && (
@@ -100,6 +115,6 @@ export function ItemCard({
           {formatDate(item.updatedAt)}
         </time>
       </div>
-    </button>
+    </div>
   );
 }
