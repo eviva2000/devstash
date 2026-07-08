@@ -1,17 +1,28 @@
-# Current Feature
+# Current Feature: Implement Collection Create
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Wire the existing top-bar New Collection button to open a modal.
+- Collect the required collection fields, including name and description.
+- Persist new collections as user-scoped records following the existing item creation patterns.
+- Fetch collection data from server components through `lib/db` helpers.
+- Use API routes only where a client-side collection call is needed.
+- Show success and failure toasts after save attempts.
+- Refresh the dashboard/sidebar/list data so the newly created collection appears after save.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Inline spec loaded from the user request.
+- Collections must remain scoped to `session.user.id`.
+- Match existing item create UX and data flow patterns where practical.
+- Do not add a second collection create button; reuse the existing New Collection control.
 
 ## History
 

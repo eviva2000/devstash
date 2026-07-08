@@ -19,6 +19,11 @@ type CollectionWithItems = Prisma.CollectionGetPayload<{
   include: typeof collectionInclude;
 }>;
 
+export type CreateCollectionData = {
+  name: string;
+  description: string | null;
+};
+
 function toDashboardCollection(
   collection: CollectionWithItems
 ): DashboardCollection & {
@@ -122,6 +127,24 @@ export async function getFavoriteCollections(
   return collections.map(toDashboardCollection);
 }
 
+export async function createCollection(
+  userId: string,
+  data: CreateCollectionData
+): Promise<DashboardCollection> {
+  const slug = await getUniqueCollectionSlug(userId, data.name);
+  const collection = await prisma.collection.create({
+    data: {
+      name: data.name,
+      slug,
+      description: data.description,
+      userId,
+    },
+    include: collectionInclude,
+  });
+
+  return toDashboardCollection(collection);
+}
+
 /**
  * Get system item types with colors and icons.
  * Used for displaying type information in the dashboard sidebar.
@@ -143,4 +166,37 @@ export async function getCollectionStats(userId: string) {
   ]);
 
   return { total, favorites };
+}
+
+async function getUniqueCollectionSlug(userId: string, name: string) {
+  const baseSlug = slugify(name, "collection");
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (
+    await prisma.collection.findUnique({
+      where: {
+        userId_slug: {
+          userId,
+          slug,
+        },
+      },
+      select: { id: true },
+    })
+  ) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix++;
+  }
+
+  return slug;
+}
+
+function slugify(value: string, fallback: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || fallback
+  );
 }

@@ -1,5 +1,6 @@
-import { FolderOpen, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 
+import { CollectionCreateDialog } from "@/components/dashboard/collection-create-dialog";
 import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,14 +41,7 @@ export function DashboardHeader({
         />
       </div>
 
-      <Button
-        className="ml-auto hidden sm:inline-flex"
-        type="button"
-        variant="outline"
-      >
-        <FolderOpen data-icon="inline-start" />
-        New Collection
-      </Button>
+      <CollectionCreateDialog />
 
       <ItemCreateDialog
         initialTypeSlug={initialCreateTypeSlug}
