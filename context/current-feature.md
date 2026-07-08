@@ -1,28 +1,17 @@
-# Current Feature: Add Items To Collections
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Allow an item to belong to one or more collections.
-- Add collection selection input to the new item form.
-- Add collection selection input to the edit item form.
-- Populate collection choices from user-scoped server-fetched collection data.
-- Persist selected collections through the existing item create and update flows.
-- Keep collection data access user-scoped through `lib/db` helpers and server actions/API routes where needed.
-- Refresh affected dashboard and item-list views after item collection changes.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Inline spec loaded from the user request.
-- Collection pages do not need to be built or displayed in this feature.
-- Support both single-collection and multiple-collection assignment from the forms.
-- Follow existing item create/edit patterns for validation, toasts, and refresh behavior.
 
 ## History
 
@@ -271,3 +260,13 @@ Keep this updated. Earliest to Latest
   - Added a user-scoped Prisma collection create helper with per-user unique slug generation
   - Added focused Vitest coverage for collection action and database helper behavior
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, and `git diff --check`
+- **Add Items To Collections** (July 8, 2026)
+  - Completed on branch `add-items-to-collections`
+  - Added an `item_collections` join table and Prisma relations so items can belong to one or more collections
+  - Backfilled existing primary collection links into the join table while keeping `items.collection_id` for compatibility
+  - Added user-scoped collection fetching and ownership validation through `lib/db` helpers
+  - Added collection selection to new and edit item forms using a shadcn-style Popover selector
+  - Persisted selected collections through existing create and update item flows
+  - Updated dashboard and item-list data mapping to include `collectionIds` and `collections`
+  - Fixed the development Prisma singleton to avoid stale generated-client reuse after schema changes
+  - Verified with `git diff --check`, `npx tsc --noEmit`, `npm run lint`, `npm test`, and `npm run build`
