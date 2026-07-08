@@ -23,7 +23,12 @@ interface ExtendedCollection {
   isFavorite: boolean;
   itemCount: number;
   dominantType?: { icon?: string | null; color?: string | null } | null;
-  types?: Array<{ icon?: string | null; name: string; slug?: string }>;
+  types?: Array<{
+    color?: string | null;
+    icon?: string | null;
+    name: string;
+    slug?: string;
+  }>;
 }
 
 export function DashboardMain({
