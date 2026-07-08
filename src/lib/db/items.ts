@@ -112,6 +112,7 @@ function toDashboardItem(item: DbDashboardItem): DashboardItem {
     fileUrl: item.fileUrl,
     fileName: item.fileName,
     fileMimeType: item.fileMimeType,
+    fileSize: item.fileSize,
     isFavorite: item.isFavorite,
     isPinned: item.isPinned,
     tags: item.tags.map(({ tag }) => tag.name),

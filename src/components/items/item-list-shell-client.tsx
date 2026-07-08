@@ -11,6 +11,7 @@ import {
 } from "@/components/dashboard/dashboard-sidebar";
 import { ItemCard } from "@/components/dashboard/item-card";
 import { ItemContentDrawer } from "@/components/dashboard/item-content-drawer";
+import { FileListRow } from "@/components/items/file-list-row";
 import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import type {
   DashboardCollection,
@@ -96,7 +97,10 @@ export function ItemListShellClient({
   const closeItemDrawer = () => setIsItemDrawerOpen(false);
   const canCreateActiveType = doesTypeSupportCreate(itemType.slug);
   const createButtonLabel = `New ${toTitleCase(itemType.name)}`;
+  const isFileList = itemType.slug === "file";
   const isImageGallery = itemType.slug === "image";
+  const getItemCollection = (item: DashboardItem) =>
+    item.collectionId ? collectionById.get(item.collectionId) : undefined;
 
   return (
     <main className="flex min-h-screen overflow-hidden bg-background text-foreground">
@@ -146,40 +150,52 @@ export function ItemListShellClient({
             </div>
 
             {items.length > 0 ? (
-              <div
-                className={
-                  isImageGallery
-                    ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-                    : "grid gap-4 md:grid-cols-2 xl:grid-cols-3"
-                }
-              >
-                {items.map((item) => (
-                  isImageGallery ? (
-                    <ImageThumbnailCard
-                      collection={
-                        item.collectionId
-                          ? collectionById.get(item.collectionId)
-                          : undefined
-                      }
-                      item={item}
-                      key={item.id}
-                      onOpen={() => openItemDrawer(item.id)}
-                    />
-                  ) : (
-                    <ItemCard
-                      collection={
-                        item.collectionId
-                          ? collectionById.get(item.collectionId)
-                          : undefined
-                      }
-                      item={item}
-                      key={item.id}
-                      onOpen={() => openItemDrawer(item.id)}
-                      type={itemType}
-                    />
-                  )
-                ))}
-              </div>
+              isFileList ? (
+                <div className="overflow-hidden rounded-md border border-border bg-card">
+                  <div className="hidden grid-cols-[minmax(0,1fr)_140px_132px_104px] border-b border-border bg-muted/30 px-4 py-2 text-xs font-medium text-muted-foreground md:grid">
+                    <span>Name</span>
+                    <span>Size</span>
+                    <span>Uploaded</span>
+                    <span className="text-right">Action</span>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {items.map((item) => (
+                      <FileListRow
+                        item={item}
+                        key={item.id}
+                        onOpen={() => openItemDrawer(item.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={
+                    isImageGallery
+                      ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                      : "grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+                  }
+                >
+                  {items.map((item) =>
+                    isImageGallery ? (
+                      <ImageThumbnailCard
+                        collection={getItemCollection(item)}
+                        item={item}
+                        key={item.id}
+                        onOpen={() => openItemDrawer(item.id)}
+                      />
+                    ) : (
+                      <ItemCard
+                        collection={getItemCollection(item)}
+                        item={item}
+                        key={item.id}
+                        onOpen={() => openItemDrawer(item.id)}
+                        type={itemType}
+                      />
+                    )
+                  )}
+                </div>
+              )
             ) : (
               <div className="flex min-h-72 items-center justify-center rounded-md border border-dashed border-border bg-card px-6 py-10 text-center text-card-foreground">
                 <div className="max-w-sm space-y-3">
