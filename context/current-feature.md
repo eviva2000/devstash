@@ -1,24 +1,17 @@
-# Current Feature: Image Gallery View
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Replace the regular item card with an image thumbnail card for image items.
-- Show image items in a three-column grid/gallery layout.
-- Display image thumbnails with a 16:9 `aspect-video` ratio.
-- Use `object-cover` so thumbnails fill the card, accepting edge cropping where needed.
-- Add a subtle hover zoom effect using 5% scale and a 300ms transition.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Source spec: `context/features/image-display-spec.md`
-- Overview: Add an image grid/gallery with thumbnail cards instead of the regular item card.
 
 ## History
 
@@ -232,3 +225,11 @@ Keep this updated. Earliest to Latest
   - Deletes now attempt R2 cleanup for attached item files, and pending uploads clean up on remove, cancel, or replacement
   - Added focused Vitest coverage for upload/download routes, server actions, DB helpers, and file validation utilities
   - Verified with `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`, and `git diff --check`
+- **Image Gallery View** (July 8, 2026)
+  - Completed on branch `image-gallery-view`
+  - Added a dedicated image thumbnail card for image item lists
+  - Rendered image items in a responsive three-column gallery on desktop
+  - Displayed thumbnails in a 16:9 `aspect-video` frame with `object-cover`
+  - Added a subtle 5% hover zoom with a 300ms transition
+  - Extended dashboard item list data to include file metadata needed for previews
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, `git diff --check`, and Playwright MCP visual checks
