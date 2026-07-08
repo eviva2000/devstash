@@ -28,6 +28,8 @@ export type CreateCollectionData = {
   description: string | null;
 };
 
+export type UpdateCollectionData = CreateCollectionData;
+
 function toDashboardCollection(
   collection: CollectionWithItems
 ): DashboardCollection & {
@@ -174,6 +176,45 @@ export async function createCollection(
   return toDashboardCollection(collection);
 }
 
+export async function updateCollection(
+  userId: string,
+  collectionId: string,
+  data: UpdateCollectionData
+): Promise<DashboardCollection | null> {
+  const existingCollection = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+    select: { id: true },
+  });
+
+  if (!existingCollection) {
+    return null;
+  }
+
+  const slug = await getUniqueCollectionSlug(userId, data.name, collectionId);
+  const collection = await prisma.collection.update({
+    where: { id: collectionId },
+    data: {
+      name: data.name,
+      slug,
+      description: data.description,
+    },
+    include: collectionInclude,
+  });
+
+  return toDashboardCollection(collection);
+}
+
+export async function deleteCollection(
+  userId: string,
+  collectionId: string
+): Promise<boolean> {
+  const deletedCollection = await prisma.collection.deleteMany({
+    where: { id: collectionId, userId },
+  });
+
+  return deletedCollection.count > 0;
+}
+
 /**
  * Get system item types with colors and icons.
  * Used for displaying type information in the dashboard sidebar.
@@ -197,13 +238,17 @@ export async function getCollectionStats(userId: string) {
   return { total, favorites };
 }
 
-async function getUniqueCollectionSlug(userId: string, name: string) {
+async function getUniqueCollectionSlug(
+  userId: string,
+  name: string,
+  excludeCollectionId?: string
+) {
   const baseSlug = slugify(name, "collection");
   let slug = baseSlug;
   let suffix = 2;
 
-  while (
-    await prisma.collection.findUnique({
+  while (true) {
+    const existingCollection = await prisma.collection.findUnique({
       where: {
         userId_slug: {
           userId,
@@ -211,13 +256,18 @@ async function getUniqueCollectionSlug(userId: string, name: string) {
         },
       },
       select: { id: true },
-    })
-  ) {
+    });
+
+    if (
+      !existingCollection ||
+      existingCollection.id === excludeCollectionId
+    ) {
+      return slug;
+    }
+
     slug = `${baseSlug}-${suffix}`;
     suffix++;
   }
-
-  return slug;
 }
 
 function slugify(value: string, fallback: string) {

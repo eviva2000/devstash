@@ -1,6 +1,10 @@
-import { ArrowUpRight, Folder, Star } from "lucide-react";
-import Link from "next/link";
+"use client";
 
+import type { KeyboardEvent } from "react";
+import { ArrowUpRight, Folder, Star } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import { CollectionActionsMenu } from "@/components/collections/collection-actions";
 import {
   getTypeColorStyle,
   getTypeLeftBorderStyle,
@@ -30,16 +34,33 @@ export function CollectionCard({
 }: {
   collection: EnhancedCollection;
 }) {
+  const router = useRouter();
   const borderClassName =
     typeLeftBorderColorMap[
       collection.dominantType?.color as keyof typeof typeLeftBorderColorMap
     ] ?? "border-border";
+  const collectionHref = `/collections/${collection.id}`;
+  const openCollection = () => router.push(collectionHref);
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openCollection();
+    }
+  };
 
   return (
-    <Link
+    <div
+      aria-label={`Open collection ${collection.name}`}
       className={`group flex min-h-36 flex-col rounded-md border border-l-4 border-border ${borderClassName} bg-card p-4 text-card-foreground transition-colors hover:border-muted-foreground/40`}
-      href={`/collections/${collection.id}`}
+      onClick={openCollection}
+      onKeyDown={handleKeyDown}
+      role="link"
       style={getTypeLeftBorderStyle(collection.dominantType?.color)}
+      tabIndex={0}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
@@ -52,12 +73,15 @@ export function CollectionCard({
             )}
           </div>
           <p className="line-clamp-2 text-sm text-muted-foreground">
-            {collection.description}
+            {collection.description || "No description added."}
           </p>
         </div>
-        <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-          {collection.itemCount}
-        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+            {collection.itemCount}
+          </span>
+          <CollectionActionsMenu collection={collection} />
+        </div>
       </div>
 
       {collection.types && collection.types.length > 0 && (
@@ -90,6 +114,6 @@ export function CollectionCard({
         </span>
         <ArrowUpRight className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
       </div>
-    </Link>
+    </div>
   );
 }

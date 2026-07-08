@@ -2,7 +2,9 @@
 
 import { Inbox } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
+import { CollectionActionButtons } from "@/components/collections/collection-actions";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import {
   DesktopSidebar,
@@ -44,6 +46,7 @@ export function CollectionDetailShellClient({
   items,
   recentCollections,
 }: CollectionDetailShellClientProps) {
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -133,21 +136,30 @@ export function CollectionDetailShellClient({
 
         <div className="min-h-0 flex-1 overflow-y-auto bg-background">
           <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-4 py-6 md:px-6 lg:px-8">
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">Collection</p>
-              <div className="space-y-1">
-                <h1 className="text-2xl font-semibold tracking-tight">
-                  {collection.name}
-                </h1>
-                {collection.description && (
-                  <p className="max-w-2xl text-sm text-muted-foreground">
-                    {collection.description}
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground">Collection</p>
+                <div className="space-y-1">
+                  <h1 className="text-2xl font-semibold tracking-tight">
+                    {collection.name}
+                  </h1>
+                  {collection.description && (
+                    <p className="max-w-2xl text-sm text-muted-foreground">
+                      {collection.description}
+                    </p>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    {items.length} {items.length === 1 ? "item" : "items"}
                   </p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  {items.length} {items.length === 1 ? "item" : "items"}
-                </p>
+                </div>
               </div>
+              <CollectionActionButtons
+                collection={collection}
+                onDeleted={() => {
+                  router.push("/collections");
+                  router.refresh();
+                }}
+              />
             </div>
 
             {items.length > 0 ? (

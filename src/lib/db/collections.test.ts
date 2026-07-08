@@ -2,21 +2,30 @@ import { beforeEach, describe, expect, test, vi, type Mock } from "vitest";
 
 import { prisma } from "@/lib/prisma";
 
-import { createCollection, getCollectionById } from "./collections";
+import {
+  createCollection,
+  deleteCollection,
+  getCollectionById,
+  updateCollection,
+} from "./collections";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     collection: {
       create: vi.fn(),
+      deleteMany: vi.fn(),
       findFirst: vi.fn(),
       findUnique: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
 
 const collectionCreateMock = prisma.collection.create as unknown as Mock;
+const collectionDeleteManyMock = prisma.collection.deleteMany as unknown as Mock;
 const collectionFindFirstMock = prisma.collection.findFirst as unknown as Mock;
 const collectionFindUniqueMock = prisma.collection.findUnique as unknown as Mock;
+const collectionUpdateMock = prisma.collection.update as unknown as Mock;
 
 describe("createCollection", () => {
   beforeEach(() => {
@@ -148,6 +157,116 @@ describe("getCollectionById", () => {
 
     await expect(getCollectionById("user-1", "collection-2")).resolves.toBe(
       null
+    );
+  });
+});
+
+describe("updateCollection", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("updates only a collection owned by the user", async () => {
+    const updatedCollection = dbCollection({
+      id: "collection-2",
+      name: "Updated Workflows",
+      slug: "updated-workflows",
+      description: "Updated metadata",
+    });
+    collectionFindFirstMock.mockResolvedValue({ id: "collection-2" });
+    collectionFindUniqueMock.mockResolvedValue(null);
+    collectionUpdateMock.mockResolvedValue(updatedCollection);
+
+    await expect(
+      updateCollection("user-1", "collection-2", {
+        name: "Updated Workflows",
+        description: "Updated metadata",
+      })
+    ).resolves.toEqual({
+      id: "collection-2",
+      name: "Updated Workflows",
+      slug: "updated-workflows",
+      description: "Updated metadata",
+      isFavorite: false,
+      itemCount: 0,
+      dominantType: null,
+      types: [],
+      createdAt: updatedCollection.createdAt,
+      updatedAt: updatedCollection.updatedAt,
+    });
+    expect(collectionFindFirstMock).toHaveBeenCalledWith({
+      where: { id: "collection-2", userId: "user-1" },
+      select: { id: true },
+    });
+    expect(collectionUpdateMock).toHaveBeenCalledWith({
+      where: { id: "collection-2" },
+      data: {
+        name: "Updated Workflows",
+        slug: "updated-workflows",
+        description: "Updated metadata",
+      },
+      include: expect.any(Object),
+    });
+  });
+
+  test("returns null when the collection is not owned by the user", async () => {
+    collectionFindFirstMock.mockResolvedValue(null);
+
+    await expect(
+      updateCollection("user-1", "collection-2", {
+        name: "Updated Workflows",
+        description: null,
+      })
+    ).resolves.toBe(null);
+    expect(collectionUpdateMock).not.toHaveBeenCalled();
+  });
+
+  test("allows the current collection to keep its existing generated slug", async () => {
+    collectionFindFirstMock.mockResolvedValue({ id: "collection-2" });
+    collectionFindUniqueMock.mockResolvedValue({ id: "collection-2" });
+    collectionUpdateMock.mockResolvedValue(
+      dbCollection({
+        id: "collection-2",
+        slug: "api-notes",
+      })
+    );
+
+    await updateCollection("user-1", "collection-2", {
+      name: "API Notes",
+      description: null,
+    });
+
+    expect(collectionUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          slug: "api-notes",
+        }),
+      })
+    );
+  });
+});
+
+describe("deleteCollection", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("deletes only a collection owned by the user", async () => {
+    collectionDeleteManyMock.mockResolvedValue({ count: 1 });
+
+    await expect(deleteCollection("user-1", "collection-2")).resolves.toBe(
+      true
+    );
+    expect(collectionDeleteManyMock).toHaveBeenCalledWith({
+      where: { id: "collection-2", userId: "user-1" },
+    });
+  });
+
+  test("returns false when no owned collection is deleted", async () => {
+    collectionDeleteManyMock.mockResolvedValue({ count: 0 });
+
+    await expect(deleteCollection("user-1", "collection-2")).resolves.toBe(
+      false
     );
   });
 });
