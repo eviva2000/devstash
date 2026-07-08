@@ -1,34 +1,17 @@
-# Current Feature: Collection Actions
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Add edit, delete, and favorite icon buttons/actions on `/collections/[id]`.
-- Add an edit modal for collection metadata.
-- Add a delete confirmation for removing a collection.
-- Ensure deleting a collection does not delete its items; items should only be removed from that collection.
-- Add a 3-dot dropdown menu on collection cards shown on `/collections` and the dashboard.
-- Include edit, delete, and favorite actions in the card dropdown menu.
-- Keep clicking anywhere else on a collection card navigating to that collection page.
-- Do not implement favorite behavior yet beyond the icon/button affordance.
-- Keep collection actions user-scoped through existing server-side data access patterns.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Inline spec loaded from the user request.
-- Use existing modal/dialog and dropdown UI patterns where available.
-- Collection delete should remove the collection and its item membership links, while preserving the items themselves.
-- Favorite action is visual only for this feature.
-- Card-level action controls must not trigger the card navigation.
-- Used the existing Popover primitive for collection card action menus.
-- Added edit/delete server actions with user-scoped database helpers and route revalidation.
-- Verified with `npx tsc --noEmit`, `npm test`, `npm run lint`, `npm run build`, and `git diff --check`.
 
 ## History
 
@@ -293,4 +276,14 @@ Keep this updated. Earliest to Latest
   - Added user-scoped `getCollectionById()` and `getItemsByCollectionId()` helpers
   - Updated collection card and sidebar collection links to use collection IDs
   - Protected `/collections/:path*` through `src/proxy.ts`
+  - Verified with `npx tsc --noEmit`, `npm test`, `npm run lint`, `npm run build`, and `git diff --check`
+- **Collection Actions** (July 8, 2026)
+  - Completed on branch `collection-actions`
+  - Added edit, delete, and favorite action buttons on collection detail pages
+  - Added a collection metadata edit dialog for name and description
+  - Added delete confirmation that removes the collection without deleting its items
+  - Added 3-dot action menus to collection cards on dashboard and `/collections`
+  - Kept card body clicks navigating to the collection page while action controls stay interactive
+  - Added user-scoped update and delete server actions plus Prisma helpers
+  - Added focused Vitest coverage for collection action and database helper behavior
   - Verified with `npx tsc --noEmit`, `npm test`, `npm run lint`, `npm run build`, and `git diff --check`
