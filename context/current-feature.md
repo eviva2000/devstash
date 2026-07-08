@@ -1,26 +1,17 @@
-# Current Feature: File List View
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Update `/items/files` to display as a single-column file list instead of grid cards.
-- Render each file row with an extension-aware file icon, file name, file size, upload date, and download button.
-- Add row hover highlighting.
-- Keep row click behavior opening the existing item drawer.
-- Make the row download button trigger direct download without opening the drawer.
-- Stack file information vertically on mobile.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Source spec: `context/features/file-display-spec.md`
-- The user requested `file-display-spec.mad`; loaded the matching markdown spec `file-display-spec.md`.
-- Desired presentation should feel like a Google Drive or Dropbox-style list.
 
 ## History
 
@@ -75,7 +66,7 @@ Keep this updated. Earliest to Latest
   - Derived item card icons and borders from database item type metadata, including hex color support
   - Hid the pinned items section when no pinned items exist
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm run build`, and a browser smoke test
-  - **Stats and Sidebar Database Integration** (May 31, 2026)
+- **Stats and Sidebar Database Integration** (May 31, 2026)
   - Completed on branch `stats`
   - Replaced dashboard stat values with database-backed item and collection counts
   - Displayed system item types in the sidebar with database-backed counts, icons, and `/items/[typename]` links
@@ -242,3 +233,15 @@ Keep this updated. Earliest to Latest
   - Added a subtle 5% hover zoom with a 300ms transition
   - Extended dashboard item list data to include file metadata needed for previews
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, `git diff --check`, and Playwright MCP visual checks
+- **File List View** (July 8, 2026)
+  - Completed on branch `file-list-view`
+  - Updated file item lists to use a single-column Drive-style row layout instead of grid cards
+  - Added extension-aware file icons, file names, file sizes, upload dates, and direct download actions
+  - Kept row clicks opening the existing item drawer while download clicks avoid opening the drawer
+  - Stacked file metadata vertically on mobile
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, and `git diff --check`
+- **Item Card Quick Copy** (July 8, 2026)
+  - Added a quick copy icon button to regular item cards
+  - Reused the drawer copy priority: content, URL, file name, description, then title
+  - Kept file list rows and image thumbnail cards free of the quick copy action
+  - Verified with `npx tsc --noEmit`, `npm run lint`, and `npm test`
