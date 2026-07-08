@@ -1,28 +1,17 @@
-# Current Feature: Implement Collection Create
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Wire the existing top-bar New Collection button to open a modal.
-- Collect the required collection fields, including name and description.
-- Persist new collections as user-scoped records following the existing item creation patterns.
-- Fetch collection data from server components through `lib/db` helpers.
-- Use API routes only where a client-side collection call is needed.
-- Show success and failure toasts after save attempts.
-- Refresh the dashboard/sidebar/list data so the newly created collection appears after save.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Inline spec loaded from the user request.
-- Collections must remain scoped to `session.user.id`.
-- Match existing item create UX and data flow patterns where practical.
-- Do not add a second collection create button; reuse the existing New Collection control.
 
 ## History
 
@@ -263,3 +252,11 @@ Keep this updated. Earliest to Latest
   - Removed Favorites, Pinned, and Recent shortcuts while keeping Dashboard in the sidebar
   - Preserved mobile drawer behavior
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, `git diff --check`, and a Playwright scroll check
+- **Implement Collection Create** (July 8, 2026)
+  - Completed on branch `implement-collection-create`
+  - Reused the existing top-bar New Collection button as the modal trigger
+  - Added a collection create dialog with name and description fields
+  - Added an authenticated `createCollection` server action with validation, toasts, and route revalidation
+  - Added a user-scoped Prisma collection create helper with per-user unique slug generation
+  - Added focused Vitest coverage for collection action and database helper behavior
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, and `git diff --check`
