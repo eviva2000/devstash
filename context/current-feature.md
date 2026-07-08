@@ -1,4 +1,4 @@
-# Current Feature: Collections Pages
+# Current Feature: Collection Actions
 
 ## Status
 
@@ -8,22 +8,27 @@ In Progress
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Create `/collections` to show the user's collections.
-- Create `/collections/[id]` to show the items in a specific collection.
-- Use the existing collection and item cards where possible.
-- Link the sidebar "View all collections" action to `/collections`.
-- Link every collection card to its specific collection detail page.
-- Keep collection and item data user-scoped through existing server-side data access patterns.
-- Preserve existing dashboard and item-list card behavior.
+- Add edit, delete, and favorite icon buttons/actions on `/collections/[id]`.
+- Add an edit modal for collection metadata.
+- Add a delete confirmation for removing a collection.
+- Ensure deleting a collection does not delete its items; items should only be removed from that collection.
+- Add a 3-dot dropdown menu on collection cards shown on `/collections` and the dashboard.
+- Include edit, delete, and favorite actions in the card dropdown menu.
+- Keep clicking anywhere else on a collection card navigating to that collection page.
+- Do not implement favorite behavior yet beyond the icon/button affordance.
+- Keep collection actions user-scoped through existing server-side data access patterns.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
 - Inline spec loaded from the user request.
-- Collection detail pages should display items in that collection.
-- Prefer existing dashboard/sidebar layout and card components over new visual patterns.
-- `/collections/[id]` uses the collection ID; collection cards and sidebar collection links point to `/collections/${collection.id}`.
-- Image items on collection detail pages render with the existing image thumbnail card instead of the regular item card.
+- Use existing modal/dialog and dropdown UI patterns where available.
+- Collection delete should remove the collection and its item membership links, while preserving the items themselves.
+- Favorite action is visual only for this feature.
+- Card-level action controls must not trigger the card navigation.
+- Used the existing Popover primitive for collection card action menus.
+- Added edit/delete server actions with user-scoped database helpers and route revalidation.
+- Verified with `npx tsc --noEmit`, `npm test`, `npm run lint`, `npm run build`, and `git diff --check`.
 
 ## History
 
