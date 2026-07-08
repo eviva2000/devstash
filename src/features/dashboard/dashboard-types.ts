@@ -33,6 +33,7 @@ export type DashboardItem = {
   fileUrl?: string | null;
   fileName?: string | null;
   fileMimeType?: string | null;
+  fileSize?: number | null;
   isFavorite: boolean;
   isPinned: boolean;
   tags: string[];
