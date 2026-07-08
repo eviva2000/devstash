@@ -29,6 +29,11 @@ class RateLimitedError extends CredentialsSignin {
   code = "rate_limited";
 }
 
+// A valid cost-12 bcrypt hash used to keep the login comparison constant-time
+// when an account is missing or has no password (mitigates user enumeration).
+const DUMMY_PASSWORD_HASH =
+  "$2b$12$Mu1GNj1Zn9VS8Hjtb6yeRuS9vnlkiEgHR4fneKYVQHPCKa6uiy9uy";
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
@@ -71,13 +76,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           },
         });
 
-        if (!user?.passwordHash) {
-          return null;
-        }
+        // Always run a bcrypt comparison—using a dummy hash when the account
+        // is missing or has no password—so response time does not reveal
+        // whether the email exists (prevents user enumeration via timing).
+        const hashToCompare = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
+        const passwordMatches = await bcrypt.compare(password, hashToCompare);
 
-        const passwordMatches = await bcrypt.compare(password, user.passwordHash);
-
-        if (!passwordMatches) {
+        if (!user?.passwordHash || !passwordMatches) {
           return null;
         }
 

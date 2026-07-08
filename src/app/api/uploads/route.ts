@@ -10,6 +10,11 @@ import {
   getPendingItemUpload,
 } from "@/lib/db/items";
 import { createR2ObjectKey, deleteR2Object, uploadR2Object } from "@/lib/storage/r2";
+import {
+  checkRateLimit,
+  getClientIp,
+  tooManyRequestsResponse,
+} from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -18,6 +23,15 @@ export async function POST(request: Request) {
 
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  const rateLimit = await checkRateLimit(
+    "fileUpload",
+    `${getClientIp(request)}:${session.user.id}`
+  );
+
+  if (!rateLimit.success) {
+    return tooManyRequestsResponse(rateLimit.reset);
   }
 
   const formData = await request.formData();

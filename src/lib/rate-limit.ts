@@ -6,7 +6,8 @@ export type RateLimitName =
   | "register"
   | "forgotPassword"
   | "resetPassword"
-  | "resendVerification";
+  | "resendVerification"
+  | "fileUpload";
 
 type RateLimitConfig = {
   limit: number;
@@ -19,6 +20,7 @@ const RATE_LIMIT_CONFIG: Record<RateLimitName, RateLimitConfig> = {
   forgotPassword: { limit: 3, windowSeconds: 60 * 60 },
   resetPassword: { limit: 5, windowSeconds: 15 * 60 },
   resendVerification: { limit: 3, windowSeconds: 15 * 60 },
+  fileUpload: { limit: 20, windowSeconds: 15 * 60 },
 };
 
 export type RateLimitResult = {
