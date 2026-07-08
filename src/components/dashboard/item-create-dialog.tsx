@@ -34,7 +34,16 @@ import {
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
 import type { UploadedFileMetadata, UploadItemType } from "@/lib/file-uploads";
-import { cn } from "@/lib/utils";
+import {
+  doesTypeSupportContent,
+  doesTypeSupportFile,
+  doesTypeSupportLanguage,
+  doesTypeSupportUrl,
+  doesTypeUseCodeEditor,
+  doesTypeUseMarkdownEditor,
+  isCreatableItemType,
+} from "@/lib/item-type-capabilities";
+import { cn, getActionErrorMessage, parseTags } from "@/lib/utils";
 
 type CreateItemFormState = {
   typeSlug: string;
@@ -46,16 +55,6 @@ type CreateItemFormState = {
   url: string;
   file: UploadedFileMetadata | null;
 };
-
-const supportedTypeSlugs = [
-  "snippet",
-  "prompt",
-  "command",
-  "note",
-  "link",
-  "file",
-  "image",
-];
 
 export function ItemCreateDialog({
   initialTypeSlug,
@@ -72,12 +71,12 @@ export function ItemCreateDialog({
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const availableTypes = useMemo(
-    () => itemTypes.filter((type) => supportedTypeSlugs.includes(type.slug)),
+    () => itemTypes.filter((type) => isCreatableItemType(type.slug)),
     [itemTypes]
   );
   const fallbackTypeSlug = availableTypes[0]?.slug ?? "snippet";
   const defaultTypeSlug =
-    initialTypeSlug && supportedTypeSlugs.includes(initialTypeSlug)
+    initialTypeSlug && isCreatableItemType(initialTypeSlug)
       ? initialTypeSlug
       : fallbackTypeSlug;
   const [form, setForm] = useState<CreateItemFormState>(() =>
@@ -92,7 +91,7 @@ export function ItemCreateDialog({
   const usesMarkdownEditor = doesTypeUseMarkdownEditor(form.typeSlug);
   const supportsLanguage = doesTypeSupportLanguage(form.typeSlug);
   const supportsUrl = doesTypeSupportUrl(form.typeSlug);
-  const supportsFileUpload = doesTypeSupportFileUpload(form.typeSlug);
+  const supportsFileUpload = doesTypeSupportFile(form.typeSlug);
   const isSubmitDisabled =
     isSaving ||
     availableTypes.length === 0 ||
@@ -141,11 +140,10 @@ export function ItemCreateDialog({
       });
     } catch (error) {
       console.error("Failed to create item.", error);
-      const message =
-        process.env.NODE_ENV === "development" && error instanceof Error
-          ? error.message
-          : "Unable to create item. Try again.";
-      result = { success: false, error: message };
+      result = {
+        success: false,
+        error: getActionErrorMessage(error, "Unable to create item. Try again."),
+      };
     } finally {
       setIsSaving(false);
     }
@@ -508,37 +506,6 @@ function getInitialForm(typeSlug: string): CreateItemFormState {
     url: "",
     file: null,
   };
-}
-
-function parseTags(value: string) {
-  return value
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-}
-
-function doesTypeSupportContent(slug: string) {
-  return ["snippet", "prompt", "command", "note"].includes(slug);
-}
-
-function doesTypeSupportLanguage(slug: string) {
-  return ["snippet", "command"].includes(slug);
-}
-
-function doesTypeUseCodeEditor(slug: string) {
-  return ["snippet", "command"].includes(slug);
-}
-
-function doesTypeUseMarkdownEditor(slug: string) {
-  return ["prompt", "note"].includes(slug);
-}
-
-function doesTypeSupportUrl(slug: string) {
-  return slug === "link";
-}
-
-function doesTypeSupportFileUpload(slug: string) {
-  return ["file", "image"].includes(slug);
 }
 
 function getTitleFromFileName(fileName: string) {

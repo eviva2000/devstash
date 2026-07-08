@@ -22,6 +22,7 @@ import type {
   SidebarData,
 } from "@/features/dashboard/dashboard-types";
 import { getTypeHref } from "@/features/dashboard/dashboard-utils";
+import { isCreatableItemType } from "@/lib/item-type-capabilities";
 
 interface ItemListShellClientProps {
   readonly user: DashboardUser;
@@ -95,7 +96,7 @@ export function ItemListShellClient({
     setIsItemDrawerOpen(true);
   };
   const closeItemDrawer = () => setIsItemDrawerOpen(false);
-  const canCreateActiveType = doesTypeSupportCreate(itemType.slug);
+  const canCreateActiveType = isCreatableItemType(itemType.slug);
   const createButtonLabel = `New ${toTitleCase(itemType.name)}`;
   const isFileList = itemType.slug === "file";
   const isImageGallery = itemType.slug === "image";
@@ -235,10 +236,4 @@ function toTitleCase(value: string) {
     .split(/\s+/)
     .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
     .join(" ");
-}
-
-function doesTypeSupportCreate(slug: string) {
-  return ["snippet", "prompt", "command", "note", "link", "file", "image"].includes(
-    slug
-  );
 }

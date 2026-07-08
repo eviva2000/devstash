@@ -17,6 +17,7 @@ import {
 
 import type { DashboardItem } from "@/features/dashboard/dashboard-types";
 import { formatDate } from "@/features/dashboard/dashboard-utils";
+import { formatFileSize } from "@/lib/file-uploads";
 
 export function FileListRow({
   item,
@@ -77,7 +78,9 @@ export function FileListRow({
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground md:block">
         <span className="md:hidden">Size</span>
-        <span>{formatFileSize(item.fileSize)}</span>
+        <span>
+          {item.fileSize == null ? "Unknown size" : formatFileSize(item.fileSize)}
+        </span>
       </div>
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground md:block">
@@ -162,20 +165,4 @@ function FileTypeIcon({
   }
 
   return <File className="size-5" />;
-}
-
-function formatFileSize(bytes?: number | null) {
-  if (bytes == null) {
-    return "Unknown size";
-  }
-
-  if (bytes < 1024) {
-    return `${bytes} B`;
-  }
-
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

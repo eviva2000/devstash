@@ -8,6 +8,12 @@ import { ItemContentType } from "@/generated/prisma/client";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { validateQueryLimit } from "@/lib/db/query-limits";
+import {
+  doesTypeSupportContent,
+  doesTypeSupportFile,
+  doesTypeSupportLanguage,
+  doesTypeSupportUrl,
+} from "@/lib/item-type-capabilities";
 import type {
   StoredFileMetadata,
   UploadedFileMetadata,
@@ -482,22 +488,6 @@ function getSupportedUpdateData(
     language: doesTypeSupportLanguage(itemTypeSlug) ? data.language : null,
     url: doesTypeSupportUrl(itemTypeSlug) ? data.url : null,
   };
-}
-
-function doesTypeSupportContent(slug: string) {
-  return ["snippet", "prompt", "command", "note"].includes(slug);
-}
-
-function doesTypeSupportLanguage(slug: string) {
-  return ["snippet", "command"].includes(slug);
-}
-
-function doesTypeSupportUrl(slug: string) {
-  return slug === "link";
-}
-
-function doesTypeSupportFile(slug: string) {
-  return ["file", "image"].includes(slug);
 }
 
 function getContentTypeForItemType(slug: string) {
