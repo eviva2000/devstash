@@ -59,6 +59,14 @@ const updateItemSchema = z.object({
   tags: z
     .array(z.string().trim().min(1).max(50, "Tag is too long."))
     .max(30, "Too many tags."),
+  collectionIds: z
+    .array(
+      z
+        .string()
+        .regex(/^c[a-z0-9]{24}$/, "Choose a valid collection.")
+    )
+    .max(50, "Too many collections.")
+    .default([]),
 });
 
 const createItemSchema = updateItemSchema

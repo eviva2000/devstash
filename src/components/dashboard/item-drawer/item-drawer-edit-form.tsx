@@ -3,9 +3,13 @@
 import type React from "react";
 
 import { CodeEditor } from "@/components/dashboard/code-editor";
+import { CollectionSelector } from "@/components/dashboard/collection-selector";
 import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
 import { Input } from "@/components/ui/input";
-import type { DashboardCollection, DashboardItemType } from "@/features/dashboard/dashboard-types";
+import type {
+  DashboardCollection,
+  DashboardItemType,
+} from "@/features/dashboard/dashboard-types";
 
 import {
   DrawerMeta,
@@ -18,6 +22,7 @@ import type { EditFormState, ItemDetail } from "./types";
 
 export function ItemDrawerEditForm({
   collection,
+  collections,
   error,
   form,
   item,
@@ -31,6 +36,7 @@ export function ItemDrawerEditForm({
   usesMarkdownEditor,
 }: Readonly<{
   collection: DashboardCollection | null;
+  collections: DashboardCollection[];
   error: string;
   form: EditFormState;
   item: ItemDetail;
@@ -93,6 +99,15 @@ export function ItemDrawerEditForm({
             value={form.tags}
           />
         </EditField>
+
+        <CollectionSelector
+          collections={collections}
+          disabled={isSaving}
+          onChange={(collectionIds) =>
+            onChange((current) => ({ ...current, collectionIds }))
+          }
+          selectedIds={form.collectionIds}
+        />
 
         {supportsContent && (
           <ContentField

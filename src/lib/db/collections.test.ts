@@ -2,18 +2,20 @@ import { beforeEach, describe, expect, test, vi, type Mock } from "vitest";
 
 import { prisma } from "@/lib/prisma";
 
-import { createCollection } from "./collections";
+import { createCollection, getCollectionById } from "./collections";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     collection: {
       create: vi.fn(),
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
     },
   },
 }));
 
 const collectionCreateMock = prisma.collection.create as unknown as Mock;
+const collectionFindFirstMock = prisma.collection.findFirst as unknown as Mock;
 const collectionFindUniqueMock = prisma.collection.findUnique as unknown as Mock;
 
 describe("createCollection", () => {
@@ -108,6 +110,48 @@ describe("createCollection", () => {
   });
 });
 
+describe("getCollectionById", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("fetches only a collection owned by the user", async () => {
+    const collection = dbCollection({
+      id: "collection-2",
+      name: "Workflows",
+      slug: "workflows",
+    });
+    collectionFindFirstMock.mockResolvedValue(collection);
+
+    await expect(
+      getCollectionById("user-1", "collection-2")
+    ).resolves.toEqual({
+      id: "collection-2",
+      name: "Workflows",
+      slug: "workflows",
+      description: "Useful API references",
+      isFavorite: false,
+      itemCount: 0,
+      dominantType: null,
+      types: [],
+      createdAt: collection.createdAt,
+      updatedAt: collection.updatedAt,
+    });
+    expect(collectionFindFirstMock).toHaveBeenCalledWith({
+      where: { id: "collection-2", userId: "user-1" },
+      include: expect.any(Object),
+    });
+  });
+
+  test("returns null when the collection is not owned by the user", async () => {
+    collectionFindFirstMock.mockResolvedValue(null);
+
+    await expect(getCollectionById("user-1", "collection-2")).resolves.toBe(
+      null
+    );
+  });
+});
+
 function dbCollection(
   overrides: Partial<{
     id: string;
@@ -115,7 +159,7 @@ function dbCollection(
     slug: string;
     description: string | null;
     isFavorite: boolean;
-    items: [];
+    itemLinks: [];
     createdAt: Date;
     updatedAt: Date;
   }> = {}
@@ -129,7 +173,7 @@ function dbCollection(
     slug: "api-notes",
     description: "Useful API references",
     isFavorite: false,
-    items: [],
+    itemLinks: [],
     createdAt,
     updatedAt,
     ...overrides,

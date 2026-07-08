@@ -2,8 +2,10 @@ import { ArrowUpRight, Folder, Star } from "lucide-react";
 import Link from "next/link";
 
 import {
-  getTypeBorderStyle,
-  typeBorderColorMap,
+  getTypeColorStyle,
+  getTypeLeftBorderStyle,
+  typeColorMap,
+  typeLeftBorderColorMap,
 } from "@/features/dashboard/dashboard-utils";
 import { getIconComponent } from "@/lib/icon-map";
 
@@ -15,7 +17,12 @@ interface EnhancedCollection {
   isFavorite: boolean;
   itemCount: number;
   dominantType?: { icon?: string | null; color?: string | null } | null;
-  types?: Array<{ icon?: string | null; name: string; slug?: string }>;
+  types?: Array<{
+    color?: string | null;
+    icon?: string | null;
+    name: string;
+    slug?: string;
+  }>;
 }
 
 export function CollectionCard({
@@ -23,16 +30,16 @@ export function CollectionCard({
 }: {
   collection: EnhancedCollection;
 }) {
-  const borderColor =
-    typeBorderColorMap[
-      collection.dominantType?.color as keyof typeof typeBorderColorMap
+  const borderClassName =
+    typeLeftBorderColorMap[
+      collection.dominantType?.color as keyof typeof typeLeftBorderColorMap
     ] ?? "border-border";
 
   return (
     <Link
-      className={`group flex min-h-36 flex-col rounded-md border ${borderColor} bg-card p-4 text-card-foreground transition-colors hover:border-muted-foreground/40`}
-      href={`/collections/${collection.slug}`}
-      style={getTypeBorderStyle(collection.dominantType?.color)}
+      className={`group flex min-h-36 flex-col rounded-md border border-l-4 border-border ${borderClassName} bg-card p-4 text-card-foreground transition-colors hover:border-muted-foreground/40`}
+      href={`/collections/${collection.id}`}
+      style={getTypeLeftBorderStyle(collection.dominantType?.color)}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
@@ -58,11 +65,15 @@ export function CollectionCard({
           {collection.types.map((type, idx) => {
             const IconComponent = getIconComponent(type.icon);
             if (!IconComponent) return null;
+            const colorClass =
+              typeColorMap[type.color as keyof typeof typeColorMap] ??
+              "bg-muted/50 text-muted-foreground";
             return (
               <span
                 aria-label={type.name}
-                className="flex size-6 items-center justify-center rounded bg-muted/50 text-muted-foreground"
+                className={`flex size-6 items-center justify-center rounded ${colorClass}`}
                 key={`${collection.id}-type-${idx}`}
+                style={getTypeColorStyle(type.color)}
                 title={type.name}
               >
                 <IconComponent className="size-3.5" />

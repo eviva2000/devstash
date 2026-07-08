@@ -32,4 +32,5 @@ export type EditFormState = {
   content: string;
   language: string;
   url: string;
+  collectionIds: string[];
 };

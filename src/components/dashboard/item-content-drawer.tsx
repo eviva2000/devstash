@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { deleteItem, updateItem } from "@/actions/items";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import type {
+  DashboardCollection,
   DashboardItem,
   DashboardItemType,
 } from "@/features/dashboard/dashboard-types";
@@ -32,6 +33,7 @@ import type { EditFormState } from "./item-drawer/types";
 import { useItemDetail } from "./item-drawer/use-item-detail";
 
 export function ItemContentDrawer({
+  collections,
   isOpen,
   item,
   itemId,
@@ -39,6 +41,7 @@ export function ItemContentDrawer({
   onClosed,
   type,
 }: Readonly<{
+  collections: DashboardCollection[];
   isOpen: boolean;
   item?: DashboardItem;
   itemId: string | null;
@@ -142,6 +145,7 @@ export function ItemContentDrawer({
         content: supportsContent ? editForm.content : null,
         language: supportsLanguage ? editForm.language : null,
         url: supportsUrl ? editForm.url : null,
+        collectionIds: editForm.collectionIds,
       });
     } catch (error) {
       console.error("Failed to save item.", error);
@@ -259,6 +263,7 @@ export function ItemContentDrawer({
             {!isLoading && !activeError && activeDetail && isEditing && (
               <ItemDrawerEditForm
                 collection={displayCollection}
+                collections={collections}
                 error={formError}
                 form={editForm}
                 item={activeDetail}

@@ -6,10 +6,14 @@ import { validateQueryLimit } from "@/lib/db/query-limits";
 const MAX_COLLECTION_QUERY_LIMIT = 100;
 
 const collectionInclude = {
-  items: {
+  itemLinks: {
     include: {
-      type: {
-        select: { id: true, name: true, slug: true, icon: true, color: true },
+      item: {
+        include: {
+          type: {
+            select: { id: true, name: true, slug: true, icon: true, color: true },
+          },
+        },
       },
     },
   },
@@ -40,10 +44,10 @@ function toDashboardCollection(
 } {
   const typeCountMap = new Map<
     string,
-    { count: number; type: CollectionWithItems["items"][number]["type"] }
+    { count: number; type: CollectionWithItems["itemLinks"][number]["item"]["type"] }
   >();
 
-  collection.items.forEach((item) => {
+  collection.itemLinks.forEach(({ item }) => {
     const existing = typeCountMap.get(item.typeId);
 
     if (existing) {
@@ -77,7 +81,7 @@ function toDashboardCollection(
     slug: collection.slug,
     description: collection.description ?? "",
     isFavorite: collection.isFavorite,
-    itemCount: collection.items.length,
+    itemCount: collection.itemLinks.length,
     dominantType,
     types,
     createdAt: collection.createdAt,
@@ -125,6 +129,31 @@ export async function getFavoriteCollections(
   });
 
   return collections.map(toDashboardCollection);
+}
+
+export async function getCollections(userId: string, limit: number = 100) {
+  const take = validateQueryLimit(limit, {
+    max: MAX_COLLECTION_QUERY_LIMIT,
+    name: "Collections limit",
+  });
+
+  const collections = await prisma.collection.findMany({
+    where: { userId },
+    take,
+    orderBy: { name: "asc" },
+    include: collectionInclude,
+  });
+
+  return collections.map(toDashboardCollection);
+}
+
+export async function getCollectionById(userId: string, collectionId: string) {
+  const collection = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+    include: collectionInclude,
+  });
+
+  return collection ? toDashboardCollection(collection) : null;
 }
 
 export async function createCollection(

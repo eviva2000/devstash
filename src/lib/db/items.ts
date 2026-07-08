@@ -31,17 +31,29 @@ const itemTypeSelect = {
   isSystem: true,
 } as const;
 
+const itemCollectionSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  description: true,
+  isFavorite: true,
+  _count: {
+    select: { itemLinks: true },
+  },
+} as const;
+
 const itemInclude = {
   collection: {
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      description: true,
-      isFavorite: true,
-      _count: {
-        select: { items: true },
+    select: itemCollectionSelect,
+  },
+  collections: {
+    include: {
+      collection: {
+        select: itemCollectionSelect,
       },
+    },
+    orderBy: {
+      createdAt: "asc",
     },
   },
   tags: {
@@ -84,6 +96,7 @@ export type UpdateItemData = {
   language: string | null;
   url: string | null;
   tags: string[];
+  collectionIds?: string[];
 };
 
 export type CreateItemData = UpdateItemData & {
@@ -92,7 +105,9 @@ export type CreateItemData = UpdateItemData & {
 };
 
 function toDashboardCollection(
-  collection: NonNullable<DbDashboardItem["collection"]>
+  collection:
+    | NonNullable<DbDashboardItem["collection"]>
+    | DbDashboardItem["collections"][number]["collection"]
 ): DashboardCollection {
   return {
     id: collection.id,
@@ -100,18 +115,24 @@ function toDashboardCollection(
     slug: collection.slug,
     description: collection.description ?? "",
     isFavorite: collection.isFavorite,
-    itemCount: collection._count.items,
+    itemCount: collection._count.itemLinks,
   };
 }
 
 function toDashboardItem(item: DbDashboardItem): DashboardItem {
+  const collections = getDashboardCollections(item);
+  const primaryCollection =
+    collections[0] ?? (item.collection ? toDashboardCollection(item.collection) : null);
+
   return {
     id: item.id,
     title: item.title,
     description: item.description ?? "",
     typeId: item.typeId,
-    collectionId: item.collectionId,
-    collection: item.collection ? toDashboardCollection(item.collection) : null,
+    collectionId: primaryCollection?.id ?? null,
+    collection: primaryCollection,
+    collectionIds: collections.map((collection) => collection.id),
+    collections,
     content: item.content,
     language: item.language,
     url: item.url,
@@ -125,6 +146,21 @@ function toDashboardItem(item: DbDashboardItem): DashboardItem {
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   };
+}
+
+function getDashboardCollections(item: DbDashboardItem): DashboardCollection[] {
+  const collections = item.collections.map(({ collection }) =>
+    toDashboardCollection(collection)
+  );
+
+  if (
+    item.collection &&
+    !collections.some((collection) => collection.id === item.collection?.id)
+  ) {
+    collections.unshift(toDashboardCollection(item.collection));
+  }
+
+  return collections;
 }
 
 function toDashboardItemDetail(item: DbDashboardItemDetail): DashboardItemDetail {
@@ -216,6 +252,36 @@ export async function getItemsByTypeSlug(
   return { itemType, items: items.map(toDashboardItem) };
 }
 
+export async function getItemsByCollectionId(
+  userId: string,
+  collectionId: string,
+  limit: number = MAX_ITEM_QUERY_LIMIT
+): Promise<DashboardItem[]> {
+  const take = validateQueryLimit(limit, {
+    max: MAX_ITEM_QUERY_LIMIT,
+    name: "Items by collection limit",
+  });
+
+  const items = await prisma.item.findMany({
+    where: {
+      userId,
+      OR: [
+        { collectionId },
+        {
+          collections: {
+            some: { collectionId },
+          },
+        },
+      ],
+    },
+    take,
+    orderBy: { updatedAt: "desc" },
+    include: itemInclude,
+  });
+
+  return items.map(toDashboardItem);
+}
+
 export async function getItemDetailById(
   userId: string,
   itemId: string
@@ -244,6 +310,16 @@ export async function createItem(
 
     const tags = normalizeTags(data.tags);
     const supportedData = getSupportedUpdateData(itemType.slug, data);
+    const collectionIds = await resolveOwnedCollectionIds(
+      tx,
+      userId,
+      data.collectionIds ?? []
+    );
+
+    if (!collectionIds) {
+      return null;
+    }
+
     const supportedFile = await consumeSupportedFileUpload(
       tx,
       userId,
@@ -269,6 +345,14 @@ export async function createItem(
         fileSize: supportedFile?.fileSize ?? null,
         userId,
         typeId: itemType.id,
+        collectionId: collectionIds[0] ?? null,
+        collections: {
+          create: collectionIds.map((collectionId) => ({
+            collection: {
+              connect: { id: collectionId },
+            },
+          })),
+        },
         tags: {
           create: tags.map((tag) => ({
             tag: {
@@ -375,6 +459,16 @@ export async function updateItem(
 
     const tags = normalizeTags(data.tags);
     const supportedData = getSupportedUpdateData(existingItem.type.slug, data);
+    const collectionIds = await resolveOwnedCollectionIds(
+      tx,
+      userId,
+      data.collectionIds ?? []
+    );
+
+    if (!collectionIds) {
+      return null;
+    }
+
     const updatedItem = await tx.item.update({
       where: { id: itemId, userId },
       data: {
@@ -383,6 +477,15 @@ export async function updateItem(
         content: supportedData.content,
         language: supportedData.language,
         url: supportedData.url,
+        collectionId: collectionIds[0] ?? null,
+        collections: {
+          deleteMany: {},
+          create: collectionIds.map((collectionId) => ({
+            collection: {
+              connect: { id: collectionId },
+            },
+          })),
+        },
         tags: {
           deleteMany: {},
           create: tags.map((tag) => ({
@@ -455,6 +558,37 @@ function getItemTypeSlugCandidates(slug: string) {
   }
 
   return Array.from(new Set(candidates));
+}
+
+async function resolveOwnedCollectionIds(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  collectionIds: string[]
+): Promise<string[] | null> {
+  const uniqueCollectionIds = Array.from(new Set(collectionIds));
+
+  if (uniqueCollectionIds.length === 0) {
+    return [];
+  }
+
+  const collections = await tx.collection.findMany({
+    where: {
+      id: { in: uniqueCollectionIds },
+      userId,
+    },
+    select: { id: true },
+  });
+  const ownedCollectionIds = new Set(
+    collections.map((collection) => collection.id)
+  );
+
+  if (ownedCollectionIds.size !== uniqueCollectionIds.length) {
+    return null;
+  }
+
+  return uniqueCollectionIds.filter((collectionId) =>
+    ownedCollectionIds.has(collectionId)
+  );
 }
 
 function normalizeTags(tags: string[]) {

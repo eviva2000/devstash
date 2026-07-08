@@ -8,6 +8,7 @@ import {
   createPendingItemUpload,
   deleteItem,
   deletePendingItemUpload,
+  getItemsByCollectionId,
   getPendingItemUpload,
 } from "./items";
 
@@ -16,6 +17,7 @@ vi.mock("@/lib/prisma", () => ({
     $transaction: vi.fn(),
     item: {
       deleteMany: vi.fn(),
+      findMany: vi.fn(),
     },
     itemUpload: {
       create: vi.fn(),
@@ -27,6 +29,7 @@ vi.mock("@/lib/prisma", () => ({
 
 const transactionMock = prisma.$transaction as unknown as Mock;
 const deleteManyMock = vi.mocked(prisma.item.deleteMany);
+const itemFindManyMock = vi.mocked(prisma.item.findMany);
 const itemUploadCreateMock = vi.mocked(prisma.itemUpload.create);
 const itemUploadDeleteMock = vi.mocked(prisma.itemUpload.delete);
 const itemUploadFindFirstMock = vi.mocked(prisma.itemUpload.findFirst);
@@ -36,6 +39,9 @@ const transactionClient = {
   },
   item: {
     create: vi.fn(),
+  },
+  collection: {
+    findMany: vi.fn(),
   },
   itemUpload: {
     findFirst: vi.fn(),
@@ -74,6 +80,8 @@ describe("createItem", () => {
       typeId: "type-1",
       collectionId: null,
       collection: null,
+      collectionIds: [],
+      collections: [],
       content: "const value = true",
       language: "typescript",
       url: null,
@@ -108,6 +116,10 @@ describe("createItem", () => {
         fileSize: null,
         userId: "user-1",
         typeId: "type-1",
+        collectionId: null,
+        collections: {
+          create: [],
+        },
         tags: {
           create: [
             tagConnectOrCreate("typescript", "TypeScript"),
@@ -162,6 +174,77 @@ describe("createItem", () => {
         fileName: null,
         fileMimeType: null,
         fileSize: null,
+      }),
+      include: expect.any(Object),
+    });
+  });
+
+  test("creates collection memberships for owned collections", async () => {
+    transactionClient.itemType.findFirst.mockResolvedValue({
+      id: "type-1",
+      slug: "snippet",
+    });
+    transactionClient.collection.findMany.mockResolvedValue([
+      { id: "collection-1" },
+      { id: "collection-2" },
+    ]);
+    transactionClient.item.create.mockResolvedValue(
+      dbItem({
+        collectionId: "collection-1",
+        collections: [
+          {
+            collection: dbCollection({
+              id: "collection-1",
+              name: "API Notes",
+              slug: "api-notes",
+            }),
+          },
+          {
+            collection: dbCollection({
+              id: "collection-2",
+              name: "Workflows",
+              slug: "workflows",
+            }),
+          },
+        ],
+      })
+    );
+
+    await expect(
+      createItem("user-1", {
+        typeSlug: "snippet",
+        title: "New snippet",
+        description: null,
+        content: "const value = true",
+        language: "typescript",
+        url: null,
+        tags: [],
+        collectionIds: ["collection-1", "collection-2", "collection-1"],
+      })
+    ).resolves.toMatchObject({
+      collectionId: "collection-1",
+      collectionIds: ["collection-1", "collection-2"],
+      collections: [
+        expect.objectContaining({ id: "collection-1" }),
+        expect.objectContaining({ id: "collection-2" }),
+      ],
+    });
+    expect(transactionClient.collection.findMany).toHaveBeenCalledWith({
+      where: {
+        id: { in: ["collection-1", "collection-2"] },
+        userId: "user-1",
+      },
+      select: { id: true },
+    });
+    expect(transactionClient.item.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        collectionId: "collection-1",
+        collections: {
+          create: [
+            { collection: { connect: { id: "collection-1" } } },
+            { collection: { connect: { id: "collection-2" } } },
+          ],
+        },
       }),
       include: expect.any(Object),
     });
@@ -371,6 +454,48 @@ describe("deleteItem", () => {
   });
 });
 
+describe("getItemsByCollectionId", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("fetches user-scoped items from primary and linked collection memberships", async () => {
+    const item = dbItem({
+      collectionId: "collection-1",
+      collection: dbCollection(),
+      collections: [{ collection: dbCollection() }],
+    });
+    itemFindManyMock.mockResolvedValue([item]);
+
+    await expect(
+      getItemsByCollectionId("user-1", "collection-1")
+    ).resolves.toEqual([
+      expect.objectContaining({
+        id: "item-1",
+        collectionId: "collection-1",
+        collectionIds: ["collection-1"],
+        collections: [expect.objectContaining({ id: "collection-1" })],
+      }),
+    ]);
+    expect(itemFindManyMock).toHaveBeenCalledWith({
+      where: {
+        userId: "user-1",
+        OR: [
+          { collectionId: "collection-1" },
+          {
+            collections: {
+              some: { collectionId: "collection-1" },
+            },
+          },
+        ],
+      },
+      take: 50,
+      orderBy: { updatedAt: "desc" },
+      include: expect.any(Object),
+    });
+  });
+});
+
 function tagConnectOrCreate(slug: string, name: string) {
   return {
     tag: {
@@ -397,12 +522,14 @@ type MockDbItem = {
   description: string | null;
   typeId: string;
   collectionId: string | null;
-  collection: null;
+  collection: MockDbCollection | null;
+  collections: Array<{ collection: MockDbCollection }>;
   content: string | null;
   language: string | null;
   url: string | null;
   isFavorite: boolean;
   isPinned: boolean;
+  userId: string;
   tags: Array<{ tag: { name: string } }>;
   createdAt: Date;
   updatedAt: Date;
@@ -422,9 +549,32 @@ type MockDbItem = {
   };
 };
 
+type MockDbCollection = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  isFavorite: boolean;
+  _count: { itemLinks: number };
+};
+
 function dbItem(overrides: Partial<MockDbItem> = {}): MockDbItem {
   return {
     ...baseDbItem(),
+    ...overrides,
+  };
+}
+
+function dbCollection(
+  overrides: Partial<MockDbCollection> = {}
+): MockDbCollection {
+  return {
+    id: "collection-1",
+    name: "API Notes",
+    slug: "api-notes",
+    description: null,
+    isFavorite: false,
+    _count: { itemLinks: 2 },
     ...overrides,
   };
 }
@@ -440,11 +590,13 @@ function baseDbItem(): MockDbItem {
     typeId: "type-1",
     collectionId: null,
     collection: null,
+    collections: [],
     content: "const value = true",
     language: "typescript",
     url: null,
     isFavorite: false,
     isPinned: false,
+    userId: "user-1",
     tags: [
       { tag: { name: "Next.js" } },
       { tag: { name: "TypeScript" } },

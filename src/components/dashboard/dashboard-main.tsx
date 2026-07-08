@@ -4,6 +4,7 @@ import { Folder, Heart, Layers3, Star } from "lucide-react";
 import { useState } from "react";
 
 import type {
+  DashboardCollection,
   DashboardData,
   DashboardItemStats,
 } from "@/features/dashboard/dashboard-types";
@@ -22,18 +23,25 @@ interface ExtendedCollection {
   isFavorite: boolean;
   itemCount: number;
   dominantType?: { icon?: string | null; color?: string | null } | null;
-  types?: Array<{ icon?: string | null; name: string; slug?: string }>;
+  types?: Array<{
+    color?: string | null;
+    icon?: string | null;
+    name: string;
+    slug?: string;
+  }>;
 }
 
 export function DashboardMain({
   data,
   extendedCollections,
   collectionStats,
+  collections,
   itemStats,
 }: {
   readonly data: DashboardData;
   readonly extendedCollections?: ExtendedCollection[];
   readonly collectionStats: { readonly total: number; readonly favorites: number };
+  readonly collections: DashboardCollection[];
   readonly itemStats: DashboardItemStats;
 }) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -155,6 +163,7 @@ export function DashboardMain({
       </div>
 
       <ItemContentDrawer
+        collections={collections}
         isOpen={isItemDrawerOpen}
         item={selectedItem}
         itemId={selectedItemId}

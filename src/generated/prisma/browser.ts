@@ -58,6 +58,11 @@ export type ItemType = Prisma.ItemTypeModel
  */
 export type Collection = Prisma.CollectionModel
 /**
+ * Model ItemCollection
+ *
+ */
+export type ItemCollection = Prisma.ItemCollectionModel
+/**
  * Model Tag
  *
  */

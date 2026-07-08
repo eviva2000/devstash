@@ -22,6 +22,7 @@ import {
 interface DashboardShellClientProps {
   readonly user: DashboardUser;
   readonly recentCollections: DashboardCollection[];
+  readonly collections: DashboardCollection[];
   readonly favoriteCollections: DashboardCollection[];
   readonly itemTypes: Array<{
     readonly id: string;
@@ -41,6 +42,7 @@ interface DashboardShellClientProps {
 export function DashboardShellClient({
   user,
   recentCollections,
+  collections,
   favoriteCollections,
   itemTypes,
   pinnedItems,
@@ -57,13 +59,19 @@ export function DashboardShellClient({
     const allDashboardItems = uniqueItems([...pinnedItems, ...recentItems]);
 
     const collectionById: Map<string, DashboardCollection> = new Map(
-      [...recentCollections, ...favoriteCollections].map((collection) => [
+      [...collections, ...recentCollections, ...favoriteCollections].map((collection) => [
         collection.id,
         collection,
       ])
     );
 
     for (const item of allDashboardItems) {
+      for (const collection of item.collections) {
+        if (!collectionById.has(collection.id)) {
+          collectionById.set(collection.id, collection);
+        }
+      }
+
       if (item.collection && !collectionById.has(item.collection.id)) {
         collectionById.set(item.collection.id, item.collection);
       }
@@ -98,6 +106,7 @@ export function DashboardShellClient({
     return { dashboardData, sidebarData };
   }, [
     recentCollections,
+    collections,
     favoriteCollections,
     itemTypes,
     pinnedItems,
@@ -124,11 +133,13 @@ export function DashboardShellClient({
 
       <section className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader
+          collections={collections}
           isMobileDrawerOpen={isMobileDrawerOpen}
           itemTypes={itemTypes}
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
         />
         <DashboardMain
+          collections={collections}
           data={dashboardData}
           extendedCollections={recentCollections}
           collectionStats={collectionStats}

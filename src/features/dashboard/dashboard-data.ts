@@ -16,17 +16,29 @@ export function getDashboardData(): {
   const collectionById = new Map(
     mockCollections.map((collection) => [collection.id, collection])
   );
+  const items = mockItems.map((item) => {
+    const collection = item.collectionId
+      ? collectionById.get(item.collectionId) ?? null
+      : null;
 
-  for (const item of mockItems) {
+    return {
+      ...item,
+      collection,
+      collectionIds: collection ? [collection.id] : [],
+      collections: collection ? [collection] : [],
+    };
+  });
+
+  for (const item of items) {
     typeCounts.set(item.typeId, (typeCounts.get(item.typeId) ?? 0) + 1);
   }
 
-  const favoriteItems = mockItems.filter((item) => item.isFavorite);
+  const favoriteItems = items.filter((item) => item.isFavorite);
   const favoriteCollections = mockCollections.filter(
     (collection) => collection.isFavorite
   );
-  const pinnedItems = mockItems.filter((item) => item.isPinned);
-  const recentItems = [...mockItems]
+  const pinnedItems = items.filter((item) => item.isPinned);
+  const recentItems = [...items]
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 10);
   const recentCollections = mockCollections.slice(0, 5);
@@ -42,10 +54,10 @@ export function getDashboardData(): {
       typeById,
     },
     sidebarData: {
-      totalItemsCount: mockItems.length,
+      totalItemsCount: items.length,
       favoriteItemsCount: favoriteItems.length,
       pinnedItemsCount: pinnedItems.length,
-      recentItemsCount: Math.min(mockItems.length, 5),
+      recentItemsCount: Math.min(items.length, 5),
       types: mockItemTypes.map((type) => ({
         ...type,
         count: typeCounts.get(type.id) ?? 0,

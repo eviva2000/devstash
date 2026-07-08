@@ -109,7 +109,8 @@ model Item {
   typeId       String          @map("type_id")
   type         ItemType        @relation(fields: [typeId], references: [id], onDelete: Restrict)
   collectionId String?         @map("collection_id")
-  collection   Collection?     @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  collection   Collection?     @relation("PrimaryItemCollection", fields: [collectionId], references: [id], onDelete: SetNull)
+  collections  ItemCollection[]
   tags         ItemTag[]
   createdAt    DateTime        @default(now()) @map("created_at")
   updatedAt    DateTime        @updatedAt @map("updated_at")
@@ -172,7 +173,8 @@ model Collection {
   isFavorite  Boolean  @default(false) @map("is_favorite")
   userId      String   @map("user_id")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items       Item[]
+  items       Item[]   @relation("PrimaryItemCollection")
+  itemLinks   ItemCollection[]
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -180,6 +182,18 @@ model Collection {
   @@index([userId])
   @@index([userId, isFavorite])
   @@map("collections")
+}
+
+model ItemCollection {
+  itemId       String     @map("item_id")
+  collectionId String     @map("collection_id")
+  item         Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@id([itemId, collectionId])
+  @@index([collectionId])
+  @@map("item_collections")
 }
 
 model Tag {
