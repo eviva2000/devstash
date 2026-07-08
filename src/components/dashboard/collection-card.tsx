@@ -38,7 +38,7 @@ export function CollectionCard({
   return (
     <Link
       className={`group flex min-h-36 flex-col rounded-md border border-l-4 border-border ${borderClassName} bg-card p-4 text-card-foreground transition-colors hover:border-muted-foreground/40`}
-      href={`/collections/${collection.slug}`}
+      href={`/collections/${collection.id}`}
       style={getTypeLeftBorderStyle(collection.dominantType?.color)}
     >
       <div className="flex items-start justify-between gap-3">

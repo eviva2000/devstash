@@ -1,17 +1,29 @@
-# Current Feature
+# Current Feature: Collections Pages
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Create `/collections` to show the user's collections.
+- Create `/collections/[id]` to show the items in a specific collection.
+- Use the existing collection and item cards where possible.
+- Link the sidebar "View all collections" action to `/collections`.
+- Link every collection card to its specific collection detail page.
+- Keep collection and item data user-scoped through existing server-side data access patterns.
+- Preserve existing dashboard and item-list card behavior.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Inline spec loaded from the user request.
+- Collection detail pages should display items in that collection.
+- Prefer existing dashboard/sidebar layout and card components over new visual patterns.
+- `/collections/[id]` uses the collection ID; collection cards and sidebar collection links point to `/collections/${collection.id}`.
+- Image items on collection detail pages render with the existing image thumbnail card instead of the regular item card.
 
 ## History
 
@@ -270,3 +282,10 @@ Keep this updated. Earliest to Latest
   - Updated dashboard and item-list data mapping to include `collectionIds` and `collections`
   - Fixed the development Prisma singleton to avoid stale generated-client reuse after schema changes
   - Verified with `git diff --check`, `npx tsc --noEmit`, `npm run lint`, `npm test`, and `npm run build`
+- **Collections Pages** (July 8, 2026)
+  - Added `/collections` for the authenticated user's collection grid using existing collection cards
+  - Added `/collections/[id]` for items in a specific user-owned collection using existing item cards, image thumbnail cards, and the item detail drawer
+  - Added user-scoped `getCollectionById()` and `getItemsByCollectionId()` helpers
+  - Updated collection card and sidebar collection links to use collection IDs
+  - Protected `/collections/:path*` through `src/proxy.ts`
+  - Verified with `npx tsc --noEmit`, `npm test`, `npm run lint`, `npm run build`, and `git diff --check`

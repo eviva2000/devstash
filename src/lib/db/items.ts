@@ -252,6 +252,36 @@ export async function getItemsByTypeSlug(
   return { itemType, items: items.map(toDashboardItem) };
 }
 
+export async function getItemsByCollectionId(
+  userId: string,
+  collectionId: string,
+  limit: number = MAX_ITEM_QUERY_LIMIT
+): Promise<DashboardItem[]> {
+  const take = validateQueryLimit(limit, {
+    max: MAX_ITEM_QUERY_LIMIT,
+    name: "Items by collection limit",
+  });
+
+  const items = await prisma.item.findMany({
+    where: {
+      userId,
+      OR: [
+        { collectionId },
+        {
+          collections: {
+            some: { collectionId },
+          },
+        },
+      ],
+    },
+    take,
+    orderBy: { updatedAt: "desc" },
+    include: itemInclude,
+  });
+
+  return items.map(toDashboardItem);
+}
+
 export async function getItemDetailById(
   userId: string,
   itemId: string

@@ -214,7 +214,7 @@ function SidebarContent({
           {data.favoriteCollections.map((collection) => (
             <SidebarLink
               count={collection.itemCount}
-              href={`/collections/${collection.slug}`}
+              href={`/collections/${collection.id}`}
               icon={Star}
               iconClassName="bg-amber-500/15 text-amber-400"
               isCollapsed={compact}
@@ -230,7 +230,7 @@ function SidebarContent({
           {data.recentCollections.map((collection) => (
             <SidebarLink
               count={collection.itemCount}
-              href={`/collections/${collection.slug}`}
+              href={`/collections/${collection.id}`}
               marker
               markerStyle={getTypeMarkerStyle(
                 collection.dominantType?.color

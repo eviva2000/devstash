@@ -8,6 +8,7 @@ import {
   createPendingItemUpload,
   deleteItem,
   deletePendingItemUpload,
+  getItemsByCollectionId,
   getPendingItemUpload,
 } from "./items";
 
@@ -16,6 +17,7 @@ vi.mock("@/lib/prisma", () => ({
     $transaction: vi.fn(),
     item: {
       deleteMany: vi.fn(),
+      findMany: vi.fn(),
     },
     itemUpload: {
       create: vi.fn(),
@@ -27,6 +29,7 @@ vi.mock("@/lib/prisma", () => ({
 
 const transactionMock = prisma.$transaction as unknown as Mock;
 const deleteManyMock = vi.mocked(prisma.item.deleteMany);
+const itemFindManyMock = vi.mocked(prisma.item.findMany);
 const itemUploadCreateMock = vi.mocked(prisma.itemUpload.create);
 const itemUploadDeleteMock = vi.mocked(prisma.itemUpload.delete);
 const itemUploadFindFirstMock = vi.mocked(prisma.itemUpload.findFirst);
@@ -451,6 +454,48 @@ describe("deleteItem", () => {
   });
 });
 
+describe("getItemsByCollectionId", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("fetches user-scoped items from primary and linked collection memberships", async () => {
+    const item = dbItem({
+      collectionId: "collection-1",
+      collection: dbCollection(),
+      collections: [{ collection: dbCollection() }],
+    });
+    itemFindManyMock.mockResolvedValue([item]);
+
+    await expect(
+      getItemsByCollectionId("user-1", "collection-1")
+    ).resolves.toEqual([
+      expect.objectContaining({
+        id: "item-1",
+        collectionId: "collection-1",
+        collectionIds: ["collection-1"],
+        collections: [expect.objectContaining({ id: "collection-1" })],
+      }),
+    ]);
+    expect(itemFindManyMock).toHaveBeenCalledWith({
+      where: {
+        userId: "user-1",
+        OR: [
+          { collectionId: "collection-1" },
+          {
+            collections: {
+              some: { collectionId: "collection-1" },
+            },
+          },
+        ],
+      },
+      take: 50,
+      orderBy: { updatedAt: "desc" },
+      include: expect.any(Object),
+    });
+  });
+});
+
 function tagConnectOrCreate(slug: string, name: string) {
   return {
     tag: {
@@ -477,13 +522,14 @@ type MockDbItem = {
   description: string | null;
   typeId: string;
   collectionId: string | null;
-  collection: null;
+  collection: MockDbCollection | null;
   collections: Array<{ collection: MockDbCollection }>;
   content: string | null;
   language: string | null;
   url: string | null;
   isFavorite: boolean;
   isPinned: boolean;
+  userId: string;
   tags: Array<{ tag: { name: string } }>;
   createdAt: Date;
   updatedAt: Date;
@@ -550,6 +596,7 @@ function baseDbItem(): MockDbItem {
     url: null,
     isFavorite: false,
     isPinned: false,
+    userId: "user-1",
     tags: [
       { tag: { name: "Next.js" } },
       { tag: { name: "TypeScript" } },

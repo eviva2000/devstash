@@ -147,6 +147,15 @@ export async function getCollections(userId: string, limit: number = 100) {
   return collections.map(toDashboardCollection);
 }
 
+export async function getCollectionById(userId: string, collectionId: string) {
+  const collection = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+    include: collectionInclude,
+  });
+
+  return collection ? toDashboardCollection(collection) : null;
+}
+
 export async function createCollection(
   userId: string,
   data: CreateCollectionData
