@@ -1,21 +1,17 @@
-# Current Feature: Fixed Sidebar Scroll
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Keep the desktop sidebar fixed in place while dashboard and item-list content scrolls.
-- Prevent the desktop sidebar from vertically scrolling when the main dashboard section scrolls.
-- Preserve mobile drawer behavior.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Requested inline: make the sidebar fixed and not vertically scrollable when scrolling dashboard content.
 
 ## History
 
@@ -249,3 +245,10 @@ Keep this updated. Earliest to Latest
   - Reused the drawer copy priority: content, URL, file name, description, then title
   - Kept file list rows and image thumbnail cards free of the quick copy action
   - Verified with `npx tsc --noEmit`, `npm run lint`, and `npm test`
+- **Fixed Sidebar Scroll** (July 8, 2026)
+  - Completed on branch `fixed-sidebar-scroll`
+  - Kept the desktop sidebar fixed in place while dashboard and item-list content scrolls
+  - Prevented the desktop sidebar nav from vertically scrolling with the main content
+  - Removed Favorites, Pinned, and Recent shortcuts while keeping Dashboard in the sidebar
+  - Preserved mobile drawer behavior
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build`, `git diff --check`, and a Playwright scroll check
