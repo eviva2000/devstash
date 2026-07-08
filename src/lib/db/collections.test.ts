@@ -115,7 +115,7 @@ function dbCollection(
     slug: string;
     description: string | null;
     isFavorite: boolean;
-    items: [];
+    itemLinks: [];
     createdAt: Date;
     updatedAt: Date;
   }> = {}
@@ -129,7 +129,7 @@ function dbCollection(
     slug: "api-notes",
     description: "Useful API references",
     isFavorite: false,
-    items: [],
+    itemLinks: [],
     createdAt,
     updatedAt,
     ...overrides,

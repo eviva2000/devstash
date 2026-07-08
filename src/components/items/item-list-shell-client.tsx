@@ -27,6 +27,7 @@ import { isCreatableItemType } from "@/lib/item-type-capabilities";
 interface ItemListShellClientProps {
   readonly user: DashboardUser;
   readonly recentCollections: DashboardCollection[];
+  readonly collections: DashboardCollection[];
   readonly favoriteCollections: DashboardCollection[];
   readonly itemTypes: DashboardItemType[];
   readonly itemType: DashboardItemType;
@@ -38,6 +39,7 @@ interface ItemListShellClientProps {
 export function ItemListShellClient({
   user,
   recentCollections,
+  collections,
   favoriteCollections,
   itemTypes,
   itemType,
@@ -73,21 +75,27 @@ export function ItemListShellClient({
     ]
   );
   const collectionById = useMemo(() => {
-    const collections = new Map<string, DashboardCollection>(
-      [...recentCollections, ...favoriteCollections].map((collection) => [
+    const collectionMap = new Map<string, DashboardCollection>(
+      [...collections, ...recentCollections, ...favoriteCollections].map((collection) => [
         collection.id,
         collection,
       ])
     );
 
     for (const item of items) {
-      if (item.collection && !collections.has(item.collection.id)) {
-        collections.set(item.collection.id, item.collection);
+      for (const collection of item.collections) {
+        if (!collectionMap.has(collection.id)) {
+          collectionMap.set(collection.id, collection);
+        }
+      }
+
+      if (item.collection && !collectionMap.has(item.collection.id)) {
+        collectionMap.set(item.collection.id, item.collection);
       }
     }
 
-    return collections;
-  }, [favoriteCollections, items, recentCollections]);
+    return collectionMap;
+  }, [collections, favoriteCollections, items, recentCollections]);
   const selectedItem = selectedItemId
     ? items.find((item) => item.id === selectedItemId)
     : undefined;
@@ -121,6 +129,7 @@ export function ItemListShellClient({
 
       <section className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader
+          collections={collections}
           initialCreateTypeSlug={itemType.slug}
           isMobileDrawerOpen={isMobileDrawerOpen}
           itemTypes={itemTypes}
@@ -142,6 +151,7 @@ export function ItemListShellClient({
                 </div>
                 {canCreateActiveType && (
                   <ItemCreateDialog
+                    collections={collections}
                     initialTypeSlug={itemType.slug}
                     itemTypes={itemTypes}
                     triggerLabel={createButtonLabel}
@@ -219,6 +229,7 @@ export function ItemListShellClient({
       </section>
 
       <ItemContentDrawer
+        collections={collections}
         isOpen={isItemDrawerOpen}
         item={selectedItem}
         itemId={selectedItemId}

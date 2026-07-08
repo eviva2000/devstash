@@ -27,6 +27,8 @@ export type DashboardItem = {
   typeId: string;
   collectionId: string | null;
   collection?: DashboardCollection | null;
+  collectionIds: string[];
+  collections: DashboardCollection[];
   content?: string | null;
   language?: string | null;
   url?: string | null;

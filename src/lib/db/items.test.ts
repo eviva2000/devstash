@@ -37,6 +37,9 @@ const transactionClient = {
   item: {
     create: vi.fn(),
   },
+  collection: {
+    findMany: vi.fn(),
+  },
   itemUpload: {
     findFirst: vi.fn(),
     updateMany: vi.fn(),
@@ -74,6 +77,8 @@ describe("createItem", () => {
       typeId: "type-1",
       collectionId: null,
       collection: null,
+      collectionIds: [],
+      collections: [],
       content: "const value = true",
       language: "typescript",
       url: null,
@@ -108,6 +113,10 @@ describe("createItem", () => {
         fileSize: null,
         userId: "user-1",
         typeId: "type-1",
+        collectionId: null,
+        collections: {
+          create: [],
+        },
         tags: {
           create: [
             tagConnectOrCreate("typescript", "TypeScript"),
@@ -162,6 +171,77 @@ describe("createItem", () => {
         fileName: null,
         fileMimeType: null,
         fileSize: null,
+      }),
+      include: expect.any(Object),
+    });
+  });
+
+  test("creates collection memberships for owned collections", async () => {
+    transactionClient.itemType.findFirst.mockResolvedValue({
+      id: "type-1",
+      slug: "snippet",
+    });
+    transactionClient.collection.findMany.mockResolvedValue([
+      { id: "collection-1" },
+      { id: "collection-2" },
+    ]);
+    transactionClient.item.create.mockResolvedValue(
+      dbItem({
+        collectionId: "collection-1",
+        collections: [
+          {
+            collection: dbCollection({
+              id: "collection-1",
+              name: "API Notes",
+              slug: "api-notes",
+            }),
+          },
+          {
+            collection: dbCollection({
+              id: "collection-2",
+              name: "Workflows",
+              slug: "workflows",
+            }),
+          },
+        ],
+      })
+    );
+
+    await expect(
+      createItem("user-1", {
+        typeSlug: "snippet",
+        title: "New snippet",
+        description: null,
+        content: "const value = true",
+        language: "typescript",
+        url: null,
+        tags: [],
+        collectionIds: ["collection-1", "collection-2", "collection-1"],
+      })
+    ).resolves.toMatchObject({
+      collectionId: "collection-1",
+      collectionIds: ["collection-1", "collection-2"],
+      collections: [
+        expect.objectContaining({ id: "collection-1" }),
+        expect.objectContaining({ id: "collection-2" }),
+      ],
+    });
+    expect(transactionClient.collection.findMany).toHaveBeenCalledWith({
+      where: {
+        id: { in: ["collection-1", "collection-2"] },
+        userId: "user-1",
+      },
+      select: { id: true },
+    });
+    expect(transactionClient.item.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        collectionId: "collection-1",
+        collections: {
+          create: [
+            { collection: { connect: { id: "collection-1" } } },
+            { collection: { connect: { id: "collection-2" } } },
+          ],
+        },
       }),
       include: expect.any(Object),
     });
@@ -398,6 +478,7 @@ type MockDbItem = {
   typeId: string;
   collectionId: string | null;
   collection: null;
+  collections: Array<{ collection: MockDbCollection }>;
   content: string | null;
   language: string | null;
   url: string | null;
@@ -422,9 +503,32 @@ type MockDbItem = {
   };
 };
 
+type MockDbCollection = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  isFavorite: boolean;
+  _count: { itemLinks: number };
+};
+
 function dbItem(overrides: Partial<MockDbItem> = {}): MockDbItem {
   return {
     ...baseDbItem(),
+    ...overrides,
+  };
+}
+
+function dbCollection(
+  overrides: Partial<MockDbCollection> = {}
+): MockDbCollection {
+  return {
+    id: "collection-1",
+    name: "API Notes",
+    slug: "api-notes",
+    description: null,
+    isFavorite: false,
+    _count: { itemLinks: 2 },
     ...overrides,
   };
 }
@@ -440,6 +544,7 @@ function baseDbItem(): MockDbItem {
     typeId: "type-1",
     collectionId: null,
     collection: null,
+    collections: [],
     content: "const value = true",
     language: "typescript",
     url: null,

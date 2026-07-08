@@ -1,17 +1,28 @@
-# Current Feature
+# Current Feature: Add Items To Collections
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Allow an item to belong to one or more collections.
+- Add collection selection input to the new item form.
+- Add collection selection input to the edit item form.
+- Populate collection choices from user-scoped server-fetched collection data.
+- Persist selected collections through the existing item create and update flows.
+- Keep collection data access user-scoped through `lib/db` helpers and server actions/API routes where needed.
+- Refresh affected dashboard and item-list views after item collection changes.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Inline spec loaded from the user request.
+- Collection pages do not need to be built or displayed in this feature.
+- Support both single-collection and multiple-collection assignment from the forms.
+- Follow existing item create/edit patterns for validation, toasts, and refresh behavior.
 
 ## History
 

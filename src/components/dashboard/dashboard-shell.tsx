@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DashboardShellClient } from "./dashboard-shell-client";
 import {
+  getCollections,
   getCollectionStats,
   getFavoriteCollections,
   getItemTypes,
@@ -27,6 +28,7 @@ export async function DashboardShell() {
 
   const [
     recentCollections,
+    collections,
     favoriteCollections,
     itemTypes,
     collectionStats,
@@ -36,6 +38,7 @@ export async function DashboardShell() {
     itemTypeCounts,
   ] = await Promise.all([
     getRecentCollections(userId, 6),
+    getCollections(userId),
     getFavoriteCollections(userId),
     getItemTypes(),
     getCollectionStats(userId),
@@ -53,6 +56,7 @@ export async function DashboardShell() {
         image: session.user.image,
       }}
       recentCollections={recentCollections}
+      collections={collections}
       favoriteCollections={favoriteCollections}
       itemTypes={itemTypes}
       pinnedItems={pinnedItems}

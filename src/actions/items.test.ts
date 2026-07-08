@@ -44,6 +44,8 @@ const revalidatePathMock = vi.mocked(revalidatePath);
 const updateItemRecordMock = vi.mocked(updateItemRecord);
 
 const VALID_ITEM_ID = "cm00000000000000000000000";
+const VALID_COLLECTION_ID = "cm11111111111111111111111";
+const SECOND_COLLECTION_ID = "cm22222222222222222222222";
 
 describe("createItem", () => {
   beforeEach(() => {
@@ -105,6 +107,7 @@ describe("createItem", () => {
         language: "",
         url: "   ",
         tags: [" TypeScript ", "Next.js", "TypeScript"],
+        collectionIds: [VALID_COLLECTION_ID, SECOND_COLLECTION_ID],
       })
     ).resolves.toEqual({ success: true, data: createdItem });
     expect(createItemRecordMock).toHaveBeenCalledWith("user-1", {
@@ -115,6 +118,7 @@ describe("createItem", () => {
       language: null,
       url: null,
       tags: ["TypeScript", "Next.js", "TypeScript"],
+      collectionIds: [VALID_COLLECTION_ID, SECOND_COLLECTION_ID],
     });
     expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
     expect(revalidatePathMock).toHaveBeenCalledWith("/items/snippet");
@@ -164,6 +168,7 @@ describe("createItem", () => {
         language: "ignored",
         url: "   ",
         tags: [],
+        collectionIds: [],
         file: {
           uploadToken: "cm11111111111111111111111",
         },
@@ -177,6 +182,7 @@ describe("createItem", () => {
       language: "ignored",
       url: null,
       tags: [],
+      collectionIds: [],
       file: {
         uploadToken: "cm11111111111111111111111",
       },
@@ -252,6 +258,7 @@ describe("updateItem", () => {
         language: "",
         url: "   ",
         tags: [" TypeScript ", "Next.js", "TypeScript"],
+        collectionIds: [VALID_COLLECTION_ID],
       })
     ).resolves.toEqual({ success: true, data: updatedItem });
     expect(updateItemRecordMock).toHaveBeenCalledWith("user-1", VALID_ITEM_ID, {
@@ -261,6 +268,7 @@ describe("updateItem", () => {
       language: null,
       url: null,
       tags: ["TypeScript", "Next.js", "TypeScript"],
+      collectionIds: [VALID_COLLECTION_ID],
     });
     expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
     expect(revalidatePathMock).toHaveBeenCalledWith("/items/snippet");
@@ -402,6 +410,7 @@ function validUpdateInput() {
     language: "typescript",
     url: null,
     tags: ["Next.js"],
+    collectionIds: [],
   };
 }
 
@@ -414,6 +423,7 @@ function validCreateInput() {
     language: "typescript",
     url: null,
     tags: ["Next.js"],
+    collectionIds: [],
   };
 }
 
@@ -442,6 +452,8 @@ function itemDetail(
     typeId: "type-1",
     collectionId: null,
     collection: null,
+    collectionIds: [],
+    collections: [],
     content: "console.log('devstash')",
     language: null,
     url: null,

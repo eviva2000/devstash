@@ -23,6 +23,7 @@ export function getEditFormState(item: ItemDetail | null): EditFormState {
     content: item?.content ?? "",
     language: item?.language ?? "",
     url: item?.url ?? "",
+    collectionIds: item?.collectionIds ?? [],
   };
 }
 

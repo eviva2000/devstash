@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ItemListShellClient } from "@/components/items/item-list-shell-client";
 import {
+  getCollections,
   getFavoriteCollections,
   getItemTypes,
   getRecentCollections,
@@ -25,6 +26,7 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
 
   const [
     recentCollections,
+    collections,
     favoriteCollections,
     itemTypes,
     itemStats,
@@ -32,6 +34,7 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
     typedItems,
   ] = await Promise.all([
     getRecentCollections(userId, 6),
+    getCollections(userId),
     getFavoriteCollections(userId),
     getItemTypes(),
     getItemStats(userId),
@@ -51,6 +54,7 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
         image: session.user.image,
       }}
       favoriteCollections={favoriteCollections}
+      collections={collections}
       itemStats={itemStats}
       itemType={typedItems.itemType}
       itemTypeCounts={itemTypeCounts}

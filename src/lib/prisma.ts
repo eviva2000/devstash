@@ -1,6 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { PrismaClient } from "@/generated/prisma/client";
+import { Prisma, PrismaClient } from "@/generated/prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -9,14 +9,19 @@ if (!connectionString) {
 }
 
 const adapter = new PrismaPg({ connectionString });
+const clientCacheKey = Object.keys(Prisma.ModelName).sort().join("|");
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
+  prismaClientCacheKey?: string;
 };
 
 export const prisma =
-  globalForPrisma.prisma ?? new PrismaClient({ adapter });
+  globalForPrisma.prismaClientCacheKey === clientCacheKey
+    ? (globalForPrisma.prisma ?? new PrismaClient({ adapter }))
+    : new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
+  globalForPrisma.prismaClientCacheKey = clientCacheKey;
 }

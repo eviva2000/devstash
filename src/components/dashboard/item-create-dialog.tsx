@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
 import { CodeEditor } from "@/components/dashboard/code-editor";
+import { CollectionSelector } from "@/components/dashboard/collection-selector";
 import { FileUpload } from "@/components/dashboard/file-upload";
 import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { DashboardItemType } from "@/features/dashboard/dashboard-types";
+import type {
+  DashboardCollection,
+  DashboardItemType,
+} from "@/features/dashboard/dashboard-types";
 import {
   getTypeColorStyle,
   typeColorMap,
@@ -53,15 +57,18 @@ type CreateItemFormState = {
   content: string;
   language: string;
   url: string;
+  collectionIds: string[];
   file: UploadedFileMetadata | null;
 };
 
 export function ItemCreateDialog({
+  collections,
   initialTypeSlug,
   itemTypes,
   triggerClassName,
   triggerLabel = "New Item",
 }: {
+  collections: DashboardCollection[];
   initialTypeSlug?: string;
   itemTypes: DashboardItemType[];
   triggerClassName?: string;
@@ -136,6 +143,7 @@ export function ItemCreateDialog({
         content: supportsContent ? form.content : null,
         language: supportsLanguage ? form.language : null,
         url: supportsUrl ? form.url : null,
+        collectionIds: form.collectionIds,
         file: supportsFileUpload ? form.file : null,
       });
     } catch (error) {
@@ -288,6 +296,13 @@ export function ItemCreateDialog({
                       value={form.tags}
                     />
                   </CreateField>
+
+                  <CollectionSelector
+                    collections={collections}
+                    disabled={isSaving}
+                    onChange={(collectionIds) => updateForm({ collectionIds })}
+                    selectedIds={form.collectionIds}
+                  />
 
                   {supportsContent && (
                     usesCodeEditor ? (
@@ -504,6 +519,7 @@ function getInitialForm(typeSlug: string): CreateItemFormState {
     content: "",
     language: "",
     url: "",
+    collectionIds: [],
     file: null,
   };
 }

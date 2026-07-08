@@ -4,14 +4,19 @@ import { CollectionCreateDialog } from "@/components/dashboard/collection-create
 import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { DashboardItemType } from "@/features/dashboard/dashboard-types";
+import type {
+  DashboardCollection,
+  DashboardItemType,
+} from "@/features/dashboard/dashboard-types";
 
 export function DashboardHeader({
+  collections,
   initialCreateTypeSlug,
   isMobileDrawerOpen,
   itemTypes,
   onOpenMobileDrawer,
 }: {
+  collections: DashboardCollection[];
   initialCreateTypeSlug?: string;
   isMobileDrawerOpen: boolean;
   itemTypes: DashboardItemType[];
@@ -44,6 +49,7 @@ export function DashboardHeader({
       <CollectionCreateDialog />
 
       <ItemCreateDialog
+        collections={collections}
         initialTypeSlug={initialCreateTypeSlug}
         itemTypes={itemTypes}
       />

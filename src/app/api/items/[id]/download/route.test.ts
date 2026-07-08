@@ -129,6 +129,8 @@ function itemDetail() {
     typeId: "type-file",
     collectionId: null,
     collection: null,
+    collectionIds: [],
+    collections: [],
     content: null,
     language: null,
     url: null,
