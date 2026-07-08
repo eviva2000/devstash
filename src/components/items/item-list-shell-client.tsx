@@ -11,6 +11,7 @@ import {
 } from "@/components/dashboard/dashboard-sidebar";
 import { ItemCard } from "@/components/dashboard/item-card";
 import { ItemContentDrawer } from "@/components/dashboard/item-content-drawer";
+import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import type {
   DashboardCollection,
   DashboardItem,
@@ -95,6 +96,7 @@ export function ItemListShellClient({
   const closeItemDrawer = () => setIsItemDrawerOpen(false);
   const canCreateActiveType = doesTypeSupportCreate(itemType.slug);
   const createButtonLabel = `New ${toTitleCase(itemType.name)}`;
+  const isImageGallery = itemType.slug === "image";
 
   return (
     <main className="flex min-h-screen overflow-hidden bg-background text-foreground">
@@ -144,19 +146,38 @@ export function ItemListShellClient({
             </div>
 
             {items.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div
+                className={
+                  isImageGallery
+                    ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                    : "grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+                }
+              >
                 {items.map((item) => (
-                  <ItemCard
-                    collection={
-                      item.collectionId
-                        ? collectionById.get(item.collectionId)
-                        : undefined
-                    }
-                    item={item}
-                    key={item.id}
-                    onOpen={() => openItemDrawer(item.id)}
-                    type={itemType}
-                  />
+                  isImageGallery ? (
+                    <ImageThumbnailCard
+                      collection={
+                        item.collectionId
+                          ? collectionById.get(item.collectionId)
+                          : undefined
+                      }
+                      item={item}
+                      key={item.id}
+                      onOpen={() => openItemDrawer(item.id)}
+                    />
+                  ) : (
+                    <ItemCard
+                      collection={
+                        item.collectionId
+                          ? collectionById.get(item.collectionId)
+                          : undefined
+                      }
+                      item={item}
+                      key={item.id}
+                      onOpen={() => openItemDrawer(item.id)}
+                      type={itemType}
+                    />
+                  )
                 ))}
               </div>
             ) : (

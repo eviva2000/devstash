@@ -30,6 +30,9 @@ export type DashboardItem = {
   content?: string | null;
   language?: string | null;
   url?: string | null;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileMimeType?: string | null;
   isFavorite: boolean;
   isPinned: boolean;
   tags: string[];
