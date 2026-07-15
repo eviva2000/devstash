@@ -1,17 +1,27 @@
-# Current Feature
+# Current Feature: Homepage
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Replace the public `/` placeholder with the production DevStash marketing homepage based on `prototypes/homepage/`.
+- Compose the page from Server Components, isolating mobile navigation, chaos animation, pricing toggle, and any scroll behavior into small Client Components.
+- Use Tailwind CSS, existing shadcn/ui primitives, Lucide icons, and reusable data-driven homepage components under `src/components/homepage/`.
+- Implement the minimal hero, chaos-to-order preview, six feature cards, Pro AI section, pricing, final CTA, and footer.
+- Point all navigation, CTAs, and footer links to working routes or in-page anchors.
+- Deliver responsive, accessible, reduced-motion-aware behavior and verify the implementation with project checks and browser testing.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Source spec: `context/features/homepage-spec.md`
+- Visual reference: `prototypes/homepage/`
+- The page is public and must not fetch user or database data.
+- Keep the root page and static sections server-rendered; do not make the whole page a Client Component.
 
 ## History
 

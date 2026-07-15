@@ -17,6 +17,7 @@ import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { LogoMark } from "@/components/homepage/logo-mark";
 import { UserAvatar } from "@/components/user-avatar";
 import type {
   DashboardUser,
@@ -128,17 +129,15 @@ function SidebarContent({
         )}
       >
         <Link
-          aria-label="DevStash dashboard"
+          aria-label="DevStash home"
           className={cn(
             "flex min-w-0 items-center gap-3",
             compact && "justify-center"
           )}
-          href="/dashboard"
+          href="/"
           onClick={onClose}
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Layers3 className="size-5" />
-          </span>
+          <LogoMark className="size-9 shrink-0" />
           {!compact && (
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold">
