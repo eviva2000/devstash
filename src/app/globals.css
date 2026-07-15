@@ -127,7 +127,25 @@
     }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
     }
+}
+
+@keyframes homepage-arrow-pulse {
+  50% {
+    opacity: 0.68;
+    transform: translateX(0.35rem);
+  }
+}
+
+@keyframes homepage-progress-shimmer {
+  from {
+    transform: translateX(-2.5rem);
+  }
+  to {
+    transform: translateX(8rem);
+  }
 }
 
 @layer components {
