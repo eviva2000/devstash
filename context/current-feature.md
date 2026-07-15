@@ -1,17 +1,31 @@
-# Current Feature
+# Current Feature: DevStash Homepage Mockup
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Create a standalone marketing homepage prototype in `prototypes/homepage/` with `index.html`, `styles.css`, and `script.js`.
+- Build a dark, responsive navigation and hero centered on the "chaos to order" concept, with animated scattered developer-tool icons, a pulsing transform arrow, and an ordered DevStash dashboard preview.
+- Add hero messaging and calls to action for organizing scattered developer knowledge.
+- Add six feature cards for code snippets, AI prompts, instant search, commands, files and docs, and collections using the specified item-type accent colors.
+- Add a two-column Pro AI section with capability highlights and an editor mockup demonstrating AI-generated tags.
+- Add Free and Pro pricing cards, including a monthly/yearly toggle and the highlighted yearly $72 option.
+- Add a final call-to-action section and a footer with navigation links and the current year.
+- Implement the specified interactions and motion: drifting/bouncing/rotating/pulsing chaos icons, cursor repulsion, arrow pulsing, scroll-triggered fades, and a navbar that becomes more opaque on scroll.
+- Make the layout responsive, stacking the hero visualization and rotating the arrow downward on mobile while converting grids to a single column.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Source spec: `context/features/homepage-mockup-spec.md`
+- This feature produces a static prototype rather than modifying the main Next.js application.
+- Accent palette: snippet blue `#3b82f6`, prompt amber `#f59e0b`, command cyan `#06b6d4`, note green `#22c55e`, file slate `#64748b`, image pink `#ec4899`, and URL indigo `#6366f1`.
+- The chaos area contains eight floating icons representing Notion, GitHub, Slack, VS Code, browser tabs, a terminal, a text file, and a bookmark.
+- The dashboard preview includes a sidebar and a grid of cards with item-type-colored top borders.
 
 ## History
 

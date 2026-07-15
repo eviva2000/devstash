@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="DevStash keeps your code snippets, AI prompts, commands, notes, files, and links in one searchable home."
+    />
+    <title>DevStash — Your developer knowledge, finally organized</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=2" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-header>
+      <div class="nav-shell">
+        <a class="brand" href="#top" aria-label="DevStash home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>DevStash</span>
+        </a>
+
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-navigation"
+          data-nav-toggle
+        >
+          <span class="sr-only">Toggle navigation</span>
+          <span></span><span></span>
+        </button>
+
+        <nav class="site-nav" id="site-navigation" aria-label="Main navigation" data-nav>
+          <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#ai">Pro AI</a>
+            <a href="#pricing">Pricing</a>
+          </div>
+          <div class="nav-actions">
+            <a class="button button-ghost button-small" href="/sign-in">Sign in</a>
+            <a class="button button-primary button-small" href="/register">
+              Get started
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M4 10h11m-4-4 4 4-4 4" />
+              </svg>
+            </a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero section" id="top">
+        <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+        <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
+
+        <div class="shell hero-copy fade-up">
+          <h1>
+            Developer knowledge,<br />
+            <span class="gradient-text">organized.</span>
+          </h1>
+          <p>
+            Everything you save. One searchable home.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary button-large" href="/register">
+              Start free
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M4 10h11m-4-4 4 4-4 4" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="shell transformation fade-up" id="chaos-to-order">
+          <article class="visual-panel chaos-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">The problem</span>
+                <h2>Your knowledge today...</h2>
+              </div>
+              <span class="status-pill status-chaos"><span></span>Scattered</span>
+            </div>
+
+            <div class="chaos-stage" data-chaos-stage aria-label="Scattered developer tools animation">
+              <div class="chaos-grid" aria-hidden="true"></div>
+
+              <div class="floating-icon notion-icon" data-chaos-icon data-x="0.08" data-y="0.12">
+                <span class="notion-mark">N</span>
+              </div>
+              <div class="floating-icon github-icon" data-chaos-icon data-x="0.57" data-y="0.06">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2.7a9.5 9.5 0 0 0-3 18.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1 1.6 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.7-1.4-2.3-.3-4.6-1.1-4.6-4.7 0-1 .4-1.9 1-2.6-.1-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9.3 9.3 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.6.7 1 1.6 1 2.6 0 3.7-2.3 4.5-4.6 4.7.4.3.7 1 .7 1.9v2.8c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.7Z" />
+                </svg>
+              </div>
+              <div class="floating-icon slack-icon" data-chaos-icon data-x="0.29" data-y="0.39">
+                <span class="slack-mark" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i>
+                </span>
+              </div>
+              <div class="floating-icon vscode-icon" data-chaos-icon data-x="0.76" data-y="0.34">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m17.8 2.8-10 9.2 10 9.2 3.2-1.6V4.4l-3.2-1.6Z" />
+                  <path d="M7.8 12 3 8.4l-2 1.3v4.6l2 1.3L7.8 12Zm10 3.8L12.2 12l5.6-3.8v7.6Z" />
+                </svg>
+              </div>
+              <div class="floating-icon tabs-icon" data-chaos-icon data-x="0.05" data-y="0.68">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="M3 9h18M7 7h2m2 0h2" />
+                </svg>
+              </div>
+              <div class="floating-icon terminal-icon" data-chaos-icon data-x="0.43" data-y="0.72">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="2.5" y="4" width="19" height="16" rx="3" />
+                  <path d="m7 9 3 3-3 3m5 0h5" />
+                </svg>
+              </div>
+              <div class="floating-icon file-icon" data-chaos-icon data-x="0.79" data-y="0.69">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 2.5h8l4 4V21H6V2.5Z" />
+                  <path d="M14 2.5v4h4M9 12h6m-6 3h6" />
+                </svg>
+              </div>
+              <div class="floating-icon bookmark-icon" data-chaos-icon data-x="0.26" data-y="0.08">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6.5 3.5h11v17L12 17l-5.5 3.5v-17Z" />
+                </svg>
+              </div>
+
+              <div class="cursor-hint" data-cursor-hint>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="m4 2 10 9-5 .5L6.5 16 4 2Z" />
+                </svg>
+                Move your cursor
+              </div>
+            </div>
+          </article>
+
+          <div class="transform-arrow" aria-label="Becomes">
+            <span class="arrow-orbit"></span>
+            <svg viewBox="0 0 64 36" aria-hidden="true">
+              <path d="M4 18h50m-12-12 12 12-12 12" />
+            </svg>
+            <span>Organize</span>
+          </div>
+
+          <article class="visual-panel dashboard-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">The solution</span>
+                <h2>...with DevStash</h2>
+              </div>
+              <span class="status-pill status-order"><span></span>Organized</span>
+            </div>
+
+            <div class="dashboard-window">
+              <div class="window-bar">
+                <span></span><span></span><span></span>
+                <div class="window-search">
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <circle cx="8.5" cy="8.5" r="4.5" />
+                    <path d="m12 12 4 4" />
+                  </svg>
+                  Search your stash...
+                  <kbd>⌘ K</kbd>
+                </div>
+              </div>
+
+              <div class="dashboard-body">
+                <aside class="preview-sidebar">
+                  <div class="preview-brand">
+                    <span class="brand-mark mini" aria-hidden="true"><span></span><span></span><span></span></span>
+                    <b>DevStash</b>
+                  </div>
+                  <div class="preview-nav-item active"><i></i>All items</div>
+                  <div class="preview-nav-item"><i></i>Snippets <span>24</span></div>
+                  <div class="preview-nav-item"><i></i>Prompts <span>18</span></div>
+                  <div class="preview-nav-item"><i></i>Commands <span>12</span></div>
+                  <p>Collections</p>
+                  <div class="preview-nav-item"><i></i>Frontend</div>
+                  <div class="preview-nav-item"><i></i>AI toolkit</div>
+                </aside>
+
+                <div class="preview-main">
+                  <div class="preview-title-row">
+                    <div>
+                      <span>Your stash</span>
+                      <small>54 saved items</small>
+                    </div>
+                    <button type="button" tabindex="-1">+ New item</button>
+                  </div>
+                  <div class="preview-cards">
+                    <div class="preview-card card-snippet">
+                      <div class="card-type"><span>&lt;/&gt;</span>Snippet</div>
+                      <b>React fetch hook</b>
+                      <code>const { data } = use...</code>
+                      <div class="mini-tags"><span>react</span><span>api</span></div>
+                    </div>
+                    <div class="preview-card card-prompt">
+                      <div class="card-type"><span>✦</span>Prompt</div>
+                      <b>Code review expert</b>
+                      <p>Review this pull request...</p>
+                      <div class="mini-tags"><span>review</span><span>ai</span></div>
+                    </div>
+                    <div class="preview-card card-command">
+                      <div class="card-type"><span>&gt;_</span>Command</div>
+                      <b>Undo last commit</b>
+                      <code>git reset --soft HEAD~1</code>
+                      <div class="mini-tags"><span>git</span></div>
+                    </div>
+                    <div class="preview-card card-note">
+                      <div class="card-type"><span>≡</span>Note</div>
+                      <b>Deploy checklist</b>
+                      <p>Pre-flight steps for prod...</p>
+                      <div class="mini-tags"><span>devops</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+      </section>
+
+      <section class="section features" id="features">
+        <div class="shell">
+          <div class="section-heading fade-up">
+            <span class="section-kicker">Everything in its place</span>
+            <h2>Built for the way developers think.</h2>
+            <p>Capture it in seconds. Find it exactly when you need it.</p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card feature-snippet fade-up">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-2-11-4 14" /></svg>
+              </div>
+              <span class="feature-number">01</span>
+              <h3>Code snippets</h3>
+              <p>Save reusable code with syntax highlighting, language detection, and one-click copy.</p>
+              <div class="feature-preview snippet-preview">
+                <div><span></span><span></span><span></span><small>useDebounce.ts</small></div>
+                <code><i>export function</i> useDebounce(value) {<br />&nbsp;&nbsp;<b>return</b> useMemo(() =&gt; value)<br />}</code>
+              </div>
+            </article>
+
+            <article class="feature-card feature-prompt fade-up">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3Zm6 12 .8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8L18 15Z" /></svg>
+              </div>
+              <span class="feature-number">02</span>
+              <h3>AI prompts</h3>
+              <p>Build your personal prompt library and stop rewriting the same context for every model.</p>
+              <div class="feature-preview prompt-preview">
+                <span>✦ System prompt</span>
+                <p>Act as a senior TypeScript engineer. Review the following...</p>
+                <div><i>claude</i><i>code-review</i></div>
+              </div>
+            </article>
+
+            <article class="feature-card feature-search fade-up">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
+              </div>
+              <span class="feature-number">03</span>
+              <h3>Instant search</h3>
+              <p>Search every title, tag, and line of content with a shortcut that is always one key away.</p>
+              <div class="feature-preview search-preview">
+                <div><svg viewBox="0 0 20 20"><circle cx="8" cy="8" r="4" /><path d="m11 11 4 4" /></svg><span>react auth</span><kbd>⌘ K</kbd></div>
+                <p><i></i><b>JWT refresh hook</b><span>Snippet</span></p>
+                <p><i></i><b>Auth architecture</b><span>Note</span></p>
+              </div>
+            </article>
+
+            <article class="feature-card feature-command fade-up">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="m7 9 3 3-3 3m6 0h4" /></svg>
+              </div>
+              <span class="feature-number">04</span>
+              <h3>Commands</h3>
+              <p>Keep the CLI incantations you can never quite remember ready for instant reuse.</p>
+              <div class="feature-preview command-preview">
+                <span>~/dev/project</span>
+                <code><i>$</i> git rebase --onto main...</code>
+                <small>Copied to clipboard</small>
+              </div>
+            </article>
+
+            <article class="feature-card feature-file fade-up">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6V3Z" /><path d="M14 3v4h4M9 12h6m-6 4h4" /></svg>
+              </div>
+              <span class="feature-number">05</span>
+              <h3>Files &amp; docs</h3>
+              <p>Store reference files and visual inspiration next to the notes that give them meaning.</p>
+              <div class="feature-preview file-preview">
+                <div><span>PDF</span><p><b>API-design-guide.pdf</b><small>2.4 MB · Just now</small></p><i>↓</i></div>
+                <div><span>PNG</span><p><b>dashboard-inspo.png</b><small>864 KB · Yesterday</small></p><i>↓</i></div>
+              </div>
+            </article>
+
+            <article class="feature-card feature-collection fade-up">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" /><circle cx="19" cy="17" r="2" /></svg>
+              </div>
+              <span class="feature-number">06</span>
+              <h3>Collections</h3>
+              <p>Group related knowledge into projects and topics without losing the power of global search.</p>
+              <div class="feature-preview collection-preview">
+                <span style="--bar-color: #3b82f6"></span><span style="--bar-color: #f59e0b"></span><span style="--bar-color: #06b6d4"></span>
+                <div><b>⚡ Frontend patterns</b><small>18 items</small></div>
+                <div><b>✦ AI toolkit</b><small>12 items</small></div>
+                <div><b>⌘ DevOps</b><small>9 items</small></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section ai-section" id="ai">
+        <div class="ai-glow" aria-hidden="true"></div>
+        <div class="shell ai-layout">
+          <div class="ai-copy fade-up">
+            <div class="pro-badge"><span>✦</span>Pro feature</div>
+            <span class="section-kicker">Your stash, supercharged</span>
+            <h2>Let AI do the organizing.</h2>
+            <p>
+              Save the useful part. DevStash Pro understands what you captured and handles the busywork around it.
+            </p>
+            <ul class="ai-checklist">
+              <li><span>✦</span><div><b>Automatic tags</b><p>Relevant tags generated from your content.</p></div></li>
+              <li><span>⌁</span><div><b>Smart summaries</b><p>Get the gist before opening a long note or file.</p></div></li>
+              <li><span>⌕</span><div><b>Semantic search</b><p>Find the right item even when you forget the words.</p></div></li>
+              <li><span>↗</span><div><b>Related knowledge</b><p>Surface helpful connections across your stash.</p></div></li>
+            </ul>
+            <a class="text-link" href="#pricing">Explore DevStash Pro <span>→</span></a>
+          </div>
+
+          <div class="ai-demo fade-up">
+            <div class="ai-demo-glow" aria-hidden="true"></div>
+            <div class="editor-window">
+              <div class="editor-topbar">
+                <div><span></span><span></span><span></span></div>
+                <small>new-snippet.ts</small>
+                <span class="editor-language">TypeScript</span>
+              </div>
+              <div class="editor-code">
+                <div class="line-numbers">1<br />2<br />3<br />4<br />5<br />6<br />7<br />8</div>
+                <pre><span class="code-pink">export</span> <span class="code-pink">async function</span> <span class="code-blue">fetchWithRetry</span>(
+  url: <span class="code-green">string</span>, retries = <span class="code-orange">3</span>
+) {
+  <span class="code-pink">for</span> (<span class="code-pink">let</span> i = <span class="code-orange">0</span>; i &lt; retries; i++) {
+    <span class="code-pink">try</span> { <span class="code-pink">return await</span> <span class="code-blue">fetch</span>(url) }
+    <span class="code-pink">catch</span> (error) { <span class="code-pink">await</span> <span class="code-blue">delay</span>(<span class="code-orange">1000</span>) }
+  }
+}</pre>
+              </div>
+              <div class="editor-footer">
+                <div>
+                  <span>AI generated tags</span>
+                  <div class="generating-line"><i></i></div>
+                </div>
+                <div class="ai-tags">
+                  <span><i>✦</i>typescript</span>
+                  <span><i>✦</i>fetch</span>
+                  <span><i>✦</i>error-handling</span>
+                  <span><i>✦</i>retry</span>
+                </div>
+                <div class="ai-summary">
+                  <span>✦</span>
+                  <p><b>AI summary</b>A reusable fetch wrapper with automatic retries and a delay between failed attempts.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section pricing" id="pricing">
+        <div class="shell">
+          <div class="section-heading fade-up">
+            <span class="section-kicker">Simple pricing</span>
+            <h2>Start free. Upgrade when you need.</h2>
+            <p>No trials, no tricks. Your knowledge stays yours on every plan.</p>
+          </div>
+
+          <div class="billing-toggle fade-up" role="group" aria-label="Billing period">
+            <button type="button" data-billing="monthly" aria-pressed="false">Monthly</button>
+            <button class="active" type="button" data-billing="yearly" aria-pressed="true">
+              Yearly <span>Save 25%</span>
+            </button>
+          </div>
+
+          <div class="pricing-grid">
+            <article class="pricing-card fade-up">
+              <div class="price-heading">
+                <div>
+                  <span class="plan-icon free-plan">D</span>
+                  <h3>Free</h3>
+                </div>
+                <p>For building your first organized stash.</p>
+              </div>
+              <div class="price"><span>$</span><strong>0</strong><small>/ forever</small></div>
+              <a class="button button-secondary button-full" href="/register">Get started free</a>
+              <div class="price-divider"></div>
+              <p class="includes">Everything you need to begin:</p>
+              <ul class="price-list">
+                <li><span>✓</span>Up to 50 items</li>
+                <li><span>✓</span>3 collections</li>
+                <li><span>✓</span>All core item types</li>
+                <li><span>✓</span>Fast keyword search</li>
+                <li><span>✓</span>Code &amp; markdown editors</li>
+              </ul>
+            </article>
+
+            <article class="pricing-card pro-card fade-up">
+              <div class="popular-badge">Most popular</div>
+              <div class="price-heading">
+                <div>
+                  <span class="plan-icon pro-plan">✦</span>
+                  <h3>Pro</h3>
+                </div>
+                <p>For developers making knowledge a superpower.</p>
+              </div>
+              <div class="price">
+                <span>$</span><strong data-price>6</strong><small data-price-suffix>/ month</small>
+              </div>
+              <p class="billing-note" data-billing-note>Billed $72 yearly</p>
+              <a class="button button-primary button-full" href="/register">Start with Pro <span>→</span></a>
+              <div class="price-divider"></div>
+              <p class="includes">Everything in Free, plus:</p>
+              <ul class="price-list pro-list">
+                <li><span>✓</span>Unlimited items &amp; collections</li>
+                <li><span>✦</span>AI-generated tags &amp; summaries</li>
+                <li><span>✦</span>Semantic AI search</li>
+                <li><span>✓</span>Files and image uploads</li>
+                <li><span>✓</span>Priority support</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section final-cta">
+        <div class="cta-grid" aria-hidden="true"></div>
+        <div class="cta-glow" aria-hidden="true"></div>
+        <div class="shell fade-up">
+          <span class="brand-mark cta-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+          <h2>Ready to organize your knowledge?</h2>
+          <p>Give every useful thing you save a place you can find again.</p>
+          <a class="button button-light button-large" href="/register">
+            Build your stash for free
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4" /></svg>
+          </a>
+          <small>No credit card. No setup headache. Just a better way to remember.</small>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="#top">
+            <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span>DevStash</span>
+          </a>
+          <p>Your developer knowledge,<br />finally organized.</p>
+        </div>
+        <div class="footer-column">
+          <h3>Product</h3>
+          <a href="#features">Features</a>
+          <a href="#ai">DevStash Pro</a>
+          <a href="#pricing">Pricing</a>
+        </div>
+        <div class="footer-column">
+          <h3>Resources</h3>
+          <a href="#">Documentation</a>
+          <a href="#">Changelog</a>
+          <a href="#">Roadmap</a>
+        </div>
+        <div class="footer-column">
+          <h3>Company</h3>
+          <a href="#">About</a>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+      <div class="shell footer-bottom">
+        <p>© <span data-current-year>2026</span> DevStash. Built for developers.</p>
+        <div>
+          <span class="footer-status"><i></i>All systems operational</span>
+          <a href="#" aria-label="DevStash on GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7a9.5 9.5 0 0 0-3 18.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1 1.6 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.7-1.4-2.3-.3-4.6-1.1-4.6-4.7 0-1 .4-1.9 1-2.6-.1-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9.3 9.3 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.6.7 1 1.6 1 2.6 0 3.7-2.3 4.5-4.6 4.7.4.3.7 1 .7 1.9v2.8c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.7Z" /></svg>
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
