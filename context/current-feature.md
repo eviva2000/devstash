@@ -1,27 +1,17 @@
-# Current Feature: Homepage
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Replace the public `/` placeholder with the production DevStash marketing homepage based on `prototypes/homepage/`.
-- Compose the page from Server Components, isolating mobile navigation, chaos animation, pricing toggle, and any scroll behavior into small Client Components.
-- Use Tailwind CSS, existing shadcn/ui primitives, Lucide icons, and reusable data-driven homepage components under `src/components/homepage/`.
-- Implement the minimal hero, chaos-to-order preview, six feature cards, Pro AI section, pricing, final CTA, and footer.
-- Point all navigation, CTAs, and footer links to working routes or in-page anchors.
-- Deliver responsive, accessible, reduced-motion-aware behavior and verify the implementation with project checks and browser testing.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Source spec: `context/features/homepage-spec.md`
-- Visual reference: `prototypes/homepage/`
-- The page is public and must not fetch user or database data.
-- Keep the root page and static sections server-rendered; do not make the whole page a Client Component.
 
 ## History
 
@@ -303,3 +293,8 @@ Keep this updated. Earliest to Latest
   - Added feature cards, Pro AI editor demonstration, interactive pricing toggle, final CTA, and footer
   - Added responsive navigation, scroll fades, navbar scroll treatment, and reduced-motion support
   - Verified with `node --check prototypes/homepage/script.js` and `git diff --check`
+- **Homepage** (July 15, 2026)
+  - Replaced the public placeholder with a responsive, server-rendered DevStash marketing homepage based on the approved prototype.
+  - Added focused client components for navigation, interactive icon motion, and pricing while keeping static content on the server.
+  - Implemented the hero, chaos-to-order comparison, feature grid, Pro AI preview, pricing, CTA, footer, shared logo, sticky navigation, and working route/anchor links.
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (76 passing), `npm run build`, and `git diff --check`.
