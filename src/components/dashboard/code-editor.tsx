@@ -6,6 +6,10 @@ import { useCallback, useMemo, useState } from "react";
 import type { BeforeMount, EditorProps } from "@monaco-editor/react";
 
 import { Button } from "@/components/ui/button";
+import {
+  getCodeLanguageLabel,
+  normalizeCodeLanguage,
+} from "@/lib/code-languages";
 import { cn } from "@/lib/utils";
 
 const MonacoEditor = dynamic<EditorProps>(
@@ -41,8 +45,8 @@ export function CodeEditor({
   value,
 }: CodeEditorProps) {
   const [hasCopied, setHasCopied] = useState(false);
-  const normalizedLanguage = normalizeLanguage(language);
-  const displayLanguage = getDisplayLanguage(language, normalizedLanguage);
+  const normalizedLanguage = normalizeCodeLanguage(language);
+  const displayLanguage = getCodeLanguageLabel(language);
   const lineCount = Math.max(1, value.split("\n").length);
   const totalHeight = Math.min(
     maxEditorHeight,
@@ -165,32 +169,4 @@ function CodeEditorLoading() {
       Loading editor...
     </div>
   );
-}
-
-function normalizeLanguage(language?: string | null) {
-  const value = language?.trim().toLowerCase();
-
-  if (!value) {
-    return "plaintext";
-  }
-
-  const aliases: Record<string, string> = {
-    bash: "shell",
-    js: "javascript",
-    md: "markdown",
-    py: "python",
-    sh: "shell",
-    ts: "typescript",
-    tsx: "typescript",
-    txt: "plaintext",
-  };
-
-  return aliases[value] ?? value;
-}
-
-function getDisplayLanguage(
-  language: string | null | undefined,
-  normalizedLanguage: string
-) {
-  return language?.trim() || normalizedLanguage;
 }

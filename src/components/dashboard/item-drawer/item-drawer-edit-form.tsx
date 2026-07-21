@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { CodeEditor } from "@/components/dashboard/code-editor";
+import { CodeLanguageSelect } from "@/components/dashboard/code-language-select";
 import { CollectionSelector } from "@/components/dashboard/collection-selector";
 import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
 import { Input } from "@/components/ui/input";
@@ -109,6 +110,19 @@ export function ItemDrawerEditForm({
           selectedIds={form.collectionIds}
         />
 
+        {supportsLanguage && (
+          <EditFieldBlock label="Language">
+            <CodeLanguageSelect
+              alignItemWithTrigger={false}
+              disabled={isSaving}
+              onChange={(language) =>
+                onChange((current) => ({ ...current, language }))
+              }
+              value={form.language}
+            />
+          </EditFieldBlock>
+        )}
+
         {supportsContent && (
           <ContentField
             isSaving={isSaving}
@@ -118,21 +132,6 @@ export function ItemDrawerEditForm({
             usesMarkdownEditor={usesMarkdownEditor}
             value={form.content}
           />
-        )}
-
-        {supportsLanguage && (
-          <EditField label="Language">
-            <Input
-              disabled={isSaving}
-              onChange={(event) =>
-                onChange((current) => ({
-                  ...current,
-                  language: event.target.value,
-                }))
-              }
-              value={form.language}
-            />
-          </EditField>
         )}
 
         {supportsUrl && (

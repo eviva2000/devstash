@@ -1,5 +1,9 @@
 import type { DashboardItemDetail } from "@/features/dashboard/dashboard-types";
 import { formatDate } from "@/features/dashboard/dashboard-utils";
+import {
+  getDefaultCodeLanguage,
+  normalizeCodeLanguage,
+} from "@/lib/code-languages";
 
 import type { EditFormState, ItemDetail } from "./types";
 
@@ -21,7 +25,9 @@ export function getEditFormState(item: ItemDetail | null): EditFormState {
     description: item?.description ?? "",
     tags: item?.tags.join(", ") ?? "",
     content: item?.content ?? "",
-    language: item?.language ?? "",
+    language: normalizeCodeLanguage(
+      item?.language || getDefaultCodeLanguage(item?.type.slug)
+    ),
     url: item?.url ?? "",
     collectionIds: item?.collectionIds ?? [],
   };

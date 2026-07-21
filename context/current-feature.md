@@ -1,17 +1,21 @@
-# Current Feature
+# Current Feature: Language Selector With Live Syntax Highlighting
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
-<!-- List goals for the active feature here. -->
+- Replace free-text language fields with a reusable language dropdown for code items.
+- Place the language dropdown above the content editor in both the new item modal and edit item drawer.
+- Update Monaco syntax highlighting immediately when the selected language changes while preserving the entered code.
+- Verify the focused behavior and existing item workflows with project checks.
 
 ## Notes
 
-<!-- Add implementation notes, constraints, or spec links here. -->
+- Applies to item types that use the code editor and support a language: snippets and commands.
+- Preserve unrelated working-tree changes.
 
 ## History
 

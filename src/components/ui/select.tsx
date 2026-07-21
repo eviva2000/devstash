@@ -40,17 +40,20 @@ function SelectTrigger({
 }
 
 function SelectContent({
+  alignItemWithTrigger,
   children,
   className,
   positionerClassName,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Popup> & {
+  alignItemWithTrigger?: boolean
   positionerClassName?: string
 }) {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Positioner
         align="start"
+        alignItemWithTrigger={alignItemWithTrigger}
         className={cn("z-50", positionerClassName)}
         sideOffset={4}
       >

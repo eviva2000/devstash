@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
 import { CodeEditor } from "@/components/dashboard/code-editor";
+import { CodeLanguageSelect } from "@/components/dashboard/code-language-select";
 import { CollectionSelector } from "@/components/dashboard/collection-selector";
 import { FileUpload } from "@/components/dashboard/file-upload";
 import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
@@ -38,6 +39,7 @@ import {
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
 import type { UploadedFileMetadata, UploadItemType } from "@/lib/file-uploads";
+import { getDefaultCodeLanguage } from "@/lib/code-languages";
 import {
   doesTypeSupportContent,
   doesTypeSupportFile,
@@ -229,6 +231,9 @@ export function ItemCreateDialog({
                         updateForm({
                           typeSlug: value,
                           file: null,
+                          language: doesTypeSupportLanguage(value)
+                            ? getDefaultCodeLanguage(value)
+                            : "",
                         });
                       }
                     }}
@@ -304,6 +309,16 @@ export function ItemCreateDialog({
                     selectedIds={form.collectionIds}
                   />
 
+                  {supportsLanguage && (
+                    <CreateFieldBlock label="Language">
+                      <CodeLanguageSelect
+                        disabled={isSaving}
+                        onChange={(language) => updateForm({ language })}
+                        value={form.language}
+                      />
+                    </CreateFieldBlock>
+                  )}
+
                   {supportsContent && (
                     usesCodeEditor ? (
                       <CreateFieldBlock label="Content">
@@ -336,18 +351,6 @@ export function ItemCreateDialog({
                         />
                       </CreateField>
                     )
-                  )}
-
-                  {supportsLanguage && (
-                    <CreateField label="Language">
-                      <Input
-                        disabled={isSaving}
-                        onChange={(event) =>
-                          updateForm({ language: event.target.value })
-                        }
-                        value={form.language}
-                      />
-                    </CreateField>
                   )}
 
                   {supportsUrl && (
@@ -517,7 +520,9 @@ function getInitialForm(typeSlug: string): CreateItemFormState {
     description: "",
     tags: "",
     content: "",
-    language: "",
+    language: doesTypeSupportLanguage(typeSlug)
+      ? getDefaultCodeLanguage(typeSlug)
+      : "",
     url: "",
     collectionIds: [],
     file: null,
