@@ -1,21 +1,17 @@
-# Current Feature: Language Selector With Live Syntax Highlighting
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Replace free-text language fields with a reusable language dropdown for code items.
-- Place the language dropdown above the content editor in both the new item modal and edit item drawer.
-- Update Monaco syntax highlighting immediately when the selected language changes while preserving the entered code.
-- Verify the focused behavior and existing item workflows with project checks.
+<!-- List goals for the active feature here. -->
 
 ## Notes
 
-- Applies to item types that use the code editor and support a language: snippets and commands.
-- Preserve unrelated working-tree changes.
+<!-- Add implementation notes, constraints, or spec links here. -->
 
 ## History
 
@@ -302,3 +298,10 @@ Keep this updated. Earliest to Latest
   - Added focused client components for navigation, interactive icon motion, and pricing while keeping static content on the server.
   - Implemented the hero, chaos-to-order comparison, feature grid, Pro AI preview, pricing, CTA, footer, shared logo, sticky navigation, and working route/anchor links.
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (76 passing), `npm run build`, and `git diff --check`.
+- **Language Selector With Live Syntax Highlighting** (July 21, 2026)
+  - Completed on branch `language-selector-live-syntax-highlighting-clean`
+  - Replaced free-text language fields with a shared dropdown for snippets and commands in both create and drawer edit flows
+  - Positioned the language selector above the content editor and updated Monaco highlighting immediately when the language changes
+  - Added Monaco language aliases, readable labels, sensible defaults, and focused utility tests
+  - Fixed the drawer dropdown panel to use collision-aware anchor positioning while preserving the create modal behavior
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (79 passing), and `npm run build`
