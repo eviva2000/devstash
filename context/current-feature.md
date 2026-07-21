@@ -1,30 +1,17 @@
-# Current Feature: AI Description Generation
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Add a button with a sparkle icon and Generate label above the description textarea in both the new item modal and drawer edit mode.
-- Generate a concise, useful 1-2 sentence description from the item data currently entered in the form, without requiring the item to be saved first.
-- Use the current title, content, item type, language, URL, tags, and other relevant form context when producing the description.
-- Insert the generated text into the description input so the user can review or edit it before saving; do not automatically persist the item.
-- Reuse the secure server-only OpenAI integration with authentication, Pro-plan enforcement, validation, rate limiting, loading states, and clear error toasts.
-- Add focused tests for description generation, input handling, access control, rate limits, response normalization, and AI service failures.
+<!-- List goals for the active feature here. -->
 
 ## Notes
 
-- Source: inline feature request.
-- Reuse the existing `gpt-5-nano` Responses API foundation; never expose `OPENAI_API_KEY` to client code.
-- Follow the existing AI tag suggestion interaction pattern where practical in both create and edit forms.
-- Give the generation button an accessible label and tooltip, clear loading and disabled states, and a visible hover treatment for both its icon and label.
-- Add the same visible hover treatment to the Suggest Tags action and its icon.
-- The response must be plain text, concise, limited to 1-2 sentences, and free of Markdown or generic filler.
-- Treat all current form values as transient input; generation must work before creation and must not save edits automatically.
-- Give fields in the new item modal more vertical breathing room.
-- Strengthen description textarea contrast and add extra separation from the title field in the new item modal.
+<!-- Add implementation notes, constraints, or spec links here. -->
 
 ## History
 
@@ -326,3 +313,11 @@ Keep this updated. Earliest to Latest
   - Improved the suggestion panel contrast and styled suggestion labels in blue for light and dark themes
   - Added focused coverage for AI client setup, access checks, response parsing, validation, rate limits, and service failures
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (95 passing), and `git diff --check`
+- **AI Description Generation** (July 21, 2026)
+  - Completed on branch `ai-description-generation`
+  - Added secure `gpt-5-nano` description generation from the current unsaved title, content, item type, language, URL, tags, and file name
+  - Enforced authentication, Pro access, input validation, a separate 20-request-per-hour limit, safe provider errors, and 1-2 sentence output normalization
+  - Added a shared Generate action above the description textarea in both the create item modal and drawer edit mode without automatically saving the item
+  - Added accessible loading, disabled, tooltip, and hover states, matched the Suggest Tags color treatment, and improved create-form spacing and textarea contrast
+  - Added focused coverage for access control, validation, rate limiting, transient form context, response normalization, and provider failures
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (104 passing), `npm run build`, and `git diff --check`
