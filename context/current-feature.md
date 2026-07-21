@@ -1,28 +1,17 @@
-# Current Feature: AI Auto-Tagging
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Establish the shared OpenAI foundation with the standard SDK, an `AI_MODEL` constant for `gpt-5-nano`, and the Responses API.
-- Add a validated `generateAutoTags` server action with authentication, server-side Pro-plan gating, content truncation, AI error handling, and a per-user limit of 20 requests per hour.
-- Add a Pro-only Suggest Tags action to the tags area in both the create item dialog and item drawer edit mode.
-- Show 3-5 freeform suggestions with per-tag accept and reject controls, merging accepted suggestions into the item tags.
-- Parse both supported AI response shapes, normalize suggestions to lowercase, and surface gating, rate-limit, and service failures through toasts.
-- Add focused unit tests for the server action and its error paths.
+<!-- List goals for the active feature here. -->
 
 ## Notes
 
-- Source spec: `context/features/ai-auto-tag-spec.md`
-- Architectural context: `docs/ai-integration-plan.md`
-- Use `client.responses.create()` and `response.output_text`; do not use Chat Completions for `gpt-5-nano`.
-- Use JSON object response formatting and manually accept either `{ "tags": [...] }` or a top-level array.
-- `OPENAI_API_KEY` is already configured locally; never expose it to client components.
-- `isPro` is available server-side but must be passed or otherwise made available to the create/edit UI for button visibility, while server-side enforcement remains mandatory.
-- Preserve unrelated working-tree changes.
+<!-- Add implementation notes, constraints, or spec links here. -->
 
 ## History
 
@@ -316,3 +305,11 @@ Keep this updated. Earliest to Latest
   - Added Monaco language aliases, readable labels, sensible defaults, and focused utility tests
   - Fixed the drawer dropdown panel to use collision-aware anchor positioning while preserving the create modal behavior
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (79 passing), and `npm run build`
+- **AI Auto-Tagging** (July 21, 2026)
+  - Completed on branch `ai-auto-tagging`
+  - Added a server-only OpenAI Responses API integration using `gpt-5-nano`, authenticated Pro-plan access control, input validation, and a 20-request-per-hour user limit
+  - Added AI tag suggestions to the create item dialog and drawer edit mode with accept and reject controls, normalized results, and user-facing error toasts
+  - Kept the OpenAI API key on the server and propagated only Pro eligibility to the client UI
+  - Improved the suggestion panel contrast and styled suggestion labels in blue for light and dark themes
+  - Added focused coverage for AI client setup, access checks, response parsing, validation, rate limits, and service failures
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (95 passing), and `git diff --check`
