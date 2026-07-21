@@ -13,12 +13,14 @@ export function DashboardHeader({
   collections,
   initialCreateTypeSlug,
   isMobileDrawerOpen,
+  isPro,
   itemTypes,
   onOpenMobileDrawer,
 }: {
   collections: DashboardCollection[];
   initialCreateTypeSlug?: string;
   isMobileDrawerOpen: boolean;
+  isPro: boolean;
   itemTypes: DashboardItemType[];
   onOpenMobileDrawer: () => void;
 }) {
@@ -51,6 +53,7 @@ export function DashboardHeader({
       <ItemCreateDialog
         collections={collections}
         initialTypeSlug={initialCreateTypeSlug}
+        isPro={isPro}
         itemTypes={itemTypes}
       />
     </header>

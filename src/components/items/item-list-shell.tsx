@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { isProUser } from "@/lib/ai/access";
 import { ItemListShellClient } from "@/components/items/item-list-shell-client";
 import {
   getCollections,
@@ -32,6 +33,7 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
     itemStats,
     itemTypeCounts,
     typedItems,
+    isPro,
   ] = await Promise.all([
     getRecentCollections(userId, 6),
     getCollections(userId),
@@ -40,6 +42,7 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
     getItemStats(userId),
     getItemTypeCounts(userId),
     getItemsByTypeSlug(userId, typeSlug),
+    isProUser(userId),
   ]);
 
   if (!typedItems.itemType) {
@@ -60,6 +63,7 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
       itemTypeCounts={itemTypeCounts}
       itemTypes={itemTypes}
       items={typedItems.items}
+      isPro={isPro}
       recentCollections={recentCollections}
     />
   );

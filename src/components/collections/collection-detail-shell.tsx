@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { isProUser } from "@/lib/ai/access";
 import { CollectionDetailShellClient } from "@/components/collections/collection-detail-shell-client";
 import {
   getCollectionById,
@@ -38,6 +39,7 @@ export async function CollectionDetailShell({
     itemTypes,
     itemStats,
     itemTypeCounts,
+    isPro,
   ] = await Promise.all([
     getCollectionById(userId, collectionId),
     getItemsByCollectionId(userId, collectionId),
@@ -47,6 +49,7 @@ export async function CollectionDetailShell({
     getItemTypes(),
     getItemStats(userId),
     getItemTypeCounts(userId),
+    isProUser(userId),
   ]);
 
   if (!collection) {
@@ -67,6 +70,7 @@ export async function CollectionDetailShell({
       itemTypeCounts={itemTypeCounts}
       itemTypes={itemTypes}
       items={items}
+      isPro={isPro}
       recentCollections={recentCollections}
     />
   );

@@ -32,6 +32,7 @@ type CollectionDetailShellClientProps = {
   readonly itemTypeCounts: Record<string, number>;
   readonly itemTypes: DashboardItemType[];
   readonly items: DashboardItem[];
+  readonly isPro: boolean;
   readonly recentCollections: DashboardCollection[];
 };
 
@@ -44,6 +45,7 @@ export function CollectionDetailShellClient({
   itemTypeCounts,
   itemTypes,
   items,
+  isPro,
   recentCollections,
 }: CollectionDetailShellClientProps) {
   const router = useRouter();
@@ -130,6 +132,7 @@ export function CollectionDetailShellClient({
         <DashboardHeader
           collections={collections}
           isMobileDrawerOpen={isMobileDrawerOpen}
+          isPro={isPro}
           itemTypes={itemTypes}
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
         />
@@ -210,6 +213,7 @@ export function CollectionDetailShellClient({
       <ItemContentDrawer
         collections={collections}
         isOpen={isItemDrawerOpen}
+        isPro={isPro}
         item={selectedItem}
         itemId={selectedItemId}
         onClose={closeItemDrawer}

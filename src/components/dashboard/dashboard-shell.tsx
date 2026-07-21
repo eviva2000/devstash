@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { isProUser } from "@/lib/ai/access";
 import { DashboardShellClient } from "./dashboard-shell-client";
 import {
   getCollections,
@@ -36,6 +37,7 @@ export async function DashboardShell() {
     recentItems,
     itemStats,
     itemTypeCounts,
+    isPro,
   ] = await Promise.all([
     getRecentCollections(userId, 6),
     getCollections(userId),
@@ -46,6 +48,7 @@ export async function DashboardShell() {
     getRecentItems(userId, 10),
     getItemStats(userId),
     getItemTypeCounts(userId),
+    isProUser(userId),
   ]);
 
   return (
@@ -63,6 +66,7 @@ export async function DashboardShell() {
       recentItems={recentItems}
       itemStats={itemStats}
       itemTypeCounts={itemTypeCounts}
+      isPro={isPro}
       collectionStats={collectionStats}
     />
   );

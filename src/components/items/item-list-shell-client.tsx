@@ -34,6 +34,7 @@ interface ItemListShellClientProps {
   readonly items: DashboardItem[];
   readonly itemStats: DashboardItemStats;
   readonly itemTypeCounts: Record<string, number>;
+  readonly isPro: boolean;
 }
 
 export function ItemListShellClient({
@@ -46,6 +47,7 @@ export function ItemListShellClient({
   items,
   itemStats,
   itemTypeCounts,
+  isPro,
 }: ItemListShellClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -132,6 +134,7 @@ export function ItemListShellClient({
           collections={collections}
           initialCreateTypeSlug={itemType.slug}
           isMobileDrawerOpen={isMobileDrawerOpen}
+          isPro={isPro}
           itemTypes={itemTypes}
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
         />
@@ -153,6 +156,7 @@ export function ItemListShellClient({
                   <ItemCreateDialog
                     collections={collections}
                     initialTypeSlug={itemType.slug}
+                    isPro={isPro}
                     itemTypes={itemTypes}
                     triggerLabel={createButtonLabel}
                   />
@@ -231,6 +235,7 @@ export function ItemListShellClient({
       <ItemContentDrawer
         collections={collections}
         isOpen={isItemDrawerOpen}
+        isPro={isPro}
         item={selectedItem}
         itemId={selectedItemId}
         onClose={closeItemDrawer}

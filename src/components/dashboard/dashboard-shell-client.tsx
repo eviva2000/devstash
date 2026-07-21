@@ -36,6 +36,7 @@ interface DashboardShellClientProps {
   readonly recentItems: DashboardItem[];
   readonly itemStats: DashboardItemStats;
   readonly itemTypeCounts: Record<string, number>;
+  readonly isPro: boolean;
   readonly collectionStats: { readonly total: number; readonly favorites: number };
 }
 
@@ -48,6 +49,7 @@ export function DashboardShellClient({
   pinnedItems,
   recentItems,
   itemTypeCounts,
+  isPro,
   collectionStats,
   itemStats,
 }: Readonly<DashboardShellClientProps>) {
@@ -135,6 +137,7 @@ export function DashboardShellClient({
         <DashboardHeader
           collections={collections}
           isMobileDrawerOpen={isMobileDrawerOpen}
+          isPro={isPro}
           itemTypes={itemTypes}
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
         />
@@ -144,6 +147,7 @@ export function DashboardShellClient({
           extendedCollections={recentCollections}
           collectionStats={collectionStats}
           itemStats={itemStats}
+          isPro={isPro}
         />
       </section>
     </main>

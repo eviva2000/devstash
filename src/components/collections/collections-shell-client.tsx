@@ -25,6 +25,7 @@ type CollectionsShellClientProps = {
   readonly itemStats: DashboardItemStats;
   readonly itemTypeCounts: Record<string, number>;
   readonly itemTypes: DashboardItemType[];
+  readonly isPro: boolean;
   readonly recentCollections: DashboardCollection[];
 };
 
@@ -35,6 +36,7 @@ export function CollectionsShellClient({
   itemStats,
   itemTypeCounts,
   itemTypes,
+  isPro,
   recentCollections,
 }: CollectionsShellClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -83,6 +85,7 @@ export function CollectionsShellClient({
         <DashboardHeader
           collections={collections}
           isMobileDrawerOpen={isMobileDrawerOpen}
+          isPro={isPro}
           itemTypes={itemTypes}
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
         />

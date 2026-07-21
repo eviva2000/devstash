@@ -35,6 +35,7 @@ import { useItemDetail } from "./item-drawer/use-item-detail";
 export function ItemContentDrawer({
   collections,
   isOpen,
+  isPro,
   item,
   itemId,
   onClose,
@@ -43,6 +44,7 @@ export function ItemContentDrawer({
 }: Readonly<{
   collections: DashboardCollection[];
   isOpen: boolean;
+  isPro: boolean;
   item?: DashboardItem;
   itemId: string | null;
   onClose: () => void;
@@ -267,6 +269,7 @@ export function ItemContentDrawer({
                 error={formError}
                 form={editForm}
                 item={activeDetail}
+                isPro={isPro}
                 isSaving={isSaving}
                 onChange={setEditForm}
                 supportsContent={supportsContent}

@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
+import { AutoTagField } from "@/components/dashboard/auto-tag-field";
 import { CodeEditor } from "@/components/dashboard/code-editor";
 import { CodeLanguageSelect } from "@/components/dashboard/code-language-select";
 import { CollectionSelector } from "@/components/dashboard/collection-selector";
@@ -66,12 +67,14 @@ type CreateItemFormState = {
 export function ItemCreateDialog({
   collections,
   initialTypeSlug,
+  isPro,
   itemTypes,
   triggerClassName,
   triggerLabel = "New Item",
 }: {
   collections: DashboardCollection[];
   initialTypeSlug?: string;
+  isPro: boolean;
   itemTypes: DashboardItemType[];
   triggerClassName?: string;
   triggerLabel?: string;
@@ -291,16 +294,14 @@ export function ItemCreateDialog({
                       />
                   </CreateField>
 
-                  <CreateField label="Tags">
-                    <Input
-                      disabled={isSaving}
-                      onChange={(event) =>
-                        updateForm({ tags: event.target.value })
-                      }
-                      placeholder="react, terminal, workflow"
-                      value={form.tags}
-                    />
-                  </CreateField>
+                  <AutoTagField
+                    content={form.content}
+                    disabled={isSaving}
+                    isPro={isPro}
+                    onChange={(tags) => updateForm({ tags })}
+                    tags={form.tags}
+                    title={form.title}
+                  />
 
                   <CollectionSelector
                     collections={collections}

@@ -36,12 +36,14 @@ export function DashboardMain({
   extendedCollections,
   collectionStats,
   collections,
+  isPro,
   itemStats,
 }: {
   readonly data: DashboardData;
   readonly extendedCollections?: ExtendedCollection[];
   readonly collectionStats: { readonly total: number; readonly favorites: number };
   readonly collections: DashboardCollection[];
+  readonly isPro: boolean;
   readonly itemStats: DashboardItemStats;
 }) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -165,6 +167,7 @@ export function DashboardMain({
       <ItemContentDrawer
         collections={collections}
         isOpen={isItemDrawerOpen}
+        isPro={isPro}
         item={selectedItem}
         itemId={selectedItemId}
         onClose={closeItemDrawer}

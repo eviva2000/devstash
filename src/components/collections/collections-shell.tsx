@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { isProUser } from "@/lib/ai/access";
 import { CollectionsShellClient } from "@/components/collections/collections-shell-client";
 import {
   getCollections,
@@ -27,6 +28,7 @@ export async function CollectionsShell() {
     itemTypes,
     itemStats,
     itemTypeCounts,
+    isPro,
   ] = await Promise.all([
     getCollections(userId),
     getRecentCollections(userId, 6),
@@ -34,6 +36,7 @@ export async function CollectionsShell() {
     getItemTypes(),
     getItemStats(userId),
     getItemTypeCounts(userId),
+    isProUser(userId),
   ]);
 
   return (
@@ -48,6 +51,7 @@ export async function CollectionsShell() {
       itemStats={itemStats}
       itemTypeCounts={itemTypeCounts}
       itemTypes={itemTypes}
+      isPro={isPro}
       recentCollections={recentCollections}
     />
   );

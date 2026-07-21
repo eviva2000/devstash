@@ -1,17 +1,28 @@
-# Current Feature
+# Current Feature: AI Auto-Tagging
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
-<!-- List goals for the active feature here. -->
+- Establish the shared OpenAI foundation with the standard SDK, an `AI_MODEL` constant for `gpt-5-nano`, and the Responses API.
+- Add a validated `generateAutoTags` server action with authentication, server-side Pro-plan gating, content truncation, AI error handling, and a per-user limit of 20 requests per hour.
+- Add a Pro-only Suggest Tags action to the tags area in both the create item dialog and item drawer edit mode.
+- Show 3-5 freeform suggestions with per-tag accept and reject controls, merging accepted suggestions into the item tags.
+- Parse both supported AI response shapes, normalize suggestions to lowercase, and surface gating, rate-limit, and service failures through toasts.
+- Add focused unit tests for the server action and its error paths.
 
 ## Notes
 
-<!-- Add implementation notes, constraints, or spec links here. -->
+- Source spec: `context/features/ai-auto-tag-spec.md`
+- Architectural context: `docs/ai-integration-plan.md`
+- Use `client.responses.create()` and `response.output_text`; do not use Chat Completions for `gpt-5-nano`.
+- Use JSON object response formatting and manually accept either `{ "tags": [...] }` or a top-level array.
+- `OPENAI_API_KEY` is already configured locally; never expose it to client components.
+- `isPro` is available server-side but must be passed or otherwise made available to the create/edit UI for button visibility, while server-side enforcement remains mandatory.
+- Preserve unrelated working-tree changes.
 
 ## History
 

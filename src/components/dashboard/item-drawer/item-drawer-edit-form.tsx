@@ -2,6 +2,7 @@
 
 import type React from "react";
 
+import { AutoTagField } from "@/components/dashboard/auto-tag-field";
 import { CodeEditor } from "@/components/dashboard/code-editor";
 import { CodeLanguageSelect } from "@/components/dashboard/code-language-select";
 import { CollectionSelector } from "@/components/dashboard/collection-selector";
@@ -27,6 +28,7 @@ export function ItemDrawerEditForm({
   error,
   form,
   item,
+  isPro,
   isSaving,
   onChange,
   supportsContent,
@@ -41,6 +43,7 @@ export function ItemDrawerEditForm({
   error: string;
   form: EditFormState;
   item: ItemDetail;
+  isPro: boolean;
   isSaving: boolean;
   onChange: React.Dispatch<React.SetStateAction<EditFormState>>;
   supportsContent: boolean;
@@ -90,16 +93,16 @@ export function ItemDrawerEditForm({
           />
         </EditField>
 
-        <EditField label="Tags">
-          <Input
-            disabled={isSaving}
-            onChange={(event) =>
-              onChange((current) => ({ ...current, tags: event.target.value }))
-            }
-            placeholder="react, terminal, workflow"
-            value={form.tags}
-          />
-        </EditField>
+        <AutoTagField
+          content={form.content}
+          disabled={isSaving}
+          isPro={isPro}
+          onChange={(tags) =>
+            onChange((current) => ({ ...current, tags }))
+          }
+          tags={form.tags}
+          title={form.title}
+        />
 
         <CollectionSelector
           collections={collections}
