@@ -8,7 +8,8 @@ export type RateLimitName =
   | "resetPassword"
   | "resendVerification"
   | "fileUpload"
-  | "aiAutoTags";
+  | "aiAutoTags"
+  | "aiDescription";
 
 type RateLimitConfig = {
   limit: number;
@@ -23,6 +24,7 @@ const RATE_LIMIT_CONFIG: Record<RateLimitName, RateLimitConfig> = {
   resendVerification: { limit: 3, windowSeconds: 15 * 60 },
   fileUpload: { limit: 20, windowSeconds: 15 * 60 },
   aiAutoTags: { limit: 20, windowSeconds: 60 * 60 },
+  aiDescription: { limit: 20, windowSeconds: 60 * 60 },
 };
 
 export type RateLimitResult = {

@@ -84,6 +84,7 @@ export function AutoTagField({
         </label>
         {isPro && (
           <Button
+            className="text-violet-600 hover:bg-violet-500/15 hover:text-violet-700 hover:[&_svg]:scale-110 [&_svg]:transition-transform dark:text-violet-400 dark:hover:bg-violet-400/15 dark:hover:text-violet-300"
             disabled={!canSuggest}
             onClick={handleSuggest}
             size="sm"

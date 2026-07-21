@@ -6,6 +6,7 @@ import { AutoTagField } from "@/components/dashboard/auto-tag-field";
 import { CodeEditor } from "@/components/dashboard/code-editor";
 import { CodeLanguageSelect } from "@/components/dashboard/code-language-select";
 import { CollectionSelector } from "@/components/dashboard/collection-selector";
+import { GenerateDescriptionButton } from "@/components/dashboard/generate-description-button";
 import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
 import { Input } from "@/components/ui/input";
 import type {
@@ -82,8 +83,27 @@ export function ItemDrawerEditForm({
           />
         </EditField>
 
-        <EditField label="Description">
+        <EditFieldBlock
+          action={
+            <GenerateDescriptionButton
+              content={supportsContent ? form.content : ""}
+              disabled={isSaving}
+              fileName={item.fileName ?? ""}
+              isPro={isPro}
+              itemType={type?.name ?? item.type.name}
+              language={supportsLanguage ? form.language : ""}
+              onGenerated={(description) =>
+                onChange((current) => ({ ...current, description }))
+              }
+              tags={form.tags}
+              title={form.title}
+              url={supportsUrl ? form.url : ""}
+            />
+          }
+          label="Description"
+        >
           <EditTextarea
+            ariaLabel="Description"
             disabled={isSaving}
             onChange={(value) =>
               onChange((current) => ({ ...current, description: value }))
@@ -91,7 +111,7 @@ export function ItemDrawerEditForm({
             rows={4}
             value={form.description}
           />
-        </EditField>
+        </EditFieldBlock>
 
         <AutoTagField
           content={form.content}

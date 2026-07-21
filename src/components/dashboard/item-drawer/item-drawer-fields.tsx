@@ -21,31 +21,45 @@ export function EditField({
 }
 
 export function EditFieldBlock({
+  action,
   children,
   label,
   required = false,
 }: Readonly<{
+  action?: React.ReactNode;
   children: React.ReactNode;
   label: string;
   required?: boolean;
 }>) {
   return (
     <div className="block space-y-2">
-      <span className="text-sm font-medium text-muted-foreground">
-        {label}
-        {required && <span className="text-destructive"> *</span>}
-      </span>
+      {action ? (
+        <div className="flex min-h-8 items-center justify-between gap-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            {label}
+            {required && <span className="text-destructive"> *</span>}
+          </span>
+          {action}
+        </div>
+      ) : (
+        <span className="text-sm font-medium text-muted-foreground">
+          {label}
+          {required && <span className="text-destructive"> *</span>}
+        </span>
+      )}
       {children}
     </div>
   );
 }
 
 export function EditTextarea({
+  ariaLabel,
   disabled,
   onChange,
   rows,
   value,
 }: Readonly<{
+  ariaLabel?: string;
   disabled: boolean;
   onChange: (value: string) => void;
   rows: number;
@@ -53,7 +67,8 @@ export function EditTextarea({
 }>) {
   return (
     <textarea
-      className="min-h-24 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+      aria-label={ariaLabel}
+      className="min-h-24 w-full resize-y rounded-lg border border-input bg-input/20 px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-[color,box-shadow,background-color,border-color] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       rows={rows}

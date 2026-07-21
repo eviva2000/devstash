@@ -1,17 +1,30 @@
-# Current Feature
+# Current Feature: AI Description Generation
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
-<!-- List goals for the active feature here. -->
+- Add a button with a sparkle icon and Generate label above the description textarea in both the new item modal and drawer edit mode.
+- Generate a concise, useful 1-2 sentence description from the item data currently entered in the form, without requiring the item to be saved first.
+- Use the current title, content, item type, language, URL, tags, and other relevant form context when producing the description.
+- Insert the generated text into the description input so the user can review or edit it before saving; do not automatically persist the item.
+- Reuse the secure server-only OpenAI integration with authentication, Pro-plan enforcement, validation, rate limiting, loading states, and clear error toasts.
+- Add focused tests for description generation, input handling, access control, rate limits, response normalization, and AI service failures.
 
 ## Notes
 
-<!-- Add implementation notes, constraints, or spec links here. -->
+- Source: inline feature request.
+- Reuse the existing `gpt-5-nano` Responses API foundation; never expose `OPENAI_API_KEY` to client code.
+- Follow the existing AI tag suggestion interaction pattern where practical in both create and edit forms.
+- Give the generation button an accessible label and tooltip, clear loading and disabled states, and a visible hover treatment for both its icon and label.
+- Add the same visible hover treatment to the Suggest Tags action and its icon.
+- The response must be plain text, concise, limited to 1-2 sentences, and free of Markdown or generic filler.
+- Treat all current form values as transient input; generation must work before creation and must not save edits automatically.
+- Give fields in the new item modal more vertical breathing room.
+- Strengthen description textarea contrast and add extra separation from the title field in the new item modal.
 
 ## History
 
