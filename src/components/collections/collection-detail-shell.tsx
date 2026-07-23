@@ -7,10 +7,12 @@ import {
   getCollectionById,
   getCollections,
   getFavoriteCollections,
+  getGlobalSearchCollections,
   getItemTypes,
   getRecentCollections,
 } from "@/lib/db/collections";
 import {
+  getGlobalSearchItems,
   getItemsByCollectionId,
   getItemStats,
   getItemTypeCounts,
@@ -39,6 +41,8 @@ export async function CollectionDetailShell({
     itemTypes,
     itemStats,
     itemTypeCounts,
+    searchCollections,
+    searchItems,
     isPro,
   ] = await Promise.all([
     getCollectionById(userId, collectionId),
@@ -49,6 +53,8 @@ export async function CollectionDetailShell({
     getItemTypes(),
     getItemStats(userId),
     getItemTypeCounts(userId),
+    getGlobalSearchCollections(userId),
+    getGlobalSearchItems(userId),
     isProUser(userId),
   ]);
 
@@ -72,6 +78,8 @@ export async function CollectionDetailShell({
       items={items}
       isPro={isPro}
       recentCollections={recentCollections}
+      searchCollections={searchCollections}
+      searchItems={searchItems}
     />
   );
 }

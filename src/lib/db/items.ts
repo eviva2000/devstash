@@ -3,6 +3,7 @@ import type {
   DashboardItem,
   DashboardItemDetail,
   DashboardItemStats,
+  GlobalSearchItem,
 } from "@/features/dashboard/dashboard-types";
 import { ItemContentType } from "@/generated/prisma/client";
 import type { Prisma } from "@/generated/prisma/client";
@@ -77,10 +78,26 @@ const itemDetailInclude = {
   },
 } as const;
 
+const globalSearchItemSelect = {
+  id: true,
+  title: true,
+  description: true,
+  content: true,
+  url: true,
+  fileName: true,
+  type: {
+    select: itemTypeSelect,
+  },
+} as const;
+
 type DbDashboardItem = Prisma.ItemGetPayload<{ include: typeof itemInclude }>;
 
 type DbDashboardItemDetail = Prisma.ItemGetPayload<{
   include: typeof itemDetailInclude;
+}>;
+
+type DbGlobalSearchItem = Prisma.ItemGetPayload<{
+  select: typeof globalSearchItemSelect;
 }>;
 
 type DbDashboardItemType = Prisma.ItemTypeGetPayload<{
@@ -176,6 +193,22 @@ function toDashboardItemDetail(item: DbDashboardItemDetail): DashboardItemDetail
   };
 }
 
+function toGlobalSearchItem(item: DbGlobalSearchItem): GlobalSearchItem {
+  return {
+    id: item.id,
+    title: item.title,
+    preview: getGlobalSearchPreview(item),
+    type: item.type,
+  };
+}
+
+function getGlobalSearchPreview(item: DbGlobalSearchItem) {
+  const previewSource =
+    item.content ?? item.description ?? item.url ?? item.fileName ?? "";
+
+  return previewSource.replace(/\s+/g, " ").trim().slice(0, 180);
+}
+
 export async function getPinnedItems(userId: string): Promise<DashboardItem[]> {
   const items = await prisma.item.findMany({
     where: { userId, isPinned: true },
@@ -184,6 +217,18 @@ export async function getPinnedItems(userId: string): Promise<DashboardItem[]> {
   });
 
   return items.map(toDashboardItem);
+}
+
+export async function getGlobalSearchItems(
+  userId: string
+): Promise<GlobalSearchItem[]> {
+  const items = await prisma.item.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    select: globalSearchItemSelect,
+  });
+
+  return items.map(toGlobalSearchItem);
 }
 
 export async function getRecentItems(

@@ -1,5 +1,8 @@
 import type { Prisma } from "@/generated/prisma/client";
-import type { DashboardCollection } from "@/features/dashboard/dashboard-types";
+import type {
+  DashboardCollection,
+  GlobalSearchCollection,
+} from "@/features/dashboard/dashboard-types";
 import { prisma } from "@/lib/prisma";
 import { validateQueryLimit } from "@/lib/db/query-limits";
 
@@ -147,6 +150,28 @@ export async function getCollections(userId: string, limit: number = 100) {
   });
 
   return collections.map(toDashboardCollection);
+}
+
+export async function getGlobalSearchCollections(
+  userId: string
+): Promise<GlobalSearchCollection[]> {
+  const collections = await prisma.collection.findMany({
+    where: { userId },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      _count: {
+        select: { itemLinks: true },
+      },
+    },
+  });
+
+  return collections.map((collection) => ({
+    id: collection.id,
+    name: collection.name,
+    itemCount: collection._count.itemLinks,
+  }));
 }
 
 export async function getCollectionById(userId: string, collectionId: string) {

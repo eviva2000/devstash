@@ -6,10 +6,12 @@ import { ItemListShellClient } from "@/components/items/item-list-shell-client";
 import {
   getCollections,
   getFavoriteCollections,
+  getGlobalSearchCollections,
   getItemTypes,
   getRecentCollections,
 } from "@/lib/db/collections";
 import {
+  getGlobalSearchItems,
   getItemStats,
   getItemTypeCounts,
   getItemsByTypeSlug,
@@ -33,6 +35,8 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
     itemStats,
     itemTypeCounts,
     typedItems,
+    searchCollections,
+    searchItems,
     isPro,
   ] = await Promise.all([
     getRecentCollections(userId, 6),
@@ -42,6 +46,8 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
     getItemStats(userId),
     getItemTypeCounts(userId),
     getItemsByTypeSlug(userId, typeSlug),
+    getGlobalSearchCollections(userId),
+    getGlobalSearchItems(userId),
     isProUser(userId),
   ]);
 
@@ -65,6 +71,8 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
       items={typedItems.items}
       isPro={isPro}
       recentCollections={recentCollections}
+      searchCollections={searchCollections}
+      searchItems={searchItems}
     />
   );
 }

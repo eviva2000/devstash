@@ -9,6 +9,8 @@ import type {
   SidebarData,
   DashboardCollection,
   DashboardUser,
+  GlobalSearchCollection,
+  GlobalSearchItem,
 } from "@/features/dashboard/dashboard-types";
 import { getTypeHref } from "@/features/dashboard/dashboard-utils";
 
@@ -36,6 +38,8 @@ interface DashboardShellClientProps {
   readonly recentItems: DashboardItem[];
   readonly itemStats: DashboardItemStats;
   readonly itemTypeCounts: Record<string, number>;
+  readonly searchCollections: GlobalSearchCollection[];
+  readonly searchItems: GlobalSearchItem[];
   readonly isPro: boolean;
   readonly collectionStats: { readonly total: number; readonly favorites: number };
 }
@@ -49,6 +53,8 @@ export function DashboardShellClient({
   pinnedItems,
   recentItems,
   itemTypeCounts,
+  searchCollections,
+  searchItems,
   isPro,
   collectionStats,
   itemStats,
@@ -140,6 +146,8 @@ export function DashboardShellClient({
           isPro={isPro}
           itemTypes={itemTypes}
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+          searchCollections={searchCollections}
+          searchItems={searchItems}
         />
         <DashboardMain
           collections={collections}

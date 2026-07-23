@@ -6,6 +6,7 @@ import {
   createCollection,
   deleteCollection,
   getCollectionById,
+  getGlobalSearchCollections,
   updateCollection,
 } from "./collections";
 
@@ -14,6 +15,7 @@ vi.mock("@/lib/prisma", () => ({
     collection: {
       create: vi.fn(),
       deleteMany: vi.fn(),
+      findMany: vi.fn(),
       findFirst: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -23,6 +25,7 @@ vi.mock("@/lib/prisma", () => ({
 
 const collectionCreateMock = prisma.collection.create as unknown as Mock;
 const collectionDeleteManyMock = prisma.collection.deleteMany as unknown as Mock;
+const collectionFindManyMock = prisma.collection.findMany as unknown as Mock;
 const collectionFindFirstMock = prisma.collection.findFirst as unknown as Mock;
 const collectionFindUniqueMock = prisma.collection.findUnique as unknown as Mock;
 const collectionUpdateMock = prisma.collection.update as unknown as Mock;
@@ -158,6 +161,41 @@ describe("getCollectionById", () => {
     await expect(getCollectionById("user-1", "collection-2")).resolves.toBe(
       null
     );
+  });
+});
+
+describe("getGlobalSearchCollections", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("fetches every user collection with minimal searchable data", async () => {
+    collectionFindManyMock.mockResolvedValue([
+      {
+        id: "collection-1",
+        name: "API Notes",
+        _count: { itemLinks: 3 },
+      },
+    ]);
+
+    await expect(getGlobalSearchCollections("user-1")).resolves.toEqual([
+      {
+        id: "collection-1",
+        name: "API Notes",
+        itemCount: 3,
+      },
+    ]);
+    expect(collectionFindManyMock).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: { itemLinks: true },
+        },
+      },
+    });
   });
 });
 

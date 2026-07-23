@@ -1,12 +1,14 @@
-import { Menu, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import { CollectionCreateDialog } from "@/components/dashboard/collection-create-dialog";
+import { GlobalSearch } from "@/components/dashboard/global-search";
 import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import type {
   DashboardCollection,
   DashboardItemType,
+  GlobalSearchCollection,
+  GlobalSearchItem,
 } from "@/features/dashboard/dashboard-types";
 
 export function DashboardHeader({
@@ -16,13 +18,17 @@ export function DashboardHeader({
   isPro,
   itemTypes,
   onOpenMobileDrawer,
+  searchCollections,
+  searchItems,
 }: {
-  collections: DashboardCollection[];
-  initialCreateTypeSlug?: string;
-  isMobileDrawerOpen: boolean;
-  isPro: boolean;
-  itemTypes: DashboardItemType[];
-  onOpenMobileDrawer: () => void;
+  readonly collections: DashboardCollection[];
+  readonly initialCreateTypeSlug?: string;
+  readonly isMobileDrawerOpen: boolean;
+  readonly isPro: boolean;
+  readonly itemTypes: DashboardItemType[];
+  readonly onOpenMobileDrawer: () => void;
+  readonly searchCollections: GlobalSearchCollection[];
+  readonly searchItems: GlobalSearchItem[];
 }) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-background px-4 md:px-6">
@@ -38,15 +44,12 @@ export function DashboardHeader({
         <Menu />
       </Button>
 
-      <div className="relative w-full max-w-md">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          aria-label="Search items"
-          className="pl-8"
-          placeholder="Search items..."
-          type="search"
-        />
-      </div>
+      <GlobalSearch
+        collections={collections}
+        isPro={isPro}
+        items={searchItems}
+        searchCollections={searchCollections}
+      />
 
       <CollectionCreateDialog />
 

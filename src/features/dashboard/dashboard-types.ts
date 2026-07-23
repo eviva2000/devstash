@@ -59,6 +59,19 @@ export type DashboardItemDetail = DashboardItem & {
   type: DashboardItemType;
 };
 
+export type GlobalSearchItem = {
+  id: string;
+  title: string;
+  preview: string;
+  type: DashboardItemType;
+};
+
+export type GlobalSearchCollection = {
+  id: string;
+  name: string;
+  itemCount: number;
+};
+
 export type DashboardData = {
   collectionById: Map<string, DashboardCollection>;
   favoriteCollections: DashboardCollection[];

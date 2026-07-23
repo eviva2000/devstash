@@ -19,6 +19,8 @@ import type {
   DashboardItemStats,
   DashboardItemType,
   DashboardUser,
+  GlobalSearchCollection,
+  GlobalSearchItem,
   SidebarData,
 } from "@/features/dashboard/dashboard-types";
 import { getTypeHref } from "@/features/dashboard/dashboard-utils";
@@ -34,6 +36,8 @@ type CollectionDetailShellClientProps = {
   readonly items: DashboardItem[];
   readonly isPro: boolean;
   readonly recentCollections: DashboardCollection[];
+  readonly searchCollections: GlobalSearchCollection[];
+  readonly searchItems: GlobalSearchItem[];
 };
 
 export function CollectionDetailShellClient({
@@ -47,6 +51,8 @@ export function CollectionDetailShellClient({
   items,
   isPro,
   recentCollections,
+  searchCollections,
+  searchItems,
 }: CollectionDetailShellClientProps) {
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -135,6 +141,8 @@ export function CollectionDetailShellClient({
           isPro={isPro}
           itemTypes={itemTypes}
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+          searchCollections={searchCollections}
+          searchItems={searchItems}
         />
 
         <div className="min-h-0 flex-1 overflow-y-auto bg-background">

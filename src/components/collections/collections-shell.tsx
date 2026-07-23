@@ -6,10 +6,15 @@ import { CollectionsShellClient } from "@/components/collections/collections-she
 import {
   getCollections,
   getFavoriteCollections,
+  getGlobalSearchCollections,
   getItemTypes,
   getRecentCollections,
 } from "@/lib/db/collections";
-import { getItemStats, getItemTypeCounts } from "@/lib/db/items";
+import {
+  getGlobalSearchItems,
+  getItemStats,
+  getItemTypeCounts,
+} from "@/lib/db/items";
 
 export async function CollectionsShell() {
   const session = await auth();
@@ -28,6 +33,8 @@ export async function CollectionsShell() {
     itemTypes,
     itemStats,
     itemTypeCounts,
+    searchCollections,
+    searchItems,
     isPro,
   ] = await Promise.all([
     getCollections(userId),
@@ -36,6 +43,8 @@ export async function CollectionsShell() {
     getItemTypes(),
     getItemStats(userId),
     getItemTypeCounts(userId),
+    getGlobalSearchCollections(userId),
+    getGlobalSearchItems(userId),
     isProUser(userId),
   ]);
 
@@ -53,6 +62,8 @@ export async function CollectionsShell() {
       itemTypes={itemTypes}
       isPro={isPro}
       recentCollections={recentCollections}
+      searchCollections={searchCollections}
+      searchItems={searchItems}
     />
   );
 }

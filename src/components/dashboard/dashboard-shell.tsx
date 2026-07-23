@@ -7,10 +7,12 @@ import {
   getCollections,
   getCollectionStats,
   getFavoriteCollections,
+  getGlobalSearchCollections,
   getItemTypes,
   getRecentCollections,
 } from "@/lib/db/collections";
 import {
+  getGlobalSearchItems,
   getItemStats,
   getItemTypeCounts,
   getPinnedItems,
@@ -37,6 +39,8 @@ export async function DashboardShell() {
     recentItems,
     itemStats,
     itemTypeCounts,
+    searchCollections,
+    searchItems,
     isPro,
   ] = await Promise.all([
     getRecentCollections(userId, 6),
@@ -48,6 +52,8 @@ export async function DashboardShell() {
     getRecentItems(userId, 10),
     getItemStats(userId),
     getItemTypeCounts(userId),
+    getGlobalSearchCollections(userId),
+    getGlobalSearchItems(userId),
     isProUser(userId),
   ]);
 
@@ -66,6 +72,8 @@ export async function DashboardShell() {
       recentItems={recentItems}
       itemStats={itemStats}
       itemTypeCounts={itemTypeCounts}
+      searchCollections={searchCollections}
+      searchItems={searchItems}
       isPro={isPro}
       collectionStats={collectionStats}
     />

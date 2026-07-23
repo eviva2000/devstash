@@ -8,6 +8,7 @@ import {
   createPendingItemUpload,
   deleteItem,
   deletePendingItemUpload,
+  getGlobalSearchItems,
   getItemsByCollectionId,
   getPendingItemUpload,
 } from "./items";
@@ -492,6 +493,59 @@ describe("getItemsByCollectionId", () => {
       take: 50,
       orderBy: { updatedAt: "desc" },
       include: expect.any(Object),
+    });
+  });
+});
+
+describe("getGlobalSearchItems", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("fetches every user item with minimal searchable data", async () => {
+    itemFindManyMock.mockResolvedValue([
+      dbItem({
+        content: "const first = true;\nconst second = false;",
+        description: "A description that should not replace content.",
+      }),
+    ]);
+
+    await expect(getGlobalSearchItems("user-1")).resolves.toEqual([
+      {
+        id: "item-1",
+        title: "New snippet",
+        preview: "const first = true; const second = false;",
+        type: {
+          id: "type-1",
+          name: "Snippet",
+          slug: "snippet",
+          icon: "Code",
+          color: "#22c55e",
+          isSystem: true,
+        },
+      },
+    ]);
+    expect(itemFindManyMock).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        content: true,
+        url: true,
+        fileName: true,
+        type: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            icon: true,
+            color: true,
+            isSystem: true,
+          },
+        },
+      },
     });
   });
 });
