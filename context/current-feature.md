@@ -1,26 +1,17 @@
-# Current Feature: Light and Dark Mode
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Add a user-facing control for switching between light and dark themes.
-- Keep the existing dark appearance as the default when no theme preference has been saved.
-- Apply the selected theme consistently across the application.
-- Persist the user's theme choice across navigation and page reloads.
-- Ensure the theme control is accessible and avoids disruptive theme flashes during page load.
+<!-- List goals for the active feature here. -->
 
 ## Notes
 
-- The application currently renders in dark mode.
-- Preserve the existing dark theme while introducing a complete light-theme palette.
-- Theme state is managed with `next-themes` using the `devstash-theme` storage key.
-- Dark remains the fallback theme, system-theme overrides are disabled, and the theme is initialized before hydration.
-- Theme toggles are available from the homepage, authenticated dashboard header, authentication pages, and profile page.
-- Homepage product mockups remain intentionally dark while the surrounding page follows the selected theme.
+<!-- Add implementation notes, constraints, or spec links here. -->
 
 ## History
 
@@ -339,3 +330,11 @@ Keep this updated. Earliest to Latest
   - Added a stricter field-by-field fuzzy filter with a minimum score threshold to suppress weak matches
   - Added focused coverage for search-index queries and filtering behavior
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (111 passing), `npm run build`, and `git diff --check`
+- **Light and Dark Mode** (July 23, 2026)
+  - Completed on branch `light-and-dark-mode`
+  - Added persistent class-based theme management with `next-themes`, a dark default, and pre-hydration initialization to prevent disruptive theme flashes
+  - Added accessible theme toggles to the homepage, dashboard header, authentication pages, and profile page
+  - Updated homepage, pricing, Markdown, code editor, and toast styling to support both light and dark palettes
+  - Preserved intentionally dark product mockups while making the surrounding application follow the selected theme
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (111 passing), `npm run build`, `git diff --check`, and a generated theme-initializer artifact check
+  - Interactive visual verification was unavailable because no in-app browser was connected
