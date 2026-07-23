@@ -119,7 +119,7 @@ export function DashboardMain({
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           {stats.map((stat) => (
             <StatCard key={stat.label} {...stat} />
           ))}
@@ -134,7 +134,7 @@ export function DashboardMain({
         </DashboardSection>
 
         <DashboardSection title="Recent Items">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {data.recentItems.map((item) => (
               <ItemCard
                 collection={getCollection(data, item.collectionId)}

@@ -1,8 +1,12 @@
+"use client";
+
 import { Menu } from "lucide-react";
+import { useState } from "react";
 
 import { CollectionCreateDialog } from "@/components/dashboard/collection-create-dialog";
 import { GlobalSearch } from "@/components/dashboard/global-search";
 import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
+import { MobileCreateMenu } from "@/components/dashboard/mobile-create-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type {
@@ -31,6 +35,9 @@ export function DashboardHeader({
   readonly searchCollections: GlobalSearchCollection[];
   readonly searchItems: GlobalSearchItem[];
 }) {
+  const [isCollectionCreateOpen, setIsCollectionCreateOpen] = useState(false);
+  const [isItemCreateOpen, setIsItemCreateOpen] = useState(false);
+
   return (
     <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-background px-4 md:px-6">
       <Button
@@ -52,15 +59,27 @@ export function DashboardHeader({
         searchCollections={searchCollections}
       />
 
-      <ThemeToggle />
+      <ThemeToggle className="ml-auto md:ml-0" />
 
-      <CollectionCreateDialog />
+      <MobileCreateMenu
+        onCreateCollection={() => setIsCollectionCreateOpen(true)}
+        onCreateItem={() => setIsItemCreateOpen(true)}
+      />
+
+      <CollectionCreateDialog
+        onOpenChange={setIsCollectionCreateOpen}
+        open={isCollectionCreateOpen}
+        triggerClassName="ml-auto hidden md:inline-flex"
+      />
 
       <ItemCreateDialog
         collections={collections}
         initialTypeSlug={initialCreateTypeSlug}
         isPro={isPro}
         itemTypes={itemTypes}
+        onOpenChange={setIsItemCreateOpen}
+        open={isItemCreateOpen}
+        triggerClassName="hidden md:inline-flex"
       />
     </header>
   );

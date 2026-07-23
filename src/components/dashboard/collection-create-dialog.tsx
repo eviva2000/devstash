@@ -29,13 +29,30 @@ const initialForm: CreateCollectionFormState = {
   description: "",
 };
 
-export function CollectionCreateDialog() {
+export function CollectionCreateDialog({
+  onOpenChange,
+  open,
+  triggerClassName,
+}: {
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+  triggerClassName?: string;
+} = {}) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState<CreateCollectionFormState>(initialForm);
   const [formError, setFormError] = useState("");
+  const isOpen = open ?? uncontrolledOpen;
   const isSubmitDisabled = isSaving || form.name.trim().length === 0;
+
+  function setDialogOpen(nextOpen: boolean) {
+    if (open === undefined) {
+      setUncontrolledOpen(nextOpen);
+    }
+
+    onOpenChange?.(nextOpen);
+  }
 
   function updateForm(patch: Partial<CreateCollectionFormState>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -45,11 +62,11 @@ export function CollectionCreateDialog() {
     setForm(initialForm);
     setFormError("");
     setIsSaving(false);
-    setIsOpen(true);
+    setDialogOpen(true);
   }
 
   function closeDialog() {
-    setIsOpen(false);
+    setDialogOpen(false);
     setForm(initialForm);
     setFormError("");
     setIsSaving(false);
@@ -93,7 +110,7 @@ export function CollectionCreateDialog() {
   return (
     <>
       <Button
-        className="ml-auto hidden sm:inline-flex"
+        className={triggerClassName ?? "ml-auto hidden sm:inline-flex"}
         onClick={openDialog}
         type="button"
         variant="outline"

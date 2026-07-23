@@ -13,10 +13,13 @@ export default function DashboardLoading() {
 
       <section className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-background px-4 md:px-6">
-          <Skeleton className="h-8 w-full max-w-md" />
-          <Skeleton className="ml-auto size-8" />
-          <Skeleton className="ml-auto hidden h-8 w-32 sm:block" />
-          <Skeleton className="h-8 w-24" />
+          <Skeleton className="size-8 md:hidden" />
+          <Skeleton className="size-8 md:hidden" />
+          <Skeleton className="hidden h-8 w-full max-w-md md:block" />
+          <Skeleton className="ml-auto size-8 md:ml-0" />
+          <Skeleton className="size-8 md:hidden" />
+          <Skeleton className="hidden h-8 w-32 md:ml-auto md:block" />
+          <Skeleton className="hidden h-8 w-24 md:block" />
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto bg-background">
@@ -26,7 +29,7 @@ export default function DashboardLoading() {
               <Skeleton className="h-4 w-20" />
             </div>
 
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   className="rounded-md border border-border bg-card p-4 text-card-foreground"

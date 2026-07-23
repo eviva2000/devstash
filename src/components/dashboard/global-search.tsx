@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 
 import { ItemContentDrawer } from "@/components/dashboard/item-content-drawer";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandDialog,
@@ -97,7 +98,20 @@ export function GlobalSearch({
 
   return (
     <>
-      <div className="relative w-full max-w-md">
+      <Button
+        aria-expanded={isPaletteOpen}
+        aria-haspopup="dialog"
+        aria-label="Search items and collections"
+        className="md:hidden"
+        onClick={openPalette}
+        size="icon"
+        type="button"
+        variant="outline"
+      >
+        <Search />
+      </Button>
+
+      <div className="relative hidden w-full max-w-md md:block">
         <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           aria-expanded={isPaletteOpen}

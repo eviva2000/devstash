@@ -70,6 +70,8 @@ export function ItemCreateDialog({
   initialTypeSlug,
   isPro,
   itemTypes,
+  onOpenChange,
+  open,
   triggerClassName,
   triggerLabel = "New Item",
 }: {
@@ -77,11 +79,13 @@ export function ItemCreateDialog({
   initialTypeSlug?: string;
   isPro: boolean;
   itemTypes: DashboardItemType[];
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
   triggerClassName?: string;
   triggerLabel?: string;
 }) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const availableTypes = useMemo(
     () => itemTypes.filter((type) => isCreatableItemType(type.slug)),
@@ -96,6 +100,7 @@ export function ItemCreateDialog({
     getInitialForm(defaultTypeSlug)
   );
   const [formError, setFormError] = useState("");
+  const isOpen = open ?? uncontrolledOpen;
   const selectedType =
     availableTypes.find((type) => type.slug === form.typeSlug) ??
     availableTypes[0];
@@ -116,11 +121,19 @@ export function ItemCreateDialog({
     setForm((current) => ({ ...current, ...patch }));
   }
 
+  function setDialogOpen(nextOpen: boolean) {
+    if (open === undefined) {
+      setUncontrolledOpen(nextOpen);
+    }
+
+    onOpenChange?.(nextOpen);
+  }
+
   function openDialog() {
     setForm(getInitialForm(defaultTypeSlug));
     setFormError("");
     setIsSaving(false);
-    setIsOpen(true);
+    setDialogOpen(true);
   }
 
   function closeDialog({ cleanupUpload = true } = {}) {
@@ -128,7 +141,7 @@ export function ItemCreateDialog({
       void cleanupPendingUpload(form.file.uploadToken);
     }
 
-    setIsOpen(false);
+    setDialogOpen(false);
     setForm(getInitialForm(defaultTypeSlug));
     setFormError("");
     setIsSaving(false);
@@ -198,11 +211,14 @@ export function ItemCreateDialog({
         }}
       >
         <DialogContent
-          className="max-h-none max-w-xl overflow-visible"
+          className="max-h-[calc(100dvh-1rem)] max-w-xl sm:max-h-[min(720px,calc(100dvh-2rem))]"
           showCloseButton={!isSaving}
         >
-          <form className="flex min-h-0 flex-col" onSubmit={handleSubmit}>
-            <div className="shrink-0 px-5 pb-3 pt-5">
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <div className="shrink-0 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
               <DialogHeader className="pr-8">
                 <DialogTitle>Create Item</DialogTitle>
                 <DialogDescription className="sr-only">
@@ -211,7 +227,7 @@ export function ItemCreateDialog({
               </DialogHeader>
             </div>
 
-            <div className="px-5 pb-5">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-5 sm:px-5">
               <div className="space-y-4">
                 {formError && (
                   <p

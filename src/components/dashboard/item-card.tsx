@@ -55,7 +55,7 @@ export function ItemCard({
     <div
       aria-label={`Open item details for ${item.title}`}
       className={cn(
-        "group flex min-h-44 w-full cursor-pointer flex-col rounded-md border border-l-4 border-border bg-card p-4 text-left text-card-foreground transition-colors hover:border-muted-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        "group flex min-h-44 w-full min-w-0 max-w-full cursor-pointer flex-col overflow-hidden rounded-md border border-l-4 border-border bg-card p-4 text-left text-card-foreground transition-colors hover:border-muted-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
         borderClassName
       )}
       onClick={onOpen}
@@ -64,7 +64,7 @@ export function ItemCard({
       style={getTypeLeftBorderStyle(type?.color)}
       tabIndex={0}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex min-w-0 items-start gap-3">
         <span
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-md",
@@ -90,15 +90,15 @@ export function ItemCard({
       </div>
 
       {(type || visibleTags.length > 0) && (
-        <div className="mt-4 flex flex-wrap gap-1.5">
+        <div className="mt-4 flex min-w-0 flex-wrap gap-1.5">
           {type && (
-            <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+            <span className="max-w-full truncate rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
               {type.name}
             </span>
           )}
           {visibleTags.map((tag) => (
             <span
-              className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
+              className="max-w-full truncate rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
               key={tag}
             >
               {tag}
@@ -107,8 +107,8 @@ export function ItemCard({
         </div>
       )}
 
-      <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-xs text-muted-foreground">
-        <span className="truncate">
+      <div className="mt-auto flex min-w-0 items-center justify-between gap-3 pt-4 text-xs text-muted-foreground">
+        <span className="min-w-0 flex-1 truncate">
           {collection?.name ?? type?.name ?? "Unsorted"}
         </span>
         <time className="shrink-0" dateTime={item.updatedAt.toISOString()}>
