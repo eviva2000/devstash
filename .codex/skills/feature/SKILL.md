@@ -30,7 +30,7 @@ Use one of these actions after `$feature`: `load`, `start`, `review`, `explain`,
 | Action | Description |
 |--------|-------------|
 | `load` | Load a feature spec or inline description |
-| `start` | Begin implementation, create branch |
+| `start` | Make a todo list, begin implementation, create branch |
 | `review` | Check goals met, code quality |
 | `explain` | Document what changed and why |
 | `test` | Add or run focused tests for changed feature code |
