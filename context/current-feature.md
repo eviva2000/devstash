@@ -1,29 +1,17 @@
-# Current Feature: Global Search / Command Palette
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
-- Open a global command palette with Cmd+K on macOS and Ctrl+K on Windows.
-- Fuzzy-search all items and collections using pre-fetched client-side data.
-- Group matching results into Items and Collections sections.
-- Support keyboard navigation with the arrow keys and Enter.
-- Show item type icons and collection item counts in search results.
-- Navigate to an item's detail drawer or a collection page when a result is selected.
-- Open the palette from the TopBar search input and show a Cmd+K shortcut hint.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
-- Spec: `context/features/global-search-spec.md`
-- Use the shadcn `Command` component built on `cmdk`.
-- Reuse existing data-fetching functions and avoid search-time server round trips.
-- Searchable item data: id, title, type, and content preview.
-- Searchable collection data: id, name, and item count.
 
 ## History
 
@@ -333,3 +321,12 @@ Keep this updated. Earliest to Latest
   - Added accessible loading, disabled, tooltip, and hover states, matched the Suggest Tags color treatment, and improved create-form spacing and textarea contrast
   - Added focused coverage for access control, validation, rate limiting, transient form context, response normalization, and provider failures
   - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (104 passing), `npm run build`, and `git diff --check`
+- **Global Search / Command Palette** (July 23, 2026)
+  - Completed on branch `global-search-command-palette`
+  - Added a global Cmd+K / Ctrl+K command palette using the shadcn `Command` component and `cmdk`
+  - Prefetched lightweight, user-scoped item and collection search indexes for client-side filtering without search-time server requests
+  - Grouped results into Items and Collections with item type icons, content previews, and collection item counts
+  - Opened item details in the existing drawer and navigated collection results to their collection pages
+  - Added a stricter field-by-field fuzzy filter with a minimum score threshold to suppress weak matches
+  - Added focused coverage for search-index queries and filtering behavior
+  - Verified with `npx tsc --noEmit`, `npm run lint`, `npm test` (111 passing), `npm run build`, and `git diff --check`
