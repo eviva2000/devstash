@@ -25,7 +25,7 @@ export default function DashboardLoading() {
               <Skeleton className="h-4 w-20" />
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 min-[1420px]:grid-cols-4">
+            <div className="grid grid-cols-4 gap-3">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   className="rounded-md border border-border bg-card p-4 text-card-foreground"

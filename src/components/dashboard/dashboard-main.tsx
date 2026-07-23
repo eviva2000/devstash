@@ -119,7 +119,7 @@ export function DashboardMain({
           </p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 min-[1420px]:grid-cols-4">
+        <div className="grid grid-cols-4 gap-3">
           {stats.map((stat) => (
             <StatCard key={stat.label} {...stat} />
           ))}
@@ -132,22 +132,6 @@ export function DashboardMain({
             ))}
           </div>
         </DashboardSection>
-
-        {data.pinnedItems.length > 0 && (
-          <DashboardSection title="Pinned Items">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {data.pinnedItems.map((item) => (
-                <ItemCard
-                  collection={getCollection(data, item.collectionId)}
-                  item={item}
-                  key={item.id}
-                  onOpen={() => openItemDrawer(item.id)}
-                  type={data.typeById.get(item.typeId)}
-                />
-              ))}
-            </div>
-          </DashboardSection>
-        )}
 
         <DashboardSection title="Recent Items">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
