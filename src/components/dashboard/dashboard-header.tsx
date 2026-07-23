@@ -3,6 +3,7 @@ import { Menu } from "lucide-react";
 import { CollectionCreateDialog } from "@/components/dashboard/collection-create-dialog";
 import { GlobalSearch } from "@/components/dashboard/global-search";
 import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type {
   DashboardCollection,
@@ -50,6 +51,8 @@ export function DashboardHeader({
         items={searchItems}
         searchCollections={searchCollections}
       />
+
+      <ThemeToggle />
 
       <CollectionCreateDialog />
 

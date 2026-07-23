@@ -14,6 +14,7 @@ export default function DashboardLoading() {
       <section className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-background px-4 md:px-6">
           <Skeleton className="h-8 w-full max-w-md" />
+          <Skeleton className="ml-auto size-8" />
           <Skeleton className="ml-auto hidden h-8 w-32 sm:block" />
           <Skeleton className="h-8 w-24" />
         </header>

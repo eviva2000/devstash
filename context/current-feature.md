@@ -1,17 +1,26 @@
-# Current Feature
+# Current Feature: Light and Dark Mode
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
-<!-- List goals for the active feature here. -->
+- Add a user-facing control for switching between light and dark themes.
+- Keep the existing dark appearance as the default when no theme preference has been saved.
+- Apply the selected theme consistently across the application.
+- Persist the user's theme choice across navigation and page reloads.
+- Ensure the theme control is accessible and avoids disruptive theme flashes during page load.
 
 ## Notes
 
-<!-- Add implementation notes, constraints, or spec links here. -->
+- The application currently renders in dark mode.
+- Preserve the existing dark theme while introducing a complete light-theme palette.
+- Theme state is managed with `next-themes` using the `devstash-theme` storage key.
+- Dark remains the fallback theme, system-theme overrides are disabled, and the theme is initialized before hydration.
+- Theme toggles are available from the homepage, authenticated dashboard header, authentication pages, and profile page.
+- Homepage product mockups remain intentionally dark while the surrounding page follows the selected theme.
 
 ## History
 

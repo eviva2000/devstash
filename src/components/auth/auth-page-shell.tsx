@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Layers3 } from "lucide-react";
 
+import { ThemeToggle } from "@/components/theme-toggle";
+
 export function AuthPageShell({
   children,
   subtitle,
@@ -12,7 +14,9 @@ export function AuthPageShell({
   title: string;
 }>) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground">
+    <main className="relative flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground">
+      <ThemeToggle className="absolute right-4 top-4" />
+
       <section className="w-full max-w-md">
         <Link
           className="mx-auto flex w-fit items-center gap-3 text-sidebar-foreground"

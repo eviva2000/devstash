@@ -52,13 +52,13 @@ export function MarkdownEditor({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-md border border-border bg-[#1e1e1e] text-card-foreground shadow-xs",
+        "overflow-hidden rounded-md border border-border bg-background text-foreground shadow-xs",
         disabled && "opacity-70",
         className
       )}
       style={{ height: totalHeight }}
     >
-      <div className="flex h-10 items-center gap-3 border-b border-white/10 bg-[#2d2d2d] px-3">
+      <div className="flex h-10 items-center gap-3 border-b border-border bg-muted px-3">
         <div className="flex items-center gap-1.5" aria-hidden="true">
           <span className="size-2.5 rounded-full bg-[#ff5f56]" />
           <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
@@ -88,7 +88,7 @@ export function MarkdownEditor({
 
         <Button
           aria-label="Copy markdown"
-          className="ml-auto size-7 text-neutral-300 hover:bg-white/10 hover:text-white"
+          className="ml-auto size-7 text-muted-foreground hover:bg-background hover:text-foreground"
           disabled={!value}
           onClick={handleCopy}
           size="icon"
@@ -102,7 +102,7 @@ export function MarkdownEditor({
       {visibleMode === "write" ? (
         <textarea
           aria-label={ariaLabel}
-          className="h-full w-full resize-none bg-[#1e1e1e] px-4 py-3 font-mono text-sm leading-6 text-neutral-100 outline-none placeholder:text-neutral-500 disabled:cursor-not-allowed"
+          className="h-full w-full resize-none bg-background px-4 py-3 font-mono text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
           disabled={isReadOnly}
           onChange={(event) => onChange?.(event.target.value)}
           spellCheck={false}
@@ -117,7 +117,7 @@ export function MarkdownEditor({
           {value.trim() ? (
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
           ) : (
-            <p className="text-sm text-neutral-500">Nothing to preview.</p>
+            <p className="text-sm text-muted-foreground">Nothing to preview.</p>
           )}
         </div>
       )}
@@ -140,8 +140,8 @@ function EditorTab({
     <button
       aria-selected={active}
       className={cn(
-        "h-7 rounded px-2 text-xs font-medium text-neutral-400 transition-colors hover:bg-white/10 hover:text-white",
-        active && "bg-white/10 text-white"
+        "h-7 rounded px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground",
+        active && "bg-background text-foreground shadow-xs"
       )}
       disabled={disabled}
       onClick={onClick}

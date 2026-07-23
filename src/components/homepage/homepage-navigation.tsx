@@ -5,6 +5,7 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Wordmark } from "@/components/homepage/logo-mark";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -28,16 +29,21 @@ export function HomepageNavigation() {
   }, []);
 
   return (
-    <header className={cn("sticky top-0 z-50 border-b border-transparent bg-[#080b12]/55 transition-colors backdrop-blur-xl", hasScrolled && "border-white/10 bg-[#080b12]/95")}>
+    <header
+      className={cn(
+        "sticky top-0 z-50 border-b border-transparent bg-background/70 transition-colors backdrop-blur-xl",
+        hasScrolled && "border-border bg-background/95"
+      )}
+    >
       <div className="mx-auto flex h-16 w-[min(1180px,calc(100%-2rem))] items-center justify-between">
         <Link href="/" aria-label="DevStash home" onClick={closeMenu}>
-          <Wordmark className="text-lg text-white" />
+          <Wordmark className="text-lg text-foreground" />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex" aria-label="Main navigation">
           {navLinks.map((link) => (
             <Link
-              className="text-sm font-medium text-slate-400 transition-colors hover:text-white"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               href={link.href}
               key={link.href}
             >
@@ -47,8 +53,9 @@ export function HomepageNavigation() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           <Link
-            className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-slate-200 hover:bg-white/8 hover:text-white")}
+            className={buttonVariants({ variant: "ghost", size: "sm" })}
             href="/sign-in"
           >
             Sign in
@@ -61,28 +68,31 @@ export function HomepageNavigation() {
           </Link>
         </div>
 
-        <button
-          aria-controls="homepage-navigation"
-          aria-expanded={isOpen}
-          aria-label={isOpen ? "Close navigation" : "Open navigation"}
-          className="rounded-md p-2 text-slate-200 hover:bg-white/10 md:hidden"
-          onClick={() => setIsOpen((open) => !open)}
-          type="button"
-        >
-          {isOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button
+            aria-controls="homepage-navigation"
+            aria-expanded={isOpen}
+            aria-label={isOpen ? "Close navigation" : "Open navigation"}
+            className="rounded-md p-2 text-foreground hover:bg-muted"
+            onClick={() => setIsOpen((open) => !open)}
+            type="button"
+          >
+            {isOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
       </div>
 
       {isOpen ? (
         <nav
-          className="border-t border-white/10 bg-[#10131d] px-4 py-4 md:hidden"
+          className="border-t border-border bg-background px-4 py-4 md:hidden"
           id="homepage-navigation"
           aria-label="Mobile navigation"
         >
           <div className="mx-auto grid w-[min(1180px,100%)] gap-1">
             {navLinks.map((link) => (
               <Link
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/8 hover:text-white"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                 href={link.href}
                 key={link.href}
                 onClick={closeMenu}
@@ -90,9 +100,9 @@ export function HomepageNavigation() {
                 {link.label}
               </Link>
             ))}
-            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-white/10 pt-3">
+            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border pt-3">
               <Link
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "border-white/15 bg-transparent text-white hover:bg-white/10")}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
                 href="/sign-in"
                 onClick={closeMenu}
               >

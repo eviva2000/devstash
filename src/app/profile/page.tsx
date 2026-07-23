@@ -13,6 +13,7 @@ import { auth } from "@/auth";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProfileAccountActions } from "@/components/profile/profile-account-actions";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { getTypeColorStyle } from "@/features/dashboard/dashboard-utils";
 import { getIconComponent } from "@/lib/icon-map";
@@ -51,12 +52,15 @@ export default async function ProfilePage() {
             <p className="text-sm text-muted-foreground">Profile</p>
             <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
           </div>
-          <Link
-            className={buttonVariants({ variant: "outline" })}
-            href="/dashboard"
-          >
-            Back to dashboard
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              className={buttonVariants({ variant: "outline" })}
+              href="/dashboard"
+            >
+              Back to dashboard
+            </Link>
+          </div>
         </header>
 
         <section className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">

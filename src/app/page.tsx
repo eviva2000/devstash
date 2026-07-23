@@ -26,12 +26,12 @@ export const metadata: Metadata = {
 };
 
 const features = [
-  { title: "Code snippets", description: "Save reusable code with syntax highlighting, language detection, and one-click copy.", Icon: Code2, color: "border-t-blue-500", icon: "bg-blue-500/12 text-blue-300" },
-  { title: "AI prompts", description: "Build your personal prompt library and stop rewriting the same context for every model.", Icon: Sparkles, color: "border-t-amber-500", icon: "bg-amber-500/12 text-amber-300" },
-  { title: "Instant search", description: "Search every title, tag, and line of content with a shortcut that is always one key away.", Icon: Search, color: "border-t-indigo-500", icon: "bg-indigo-500/12 text-indigo-300" },
-  { title: "Commands", description: "Keep the CLI incantations you can never quite remember ready for instant reuse.", Icon: Terminal, color: "border-t-cyan-500", icon: "bg-cyan-500/12 text-cyan-300" },
-  { title: "Files & docs", description: "Store reference files and visual inspiration next to the notes that give them meaning.", Icon: FileText, color: "border-t-slate-400", icon: "bg-slate-400/15 text-slate-200" },
-  { title: "Collections", description: "Group related knowledge into projects and topics without losing global search.", Icon: Folder, color: "border-t-green-500", icon: "bg-green-500/12 text-green-300" },
+  { title: "Code snippets", description: "Save reusable code with syntax highlighting, language detection, and one-click copy.", Icon: Code2, color: "border-t-blue-500", icon: "bg-blue-500/12 text-blue-600 dark:text-blue-300" },
+  { title: "AI prompts", description: "Build your personal prompt library and stop rewriting the same context for every model.", Icon: Sparkles, color: "border-t-amber-500", icon: "bg-amber-500/12 text-amber-600 dark:text-amber-300" },
+  { title: "Instant search", description: "Search every title, tag, and line of content with a shortcut that is always one key away.", Icon: Search, color: "border-t-indigo-500", icon: "bg-indigo-500/12 text-indigo-600 dark:text-indigo-300" },
+  { title: "Commands", description: "Keep the CLI incantations you can never quite remember ready for instant reuse.", Icon: Terminal, color: "border-t-cyan-500", icon: "bg-cyan-500/12 text-cyan-600 dark:text-cyan-300" },
+  { title: "Files & docs", description: "Store reference files and visual inspiration next to the notes that give them meaning.", Icon: FileText, color: "border-t-slate-400", icon: "bg-slate-400/15 text-slate-600 dark:text-slate-200" },
+  { title: "Collections", description: "Group related knowledge into projects and topics without losing global search.", Icon: Folder, color: "border-t-green-500", icon: "bg-green-500/12 text-green-600 dark:text-green-300" },
 ];
 
 const aiCapabilities = [
@@ -50,25 +50,25 @@ export default function Home() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="min-h-screen bg-[#080b12] text-slate-100">
-      <a className="sr-only z-[100] rounded-md bg-white px-4 py-2 text-slate-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4" href="#homepage-main">
+    <div className="min-h-screen bg-background text-foreground">
+      <a className="sr-only z-[100] rounded-md bg-foreground px-4 py-2 text-background focus:not-sr-only focus:fixed focus:left-4 focus:top-4" href="#homepage-main">
         Skip to content
       </a>
       <HomepageNavigation />
 
       <main id="homepage-main">
-        <section className="relative isolate overflow-hidden border-b border-white/[0.06] pb-16 pt-16 sm:pt-16">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(rgba(142,153,202,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(142,153,202,.035)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
+        <section className="relative isolate overflow-hidden border-b border-border pb-16 pt-16 sm:pt-16">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 text-foreground/[0.04] [background-image:linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
           <div aria-hidden="true" className="pointer-events-none absolute -left-48 top-0 -z-10 size-[38rem] rounded-full bg-indigo-500/12 blur-3xl" />
           <div aria-hidden="true" className="pointer-events-none absolute -right-48 top-32 -z-10 size-[32rem] rounded-full bg-sky-500/10 blur-3xl" />
 
           <div className="mx-auto w-[min(1320px,calc(100%-2rem))]">
             <div className="mx-auto max-w-3xl text-center">
-              <h1 className="text-balance text-5xl font-extrabold tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
+              <h1 className="text-balance text-5xl font-extrabold tracking-[-0.065em] text-foreground sm:text-6xl lg:text-7xl">
                 Developer knowledge,<br />
                 <span className="bg-gradient-to-r from-indigo-300 via-indigo-400 to-sky-400 bg-clip-text text-transparent">organized.</span>
               </h1>
-              <p className="mx-auto mt-6 max-w-lg text-pretty text-base leading-7 text-slate-400 sm:text-lg">Everything you save. One searchable home.</p>
+              <p className="mx-auto mt-6 max-w-lg text-pretty text-base leading-7 text-muted-foreground sm:text-lg">Everything you save. One searchable home.</p>
               <div className="mt-8 flex justify-center">
                 <Link className={cn(buttonVariants({ size: "lg" }), "h-11 bg-indigo-500 px-5 text-white hover:bg-indigo-400")} href="/register">
                   Start free <ArrowRight />
@@ -77,17 +77,17 @@ export default function Home() {
             </div>
 
             <div className="mt-10 grid items-center gap-2 lg:grid-cols-[minmax(0,1fr)_4.5rem_minmax(0,1.05fr)]">
-              <article className="rounded-2xl border-2 border-orange-200/40 bg-[linear-gradient(145deg,rgba(29,34,50,.98),rgba(13,16,25,.98))] p-4 shadow-[0_22px_60px_rgba(0,0,0,.3)] sm:p-5">
+              <article className="rounded-2xl border-2 border-orange-400/40 bg-card p-4 shadow-xl shadow-black/10 sm:p-5 dark:border-orange-200/40 dark:shadow-black/30">
                 <PanelHeading eyebrow="The problem" title="Your knowledge today..." status="Scattered" tone="orange" />
                 <ChaosVisualizer />
               </article>
 
-              <div className="flex h-12 items-center justify-center text-indigo-300 lg:h-auto lg:flex-col">
+              <div className="flex h-12 items-center justify-center text-indigo-600 lg:h-auto lg:flex-col dark:text-indigo-300">
                 <ArrowRight className="size-12 motion-safe:animate-[homepage-arrow-pulse_1.8s_ease-in-out_infinite] lg:size-14" />
                 <span className="ml-2 text-[10px] font-bold tracking-[0.16em] uppercase lg:ml-0 lg:mt-2">Organize</span>
               </div>
 
-              <article className="rounded-2xl border-2 border-indigo-300/50 bg-[linear-gradient(145deg,rgba(29,34,50,.98),rgba(13,16,25,.98))] p-4 shadow-[0_22px_60px_rgba(0,0,0,.3),0_18px_65px_rgba(50,66,186,.2)] sm:p-5">
+              <article className="rounded-2xl border-2 border-indigo-400/50 bg-card p-4 shadow-xl shadow-indigo-500/10 sm:p-5 dark:border-indigo-300/50 dark:shadow-indigo-950/30">
                 <PanelHeading eyebrow="The solution" title="...with DevStash" status="Organized" tone="green" />
                 <DashboardPreview />
               </article>
@@ -99,34 +99,34 @@ export default function Home() {
           <SectionHeading className="mb-8 sm:mb-10" eyebrow="Everything in its place" title="Built for the way developers think." description="Capture it in seconds. Find it exactly when you need it." />
           <div className="mx-auto grid w-[min(1320px,calc(100%-2rem))] gap-4 md:grid-cols-2 xl:grid-cols-3">
             {features.map(({ title, description, Icon, color, icon }, index) => (
-              <article className={`group relative min-h-[340px] overflow-hidden rounded-2xl border border-white/12 border-t-2 bg-white/[0.025] p-6 transition-transform duration-200 hover:-translate-y-1 hover:border-white/25 ${color}`} key={title}>
-                <span className="absolute right-6 top-6 text-xs font-bold text-slate-600">0{index + 1}</span>
+              <article className={`group relative min-h-[340px] overflow-hidden rounded-2xl border border-border border-t-2 bg-card p-6 transition-transform duration-200 hover:-translate-y-1 hover:border-foreground/25 ${color}`} key={title}>
+                <span className="absolute right-6 top-6 text-xs font-bold text-muted-foreground/70">0{index + 1}</span>
                 <span className={`grid size-10 place-items-center rounded-xl ${icon}`}><Icon className="size-5" /></span>
-                <h3 className="mt-5 text-xl font-bold tracking-tight text-white">{title}</h3>
-                <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">{description}</p>
+                <h3 className="mt-5 text-xl font-bold tracking-tight text-foreground">{title}</h3>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">{description}</p>
                 <FeaturePreview title={title} />
               </article>
             ))}
           </div>
         </section>
 
-        <section className="relative overflow-hidden border-y border-white/[0.07] bg-[#0c0f18] py-12 sm:py-16" id="pro-ai">
+        <section className="relative overflow-hidden border-y border-border bg-muted/30 py-12 sm:py-16" id="pro-ai">
           <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-48 size-[34rem] rounded-full bg-violet-500/16 blur-3xl" />
           <div className="relative mx-auto grid w-[min(1400px,calc(100%-2rem))] items-start gap-8 lg:grid-cols-[.9fr_1.1fr]">
             <div>
-              <Badge className="border-violet-400/25 bg-violet-500/12 text-violet-200"><Sparkles /> Pro feature</Badge>
-              <p className="mt-5 text-xs font-bold tracking-[0.14em] text-slate-400 uppercase">Your stash, supercharged</p>
-              <h2 className="mt-3 text-4xl font-extrabold tracking-[-0.05em] text-white sm:text-5xl">Let AI do the organizing.</h2>
-              <p className="mt-5 max-w-lg text-base leading-7 text-slate-400">Save the useful part. DevStash Pro understands what you captured and handles the busywork around it.</p>
+              <Badge className="border-violet-500/25 bg-violet-500/12 text-violet-700 dark:text-violet-200"><Sparkles /> Pro feature</Badge>
+              <p className="mt-5 text-xs font-bold tracking-[0.14em] text-muted-foreground uppercase">Your stash, supercharged</p>
+              <h2 className="mt-3 text-4xl font-extrabold tracking-[-0.05em] text-foreground sm:text-5xl">Let AI do the organizing.</h2>
+              <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">Save the useful part. DevStash Pro understands what you captured and handles the busywork around it.</p>
               <ul className="mt-8 space-y-5">
                 {aiCapabilities.map(([title, description]) => (
                   <li className="flex gap-3" key={title}>
-                    <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-violet-400/12 text-violet-200"><WandSparkles className="size-4" /></span>
-                    <span><strong className="block text-sm text-slate-100">{title}</strong><span className="mt-1 block text-sm text-slate-400">{description}</span></span>
+                    <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-violet-400/12 text-violet-700 dark:text-violet-200"><WandSparkles className="size-4" /></span>
+                    <span><strong className="block text-sm text-foreground">{title}</strong><span className="mt-1 block text-sm text-muted-foreground">{description}</span></span>
                   </li>
                 ))}
               </ul>
-              <a className="mt-8 inline-flex items-center gap-1 text-sm font-semibold text-indigo-300 transition-colors hover:text-indigo-200" href="#pricing">Explore DevStash Pro <ArrowRight className="size-4" /></a>
+              <a className="mt-8 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200" href="#pricing">Explore DevStash Pro <ArrowRight className="size-4" /></a>
             </div>
             <EditorDemo />
           </div>
@@ -151,22 +151,22 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-white/8 bg-[#080a10] py-10">
+      <footer className="border-t border-border bg-background py-10">
         <div className="mx-auto grid w-[min(1320px,calc(100%-2rem))] gap-8 sm:grid-cols-[1.7fr_repeat(2,1fr)]">
           <div>
-            <Link href="/"><Wordmark className="text-lg text-white" /></Link>
-            <p className="mt-4 text-sm leading-6 text-slate-500">Your developer knowledge,<br />finally organized.</p>
+            <Link href="/"><Wordmark className="text-lg text-foreground" /></Link>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">Your developer knowledge,<br />finally organized.</p>
           </div>
           {footerColumns.map((column) => (
             <div key={column.heading}>
-              <h2 className="text-sm font-semibold text-slate-200">{column.heading}</h2>
+              <h2 className="text-sm font-semibold text-foreground">{column.heading}</h2>
               <ul className="mt-4 space-y-2.5">
-                {column.links.map(([label, href]) => <li key={label}><Link className="text-sm text-slate-500 transition-colors hover:text-slate-200" href={href}>{label}</Link></li>)}
+                {column.links.map(([label, href]) => <li key={label}><Link className="text-sm text-muted-foreground transition-colors hover:text-foreground" href={href}>{label}</Link></li>)}
               </ul>
             </div>
           ))}
         </div>
-        <div className="mx-auto mt-8 flex w-[min(1320px,calc(100%-2rem))] flex-col gap-3 border-t border-white/8 pt-5 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto mt-8 flex w-[min(1320px,calc(100%-2rem))] flex-col gap-3 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>© {currentYear} DevStash. Built for developers.</p>
           <p className="inline-flex items-center gap-2"><span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_7px_rgb(74_222_128)]" /> All systems operational</p>
         </div>
@@ -181,8 +181,8 @@ function PanelHeading({ eyebrow, title, status, tone }: { eyebrow: string; title
   return (
     <div className="mb-4 flex items-start justify-between gap-4">
       <div>
-        <p className="text-[11px] font-extrabold tracking-[0.12em] text-slate-400 uppercase">{eyebrow}</p>
-        <h2 className="mt-1.5 text-xl font-extrabold tracking-[-0.04em] text-white">{title}</h2>
+        <p className="text-[11px] font-extrabold tracking-[0.12em] text-muted-foreground uppercase">{eyebrow}</p>
+        <h2 className="mt-1.5 text-xl font-extrabold tracking-[-0.04em] text-foreground">{title}</h2>
       </div>
       <span className={`mt-0.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold ${statusStyles}`}><span className={`size-1.5 rounded-full ${dotStyles}`} />{status}</span>
     </div>
@@ -192,9 +192,9 @@ function PanelHeading({ eyebrow, title, status, tone }: { eyebrow: string; title
 function SectionHeading({ eyebrow, title, description, className }: { eyebrow: string; title: string; description: string; className?: string }) {
   return (
     <div className={cn("mx-auto mb-8 max-w-2xl px-4 text-center sm:mb-10", className)}>
-      <p className="text-xs font-bold tracking-[0.14em] text-slate-400 uppercase">{eyebrow}</p>
-      <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-[-0.055em] text-white sm:text-5xl">{title}</h2>
-      <p className="mt-4 text-pretty text-base leading-7 text-slate-400">{description}</p>
+      <p className="text-xs font-bold tracking-[0.14em] text-muted-foreground uppercase">{eyebrow}</p>
+      <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-[-0.055em] text-foreground sm:text-5xl">{title}</h2>
+      <p className="mt-4 text-pretty text-base leading-7 text-muted-foreground">{description}</p>
     </div>
   );
 }

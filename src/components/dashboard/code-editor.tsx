@@ -2,6 +2,7 @@
 
 import { Check, Copy } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 import { useCallback, useMemo, useState } from "react";
 import type { BeforeMount, EditorProps } from "@monaco-editor/react";
 
@@ -45,6 +46,7 @@ export function CodeEditor({
   value,
 }: CodeEditorProps) {
   const [hasCopied, setHasCopied] = useState(false);
+  const { resolvedTheme } = useTheme();
   const normalizedLanguage = normalizeCodeLanguage(language);
   const displayLanguage = getCodeLanguageLabel(language);
   const lineCount = Math.max(1, value.split("\n").length);
@@ -110,6 +112,25 @@ export function CodeEditor({
         "scrollbarSlider.hoverBackground": "#73737377",
       },
     });
+    monaco.editor.defineTheme("devstash-light", {
+      base: "vs",
+      inherit: true,
+      rules: [],
+      colors: {
+        "editor.background": "#fafafa",
+        "editor.foreground": "#171717",
+        "editor.lineHighlightBackground": "#f5f5f5",
+        "editorLineNumber.foreground": "#a3a3a3",
+        "editorLineNumber.activeForeground": "#525252",
+        "editor.selectionBackground": "#bfdbfe",
+        "editor.inactiveSelectionBackground": "#dbeafe",
+        "editorCursor.foreground": "#171717",
+        "scrollbar.shadow": "#00000000",
+        "scrollbarSlider.activeBackground": "#73737399",
+        "scrollbarSlider.background": "#a3a3a355",
+        "scrollbarSlider.hoverBackground": "#73737377",
+      },
+    });
   }, []);
 
   async function handleCopy() {
@@ -121,24 +142,24 @@ export function CodeEditor({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-md border border-border bg-[#141414] text-card-foreground shadow-xs",
+        "overflow-hidden rounded-md border border-border bg-background text-foreground shadow-xs",
         disabled && "opacity-70",
         className
       )}
       style={{ height: totalHeight }}
     >
-      <div className="flex h-10 items-center gap-3 border-b border-white/10 bg-[#1f1f1f] px-3">
+      <div className="flex h-10 items-center gap-3 border-b border-border bg-muted px-3">
         <div className="flex items-center gap-1.5" aria-hidden="true">
           <span className="size-2.5 rounded-full bg-[#ff5f56]" />
           <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
           <span className="size-2.5 rounded-full bg-[#27c93f]" />
         </div>
-        <span className="ml-auto truncate text-xs font-medium text-neutral-300">
+        <span className="ml-auto truncate text-xs font-medium text-muted-foreground">
           {displayLanguage}
         </span>
         <Button
           aria-label="Copy code"
-          className="size-7 text-neutral-300 hover:bg-white/10 hover:text-white"
+          className="size-7 text-muted-foreground hover:bg-background hover:text-foreground"
           disabled={!value}
           onClick={handleCopy}
           size="icon"
@@ -154,7 +175,9 @@ export function CodeEditor({
         loading={<CodeEditorLoading />}
         onChange={(nextValue) => onChange?.(nextValue ?? "")}
         options={editorOptions}
-        theme="devstash-dark"
+        theme={
+          resolvedTheme === "light" ? "devstash-light" : "devstash-dark"
+        }
         value={value}
         width="100%"
         beforeMount={beforeMount}
@@ -165,7 +188,7 @@ export function CodeEditor({
 
 function CodeEditorLoading() {
   return (
-    <div className="flex h-full min-h-40 items-center justify-center bg-[#141414] text-xs text-neutral-400">
+    <div className="flex h-full min-h-40 items-center justify-center bg-background text-xs text-muted-foreground">
       Loading editor...
     </div>
   );
