@@ -26,27 +26,43 @@ enum SubscriptionStatus {
 }
 
 model User {
-  id                   String             @id @default(cuid())
-  name                 String?
-  email                String?            @unique
-  emailVerified        DateTime?          @map("email_verified")
-  image                String?
-  passwordHash         String?            @map("password_hash")
-  plan                 SubscriptionPlan   @default(FREE)
-  subscriptionStatus   SubscriptionStatus @default(INACTIVE) @map("subscription_status")
-  stripeCustomerId     String?            @unique @map("stripe_customer_id")
-  stripeSubscriptionId String?            @unique @map("stripe_subscription_id")
-  accounts             Account[]
-  sessions             Session[]
-  items                Item[]
-  itemUploads          ItemUpload[]
-  itemTypes            ItemType[]
-  collections          Collection[]
-  tags                 Tag[]
-  createdAt            DateTime           @default(now()) @map("created_at")
-  updatedAt            DateTime           @updatedAt @map("updated_at")
+  id                       String             @id @default(cuid())
+  name                     String?
+  email                    String?            @unique
+  emailVerified            DateTime?          @map("email_verified")
+  image                    String?
+  passwordHash             String?            @map("password_hash")
+  plan                     SubscriptionPlan   @default(FREE)
+  subscriptionStatus       SubscriptionStatus @default(INACTIVE) @map("subscription_status")
+  stripeCustomerId         String?            @unique @map("stripe_customer_id")
+  stripeSubscriptionId     String?            @unique @map("stripe_subscription_id")
+  stripePriceId            String?            @map("stripe_price_id")
+  stripeSubscriptionStatus String?            @map("stripe_subscription_status")
+  stripeCurrentPeriodEnd   DateTime?          @map("stripe_current_period_end")
+  stripeCancelAtPeriodEnd  Boolean            @default(false) @map("stripe_cancel_at_period_end")
+  stripeLastEventCreatedAt DateTime?          @map("stripe_last_event_created_at")
+  accounts                 Account[]
+  sessions                 Session[]
+  items                    Item[]
+  itemUploads              ItemUpload[]
+  itemTypes                ItemType[]
+  collections              Collection[]
+  tags                     Tag[]
+  createdAt                DateTime           @default(now()) @map("created_at")
+  updatedAt                DateTime           @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model StripeWebhookEvent {
+  id              String   @id
+  type            String
+  objectId        String?  @map("object_id")
+  stripeCreatedAt DateTime @map("stripe_created_at")
+  processedAt     DateTime @default(now()) @map("processed_at")
+
+  @@index([type, objectId])
+  @@map("stripe_webhook_events")
 }
 
 model Account {

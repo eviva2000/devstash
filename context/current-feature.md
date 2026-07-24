@@ -1,17 +1,39 @@
-# Current Feature
+# Current Feature: Stripe Integration Phase 1 - Core Infrastructure
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Install and configure the server-only Stripe SDK with trusted environment
+  validation and monthly/yearly Price mapping.
+- Extend the Prisma billing snapshot and add an idempotent Stripe webhook event
+  ledger through a development-only migration.
+- Establish a pure, centralized usage-limits policy where only `PRO + ACTIVE`
+  receives paid entitlements.
+- Add the database-backed entitlement entry point and reusable active-Pro
+  guard without adding billing state to Auth.js JWTs.
+- Add focused Vitest coverage for usage limits, Stripe configuration/client
+  behavior, and database-backed entitlement lookup.
+- Pass existing unit tests, lint, and the production build.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Spec: @context/features/stripe-phase-1-spec.md
+- Reference plan: @docs/stripe-integration-plan.md
+- DevStash Pro pricing is €7/month or €72/year.
+- Free limits are 50 items and 3 collections; `null` represents unlimited.
+- `PAST_DUE`, `CANCELED`, missing users, and every Free-plan state fail closed
+  to Free access.
+- Keep Auth.js identity-only and do not add an `isPro` field.
+- Any Prisma migration or Neon work must target only the `development` branch
+  (`br-aged-queen-abnc2h82`), never production.
+- Checkout, Portal, webhooks, feature enforcement, billing UI, and Stripe CLI
+  lifecycle testing are deferred to Phase 2.
 
 ## History
 
