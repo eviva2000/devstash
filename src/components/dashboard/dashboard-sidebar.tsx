@@ -29,10 +29,9 @@ import {
   typeColorMap,
   typeIconMap,
 } from "@/features/dashboard/dashboard-utils";
+import { isProOnlyItemType } from "@/lib/item-type-capabilities";
 import { cn } from "@/lib/utils";
 import { signOut } from "next-auth/react";
-
-const proBadgeItemTypeSlugs = new Set(["file", "image"]);
 
 export function DesktopSidebar({
   data,
@@ -186,7 +185,7 @@ function SidebarContent({
 
             return (
               <SidebarLink
-                badge={proBadgeItemTypeSlugs.has(type.slug) ? "PRO" : undefined}
+                badge={isProOnlyItemType(type.slug) ? "PRO" : undefined}
                 count={type.count}
                 href={type.href}
                 icon={Icon}

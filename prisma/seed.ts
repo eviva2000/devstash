@@ -8,6 +8,10 @@ import {
   SubscriptionPlan,
   SubscriptionStatus,
 } from "../src/generated/prisma/client";
+import {
+  FREE_COLLECTION_LIMIT,
+  FREE_ITEM_LIMIT,
+} from "../src/lib/usage-limits";
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -96,18 +100,6 @@ const COLLECTIONS = [
     name: "DevOps",
     slug: "devops",
     description: "Infrastructure and deployment resources",
-    isFavorite: false,
-  },
-  {
-    name: "Terminal Commands",
-    slug: "terminal-commands",
-    description: "Useful shell commands for everyday development",
-    isFavorite: false,
-  },
-  {
-    name: "Design Resources",
-    slug: "design-resources",
-    description: "UI/UX resources and references",
     isFavorite: false,
   },
 ] as const;
@@ -316,7 +308,7 @@ const ITEMS: SeedItem[] = [
   {
     title: "Undo Last Git Commit",
     description: "Move the last commit back into the working tree.",
-    collectionSlug: "terminal-commands",
+    collectionSlug: "devops",
     typeSlug: "command",
     contentType: ItemContentType.TEXT,
     language: "shell",
@@ -325,7 +317,7 @@ const ITEMS: SeedItem[] = [
   {
     title: "Docker Container Logs",
     description: "Follow recent logs for a running container.",
-    collectionSlug: "terminal-commands",
+    collectionSlug: "devops",
     typeSlug: "command",
     contentType: ItemContentType.TEXT,
     language: "shell",
@@ -334,7 +326,7 @@ const ITEMS: SeedItem[] = [
   {
     title: "Find Process Using Port",
     description: "Identify the process bound to a local port.",
-    collectionSlug: "terminal-commands",
+    collectionSlug: "devops",
     typeSlug: "command",
     contentType: ItemContentType.TEXT,
     language: "shell",
@@ -343,7 +335,7 @@ const ITEMS: SeedItem[] = [
   {
     title: "Explain Dependency Versions",
     description: "Show why a package is installed in an npm project.",
-    collectionSlug: "terminal-commands",
+    collectionSlug: "devops",
     typeSlug: "command",
     contentType: ItemContentType.TEXT,
     language: "shell",
@@ -352,7 +344,7 @@ const ITEMS: SeedItem[] = [
   {
     title: "Tailwind CSS Documentation",
     description: "Utility-first CSS framework reference.",
-    collectionSlug: "design-resources",
+    collectionSlug: "react-patterns",
     typeSlug: "link",
     contentType: ItemContentType.URL,
     url: "https://tailwindcss.com/docs",
@@ -360,7 +352,7 @@ const ITEMS: SeedItem[] = [
   {
     title: "shadcn/ui Components",
     description: "Accessible component examples built for React apps.",
-    collectionSlug: "design-resources",
+    collectionSlug: "react-patterns",
     typeSlug: "link",
     contentType: ItemContentType.URL,
     url: "https://ui.shadcn.com/docs/components",
@@ -368,7 +360,7 @@ const ITEMS: SeedItem[] = [
   {
     title: "Material Design",
     description: "Google's design system guidelines and components.",
-    collectionSlug: "design-resources",
+    collectionSlug: "react-patterns",
     typeSlug: "link",
     contentType: ItemContentType.URL,
     url: "https://m3.material.io/",
@@ -376,12 +368,24 @@ const ITEMS: SeedItem[] = [
   {
     title: "Lucide Icons",
     description: "Icon library used by Devstash item types.",
-    collectionSlug: "design-resources",
+    collectionSlug: "react-patterns",
     typeSlug: "link",
     contentType: ItemContentType.URL,
     url: "https://lucide.dev/icons/",
   },
 ];
+
+if (COLLECTIONS.length !== FREE_COLLECTION_LIMIT) {
+  throw new Error(
+    `The Free demo user must have exactly ${FREE_COLLECTION_LIMIT} collections.`
+  );
+}
+
+if (ITEMS.length >= FREE_ITEM_LIMIT) {
+  throw new Error(
+    `The Free demo user must have fewer than ${FREE_ITEM_LIMIT} items.`
+  );
+}
 
 async function seedSystemItemTypes() {
   const itemTypesBySlug = new Map<ItemTypeSlug, string>();

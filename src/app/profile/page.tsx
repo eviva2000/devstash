@@ -13,6 +13,7 @@ import { auth } from "@/auth";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/user-avatar";
 import { ProfileAccountActions } from "@/components/profile/profile-account-actions";
+import { ProfileBillingCard } from "@/components/profile/profile-billing-card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { getTypeColorStyle } from "@/features/dashboard/dashboard-utils";
@@ -28,8 +29,19 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   year: "numeric",
 });
 
-export default async function ProfilePage() {
+type SearchParams = Promise<{
+  checkout?: string | string[];
+  interval?: string | string[];
+  session_id?: string | string[];
+}>;
+
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const session = await auth();
+  const params = await searchParams;
 
   if (!session?.user?.id) {
     redirect("/sign-in?callbackUrl=/profile");
@@ -120,6 +132,15 @@ export default async function ProfilePage() {
           </div>
         </section>
 
+        <ProfileBillingCard
+          billing={profile.billing}
+          checkoutState={getParam(params.checkout)}
+          initialInterval={
+            getParam(params.interval) === "monthly" ? "monthly" : "yearly"
+          }
+          sessionId={getParam(params.session_id)}
+        />
+
         <section className="rounded-md border border-border bg-card p-5 text-card-foreground">
           <div className="mb-4 flex flex-col gap-1">
             <h2 className="text-base font-semibold tracking-normal">
@@ -163,6 +184,10 @@ export default async function ProfilePage() {
       </div>
     </main>
   );
+}
+
+function getParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
 }
 
 function ProfileStat({

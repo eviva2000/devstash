@@ -3,13 +3,17 @@
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { isProUser } from "@/lib/ai/access";
 import { AI_MODEL, getOpenAIClient } from "@/lib/ai/client";
+import {
+  ActiveProRequiredError,
+  requireActiveProUser,
+} from "@/lib/billing/entitlements";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 type GenerateAutoTagsErrorCode =
   | "UNAUTHENTICATED"
   | "PRO_REQUIRED"
+  | "BILLING_PAST_DUE"
   | "INVALID_INPUT"
   | "RATE_LIMITED"
   | "UNAVAILABLE";
@@ -26,6 +30,7 @@ export type GenerateAutoTagsResult =
 type GenerateDescriptionErrorCode =
   | "UNAUTHENTICATED"
   | "PRO_REQUIRED"
+  | "BILLING_PAST_DUE"
   | "INVALID_INPUT"
   | "RATE_LIMITED"
   | "UNAVAILABLE";
@@ -113,12 +118,13 @@ export async function generateAutoTags(
     };
   }
 
-  if (!(await isProUser(session.user.id))) {
-    return {
-      success: false,
-      code: "PRO_REQUIRED",
-      error: "AI tag suggestions require a Pro subscription.",
-    };
+  const accessFailure = await getAiAccessFailure(
+    session.user.id,
+    "AI tag suggestions"
+  );
+
+  if (accessFailure) {
+    return accessFailure;
   }
 
   const parsedInput = generateAutoTagsSchema.safeParse(input);
@@ -204,12 +210,13 @@ export async function generateDescription(
     };
   }
 
-  if (!(await isProUser(session.user.id))) {
-    return {
-      success: false,
-      code: "PRO_REQUIRED",
-      error: "AI description generation requires a Pro subscription.",
-    };
+  const accessFailure = await getAiAccessFailure(
+    session.user.id,
+    "AI description generation"
+  );
+
+  if (accessFailure) {
+    return accessFailure;
   }
 
   const parsedInput = generateDescriptionSchema.safeParse(input);
@@ -357,4 +364,34 @@ function getProviderErrorMetadata(error: unknown): {
   }
 
   return metadata;
+}
+
+async function getAiAccessFailure(
+  userId: string,
+  feature: string
+): Promise<
+  | {
+      success: false;
+      code: "PRO_REQUIRED" | "BILLING_PAST_DUE";
+      error: string;
+    }
+  | null
+> {
+  try {
+    await requireActiveProUser(userId);
+    return null;
+  } catch (error) {
+    if (!(error instanceof ActiveProRequiredError)) {
+      throw error;
+    }
+
+    return {
+      success: false,
+      code: error.code,
+      error:
+        error.code === "BILLING_PAST_DUE"
+          ? `${feature} ${feature.endsWith("generation") ? "is" : "are"} unavailable until your payment method is updated.`
+          : `${feature} ${feature.endsWith("generation") ? "requires" : "require"} an active Pro subscription.`,
+    };
+  }
 }

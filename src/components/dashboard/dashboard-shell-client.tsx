@@ -9,6 +9,7 @@ import type {
   SidebarData,
   DashboardCollection,
   DashboardUser,
+  DashboardPlanUsage,
   GlobalSearchCollection,
   GlobalSearchItem,
 } from "@/features/dashboard/dashboard-types";
@@ -42,6 +43,7 @@ interface DashboardShellClientProps {
   readonly searchItems: GlobalSearchItem[];
   readonly isPro: boolean;
   readonly collectionStats: { readonly total: number; readonly favorites: number };
+  readonly usage: DashboardPlanUsage;
 }
 
 export function DashboardShellClient({
@@ -58,6 +60,7 @@ export function DashboardShellClient({
   isPro,
   collectionStats,
   itemStats,
+  usage,
 }: Readonly<DashboardShellClientProps>) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -148,6 +151,7 @@ export function DashboardShellClient({
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
           searchCollections={searchCollections}
           searchItems={searchItems}
+          usage={usage}
         />
         <DashboardMain
           collections={collections}

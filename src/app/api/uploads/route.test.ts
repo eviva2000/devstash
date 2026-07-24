@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, test, vi, type Mock } from "vitest";
 
 import { auth } from "@/auth";
 import {
+  ActiveProRequiredError,
+  requireActiveProUser,
+} from "@/lib/billing/entitlements";
+import {
   createPendingItemUpload,
   deletePendingItemUpload,
   getPendingItemUpload,
@@ -14,6 +18,22 @@ import { DELETE, POST } from "./route";
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
+
+vi.mock("@/lib/billing/entitlements", () => {
+  class MockActiveProRequiredError extends Error {
+    code: "PRO_REQUIRED" | "BILLING_PAST_DUE";
+
+    constructor(code: "PRO_REQUIRED" | "BILLING_PAST_DUE") {
+      super(code);
+      this.code = code;
+    }
+  }
+
+  return {
+    ActiveProRequiredError: MockActiveProRequiredError,
+    requireActiveProUser: vi.fn(),
+  };
+});
 
 vi.mock("@/lib/db/items", () => ({
   createPendingItemUpload: vi.fn(),
@@ -36,11 +56,13 @@ const deletePendingItemUploadMock = vi.mocked(deletePendingItemUpload);
 const deleteR2ObjectMock = vi.mocked(deleteR2Object);
 const getPendingItemUploadMock = vi.mocked(getPendingItemUpload);
 const uploadR2ObjectMock = vi.mocked(uploadR2Object);
+const requireActiveProUserMock = vi.mocked(requireActiveProUser);
 
 describe("POST /api/uploads", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     createR2ObjectKeyMock.mockReturnValue("users/user-1/upload.png");
+    requireActiveProUserMock.mockResolvedValue({ hasActivePro: true } as never);
   });
 
   test("rejects unauthenticated upload attempts", async () => {
@@ -110,6 +132,28 @@ describe("POST /api/uploads", () => {
       fileMimeType: "image/png",
       fileSize: 7,
     });
+  });
+
+  test.each([
+    [
+      "file",
+      new File(["document"], "notes.pdf", { type: "application/pdf" }),
+    ],
+    ["image", imageFile()],
+  ])("rejects Free %s uploads before writing to R2", async (itemType, file) => {
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    requireActiveProUserMock.mockRejectedValue(
+      new ActiveProRequiredError("PRO_REQUIRED")
+    );
+
+    const response = await POST(uploadRequest(itemType, file));
+
+    await expect(response.json()).resolves.toEqual({
+      code: "PRO_REQUIRED",
+      error: "File and image uploads require an active Pro subscription.",
+    });
+    expect(response.status).toBe(403);
+    expect(uploadR2ObjectMock).not.toHaveBeenCalled();
   });
 
   test("cleans up the R2 object if pending record creation fails", async () => {

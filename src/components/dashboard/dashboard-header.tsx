@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import type {
   DashboardCollection,
   DashboardItemType,
+  DashboardPlanUsage,
   GlobalSearchCollection,
   GlobalSearchItem,
 } from "@/features/dashboard/dashboard-types";
@@ -25,6 +26,7 @@ export function DashboardHeader({
   onOpenMobileDrawer,
   searchCollections,
   searchItems,
+  usage,
 }: {
   readonly collections: DashboardCollection[];
   readonly initialCreateTypeSlug?: string;
@@ -34,6 +36,7 @@ export function DashboardHeader({
   readonly onOpenMobileDrawer: () => void;
   readonly searchCollections: GlobalSearchCollection[];
   readonly searchItems: GlobalSearchItem[];
+  readonly usage: DashboardPlanUsage;
 }) {
   const [isCollectionCreateOpen, setIsCollectionCreateOpen] = useState(false);
   const [isItemCreateOpen, setIsItemCreateOpen] = useState(false);
@@ -70,6 +73,7 @@ export function DashboardHeader({
         onOpenChange={setIsCollectionCreateOpen}
         open={isCollectionCreateOpen}
         triggerClassName="ml-auto hidden md:inline-flex"
+        usage={usage}
       />
 
       <ItemCreateDialog
@@ -80,6 +84,7 @@ export function DashboardHeader({
         onOpenChange={setIsItemCreateOpen}
         open={isItemCreateOpen}
         triggerClassName="hidden md:inline-flex"
+        usage={usage}
       />
     </header>
   );

@@ -1,12 +1,8 @@
 import "server-only";
 
-import { prisma } from "@/lib/prisma";
+import { getUserEntitlements } from "@/lib/billing/entitlements";
 
 export async function isProUser(userId: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { plan: true },
-  });
-
-  return user?.plan === "PRO";
+  const entitlements = await getUserEntitlements(userId);
+  return entitlements.hasActivePro;
 }

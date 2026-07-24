@@ -9,7 +9,7 @@ export interface BillingAccessState {
 export interface UserEntitlements {
   hasActivePro: boolean;
   canUseAi: boolean;
-  canUploadDocuments: boolean;
+  canUploadFiles: boolean;
   canManageCustomTypes: boolean;
   canExport: boolean;
   itemLimit: number | null;
@@ -25,7 +25,7 @@ export function getUsageLimits(
   return {
     hasActivePro,
     canUseAi: hasActivePro,
-    canUploadDocuments: hasActivePro,
+    canUploadFiles: hasActivePro,
     canManageCustomTypes: hasActivePro,
     canExport: hasActivePro,
     itemLimit: hasActivePro ? null : FREE_ITEM_LIMIT,

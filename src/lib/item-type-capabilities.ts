@@ -14,9 +14,21 @@ export const CREATABLE_ITEM_TYPE_SLUGS = [
   "image",
 ] as const;
 
+export const PRO_ONLY_ITEM_TYPE_SLUGS = ["file", "image"] as const;
+
+export type ProOnlyItemTypeSlug = (typeof PRO_ONLY_ITEM_TYPE_SLUGS)[number];
+
 export function isCreatableItemType(slug?: string): boolean {
   return slug
     ? (CREATABLE_ITEM_TYPE_SLUGS as readonly string[]).includes(slug)
+    : false;
+}
+
+export function isProOnlyItemType(
+  slug?: string
+): slug is ProOnlyItemTypeSlug {
+  return slug
+    ? (PRO_ONLY_ITEM_TYPE_SLUGS as readonly string[]).includes(slug)
     : false;
 }
 
@@ -41,5 +53,5 @@ export function doesTypeSupportUrl(slug?: string): boolean {
 }
 
 export function doesTypeSupportFile(slug?: string): boolean {
-  return slug ? ["file", "image"].includes(slug) : false;
+  return isProOnlyItemType(slug);
 }

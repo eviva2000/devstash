@@ -15,6 +15,10 @@ import {
   getClientIp,
   tooManyRequestsResponse,
 } from "@/lib/rate-limit";
+import {
+  ActiveProRequiredError,
+  requireActiveProUser,
+} from "@/lib/billing/entitlements";
 
 export const runtime = "nodejs";
 
@@ -51,6 +55,25 @@ export async function POST(request: Request) {
 
   if (!validation.valid) {
     return Response.json({ error: validation.error }, { status: 400 });
+  }
+
+  try {
+    await requireActiveProUser(session.user.id);
+  } catch (error) {
+    if (error instanceof ActiveProRequiredError) {
+      return Response.json(
+        {
+          code: error.code,
+          error:
+            error.code === "BILLING_PAST_DUE"
+              ? "Update your payment method before uploading files or images."
+              : "File and image uploads require an active Pro subscription.",
+        },
+        { status: 403 }
+      );
+    }
+
+    throw error;
   }
 
   const key = createR2ObjectKey(session.user.id, uploadedFile.name);

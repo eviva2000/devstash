@@ -13,6 +13,7 @@ import type {
   DashboardCollection,
   DashboardItemStats,
   DashboardItemType,
+  DashboardPlanUsage,
   DashboardUser,
   GlobalSearchCollection,
   GlobalSearchItem,
@@ -31,6 +32,7 @@ type CollectionsShellClientProps = {
   readonly recentCollections: DashboardCollection[];
   readonly searchCollections: GlobalSearchCollection[];
   readonly searchItems: GlobalSearchItem[];
+  readonly usage: DashboardPlanUsage;
 };
 
 export function CollectionsShellClient({
@@ -44,6 +46,7 @@ export function CollectionsShellClient({
   recentCollections,
   searchCollections,
   searchItems,
+  usage,
 }: CollectionsShellClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -96,6 +99,7 @@ export function CollectionsShellClient({
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
           searchCollections={searchCollections}
           searchItems={searchItems}
+          usage={usage}
         />
 
         <div className="min-h-0 flex-1 overflow-y-auto bg-background">

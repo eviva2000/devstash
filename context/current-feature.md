@@ -1,17 +1,52 @@
-# Current Feature
+# Current Feature: Stripe Integration Phase 2 - Integration and UI
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
 <!-- List goals for the active feature here. -->
+- Implement safe Stripe Customer reuse plus authenticated Checkout, Customer
+  Portal, and post-checkout reconciliation actions.
+- Add canonical subscription synchronization and a signed, idempotent webhook
+  pipeline that converges under duplicate, concurrent, and out-of-order events.
+- Apply authoritative database-backed entitlements to AI, uploads, item and
+  collection quotas, account deletion, and every existing paid operation.
+- Add the profile billing card, corrected public pricing, preserved interval
+  selection, and server-derived usage/gating feedback across create surfaces.
+- Add focused automated coverage for Stripe lifecycle handling, feature gates,
+  quota concurrency, uploads, reconciliation, and subscription-safe deletion.
+- Verify the monthly and annual lifecycle with the Stripe CLI and Sandbox, then
+  pass the complete test suite, lint, and production build.
 
 ## Notes
 
 <!-- Add implementation notes, constraints, or spec links here. -->
+- Spec: @context/features/stripe-phase-2-spec.md
+- Architecture reference: @docs/stripe-integration-plan.md
+- Read the relevant bundled Next.js 16.2.4 guides before implementing Route
+  Handlers, Server Actions, authentication boundaries, or environment access.
+- Signed webhooks are the primary source of truth. Post-checkout reconciliation
+  must retrieve Stripe state and verify ownership; browser query parameters
+  never grant Pro.
+- Stripe identifiers, amounts, currency, user IDs, and subscription state are
+  always selected or verified on the server.
+- Only `PRO + ACTIVE` receives paid entitlements. Downgrades must preserve all
+  existing content while blocking new over-limit or Pro-only operations.
+- Product override: both file and image uploads require `PRO + ACTIVE`; neither
+  upload type is available on the Free plan.
+- Product override: non-active-Pro visits to `/items/file(s)` and
+  `/items/image(s)` render a server-gated upgrade or billing-recovery page
+  before any protected item-list query runs.
+- DevStash Pro pricing is €7/month or €72/year, saving €12/year (about 14%).
+- All Neon work must target only the `development` branch
+  (`br-aged-queen-abnc2h82`), never production.
+- Automated tests are necessary but insufficient: real monthly and annual
+  Sandbox Checkout/Portal/webhook flows must be exercised with Stripe CLI.
+- The local `whsec_...` from `stripe listen` is different from the Dashboard
+  endpoint secret.
 
 ## History
 

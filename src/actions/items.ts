@@ -4,20 +4,35 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import type { DashboardItemDetail } from "@/features/dashboard/dashboard-types";
+import type {
+  DashboardItem,
+  DashboardItemDetail,
+} from "@/features/dashboard/dashboard-types";
 import { deleteR2Object } from "@/lib/storage/r2";
 import {
   createItem as createItemRecord,
   deleteItem as deleteItemRecord,
   getItemDetailById,
+  getItemsByCollectionIdPage,
+  getItemsByTypeSlugPage,
+  isCreateItemFailure,
   updateItem as updateItemRecord,
+  type CreateItemFailureCode,
   type CreateItemData,
   type UpdateItemData,
 } from "@/lib/db/items";
 
 type CreateItemResult =
   | { success: true; data: DashboardItemDetail }
-  | { success: false; error: string };
+  | {
+      success: false;
+      code:
+        | CreateItemFailureCode
+        | "UNAUTHENTICATED"
+        | "INVALID_INPUT"
+        | "UNAVAILABLE";
+      error: string;
+    };
 
 type UpdateItemResult =
   | { success: true; data: DashboardItemDetail }
@@ -25,6 +40,16 @@ type UpdateItemResult =
 
 type DeleteItemResult =
   | { success: true }
+  | { success: false; error: string };
+
+type LoadMoreItemsResult =
+  | {
+      success: true;
+      data: {
+        items: DashboardItem[];
+        nextCursor: string | null;
+      };
+    }
   | { success: false; error: string };
 
 const nullableTrimmedString = (max: number) =>
@@ -101,12 +126,71 @@ const createItemSchema = updateItemSchema
     }
   });
 
+const loadMoreItemsSchema = z.discriminatedUnion("scope", [
+  z.object({
+    scope: z.literal("type"),
+    scopeId: z.string().trim().min(1).max(100),
+    cursor: z.string().regex(/^c[a-z0-9]{24}$/),
+  }),
+  z.object({
+    scope: z.literal("collection"),
+    scopeId: z.string().regex(/^c[a-z0-9]{24}$/),
+    cursor: z.string().regex(/^c[a-z0-9]{24}$/),
+  }),
+]);
+
+export async function loadMoreItems(
+  input: unknown
+): Promise<LoadMoreItemsResult> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { success: false, error: "You must be signed in to load items." };
+  }
+
+  const parsed = loadMoreItemsSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return { success: false, error: "Unable to load more items." };
+  }
+
+  try {
+    const page =
+      parsed.data.scope === "type"
+        ? await getItemsByTypeSlugPage(
+            session.user.id,
+            parsed.data.scopeId,
+            { cursor: parsed.data.cursor }
+          )
+        : await getItemsByCollectionIdPage(
+            session.user.id,
+            parsed.data.scopeId,
+            { cursor: parsed.data.cursor }
+          );
+
+    return {
+      success: true,
+      data: {
+        items: page.items,
+        nextCursor: page.nextCursor,
+      },
+    };
+  } catch (error) {
+    console.error("Failed to load more items.", error);
+    return { success: false, error: "Unable to load more items. Try again." };
+  }
+}
+
 export async function createItem(data: unknown): Promise<CreateItemResult> {
   try {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return { success: false, error: "You must be signed in to create items." };
+      return {
+        success: false,
+        code: "UNAUTHENTICATED",
+        error: "You must be signed in to create items.",
+      };
     }
 
     const parsedData = createItemSchema.safeParse(data);
@@ -114,6 +198,7 @@ export async function createItem(data: unknown): Promise<CreateItemResult> {
     if (!parsedData.success) {
       return {
         success: false,
+        code: "INVALID_INPUT",
         error: getValidationErrorMessage(parsedData.error),
       };
     }
@@ -121,12 +206,12 @@ export async function createItem(data: unknown): Promise<CreateItemResult> {
     const createData: CreateItemData = parsedData.data;
     const createdItem = await createItemRecord(session.user.id, createData);
 
-    if (!createdItem) {
-      if (parsedData.data.typeSlug === "file" || parsedData.data.typeSlug === "image") {
-        return { success: false, error: "Upload a file first." };
-      }
-
-      return { success: false, error: "Choose a valid item type." };
+    if (isCreateItemFailure(createdItem)) {
+      return {
+        success: false,
+        code: createdItem.code,
+        error: getCreateItemFailureMessage(createdItem.code),
+      };
     }
 
     revalidatePath("/dashboard");
@@ -135,7 +220,11 @@ export async function createItem(data: unknown): Promise<CreateItemResult> {
     return { success: true, data: createdItem };
   } catch (error) {
     console.error("Failed to create item.", error);
-    return { success: false, error: "Unable to create item. Try again." };
+    return {
+      success: false,
+      code: "UNAVAILABLE",
+      error: "Unable to create item. Try again.",
+    };
   }
 }
 
@@ -224,4 +313,21 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
 
 function getValidationErrorMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Check the item details and try again.";
+}
+
+function getCreateItemFailureMessage(code: CreateItemFailureCode): string {
+  switch (code) {
+    case "ITEM_LIMIT_REACHED":
+      return "You have reached the Free plan limit of 50 items. Upgrade to add more.";
+    case "PRO_REQUIRED":
+      return "File and image uploads require an active Pro subscription.";
+    case "BILLING_PAST_DUE":
+      return "Update your payment method before uploading files or images.";
+    case "INVALID_COLLECTION":
+      return "Choose collections that belong to your account.";
+    case "INVALID_UPLOAD":
+      return "Upload a file first.";
+    case "INVALID_ITEM_TYPE":
+      return "Choose a valid item type.";
+  }
 }

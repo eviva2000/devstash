@@ -1,8 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { isProUser } from "@/lib/ai/access";
+import { getUserBillingAccess } from "@/lib/billing/entitlements";
 import { ItemListShellClient } from "@/components/items/item-list-shell-client";
+import { ItemTypeUpgradePage } from "@/components/items/item-type-upgrade-page";
 import {
   getCollections,
   getFavoriteCollections,
@@ -13,9 +14,11 @@ import {
 import {
   getGlobalSearchItems,
   getItemStats,
+  getItemTypeBySlug,
   getItemTypeCounts,
   getItemsByTypeSlug,
 } from "@/lib/db/items";
+import { isProOnlyItemType } from "@/lib/item-type-capabilities";
 
 export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
   const session = await auth();
@@ -26,6 +29,23 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
 
   const userId = session.user.id;
   const userName = session.user.name ?? session.user.email ?? "DevStash user";
+  const [itemType, billingAccess] = await Promise.all([
+    getItemTypeBySlug(typeSlug),
+    getUserBillingAccess(userId),
+  ]);
+
+  if (!itemType) {
+    notFound();
+  }
+
+  if (isProOnlyItemType(itemType.slug) && !billingAccess.hasActivePro) {
+    return (
+      <ItemTypeUpgradePage
+        billingStatus={billingAccess.subscriptionStatus}
+        itemTypeSlug={itemType.slug}
+      />
+    );
+  }
 
   const [
     recentCollections,
@@ -37,7 +57,6 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
     typedItems,
     searchCollections,
     searchItems,
-    isPro,
   ] = await Promise.all([
     getRecentCollections(userId, 6),
     getCollections(userId),
@@ -45,15 +64,10 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
     getItemTypes(),
     getItemStats(userId),
     getItemTypeCounts(userId),
-    getItemsByTypeSlug(userId, typeSlug),
+    getItemsByTypeSlug(userId, itemType.slug),
     getGlobalSearchCollections(userId),
     getGlobalSearchItems(userId),
-    isProUser(userId),
   ]);
-
-  if (!typedItems.itemType) {
-    notFound();
-  }
 
   return (
     <ItemListShellClient
@@ -65,14 +79,22 @@ export async function ItemListShell({ typeSlug }: { typeSlug: string }) {
       favoriteCollections={favoriteCollections}
       collections={collections}
       itemStats={itemStats}
-      itemType={typedItems.itemType}
+      itemType={itemType}
       itemTypeCounts={itemTypeCounts}
       itemTypes={itemTypes}
       items={typedItems.items}
-      isPro={isPro}
+      nextCursor={typedItems.nextCursor}
+      isPro={billingAccess.hasActivePro}
       recentCollections={recentCollections}
       searchCollections={searchCollections}
       searchItems={searchItems}
+      usage={{
+        itemUsed: itemStats.total,
+        itemLimit: billingAccess.itemLimit,
+        collectionUsed: collections.length,
+        collectionLimit: billingAccess.collectionLimit,
+        billingStatus: billingAccess.subscriptionStatus,
+      }}
     />
   );
 }

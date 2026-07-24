@@ -1,9 +1,10 @@
 "use client";
 
-import { Inbox } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Inbox, Loader2 } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+import { loadMoreItems } from "@/actions/items";
 import { CollectionActionButtons } from "@/components/collections/collection-actions";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import {
@@ -13,11 +14,13 @@ import {
 import { ItemCard } from "@/components/dashboard/item-card";
 import { ItemContentDrawer } from "@/components/dashboard/item-content-drawer";
 import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
+import { Button } from "@/components/ui/button";
 import type {
   DashboardCollection,
   DashboardItem,
   DashboardItemStats,
   DashboardItemType,
+  DashboardPlanUsage,
   DashboardUser,
   GlobalSearchCollection,
   GlobalSearchItem,
@@ -34,10 +37,12 @@ type CollectionDetailShellClientProps = {
   readonly itemTypeCounts: Record<string, number>;
   readonly itemTypes: DashboardItemType[];
   readonly items: DashboardItem[];
+  readonly nextCursor: string | null;
   readonly isPro: boolean;
   readonly recentCollections: DashboardCollection[];
   readonly searchCollections: GlobalSearchCollection[];
   readonly searchItems: GlobalSearchItem[];
+  readonly usage: DashboardPlanUsage;
 };
 
 export function CollectionDetailShellClient({
@@ -48,17 +53,48 @@ export function CollectionDetailShellClient({
   itemStats,
   itemTypeCounts,
   itemTypes,
-  items,
+  items: initialItems,
+  nextCursor: initialNextCursor,
   isPro,
   recentCollections,
   searchCollections,
   searchItems,
+  usage,
 }: CollectionDetailShellClientProps) {
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
+  const [pagination, setPagination] = useState<{
+    scopeId: string;
+    items: DashboardItem[];
+    nextCursor: string | null | undefined;
+  }>({
+    scopeId: collection.id,
+    items: [],
+    nextCursor: undefined,
+  });
+  const [loadError, setLoadError] = useState("");
+  const [isLoadingMore, startLoadingMore] = useTransition();
+  const items = useMemo(
+    () => {
+      const additionalItems =
+        pagination.scopeId === collection.id ? pagination.items : [];
+
+      return Array.from(
+        new Map(
+          [...initialItems, ...additionalItems].map((item) => [item.id, item])
+        ).values()
+      );
+    },
+    [collection.id, initialItems, pagination]
+  );
+  const nextCursor =
+    pagination.scopeId !== collection.id ||
+    pagination.nextCursor === undefined
+      ? initialNextCursor
+      : pagination.nextCursor;
 
   const { collectionById, sidebarData, typeById } = useMemo(() => {
     const typeById = new Map(itemTypes.map((type) => [type.id, type]));
@@ -118,6 +154,44 @@ export function CollectionDetailShellClient({
   };
   const closeItemDrawer = () => setIsItemDrawerOpen(false);
 
+  function handleLoadMore() {
+    if (!nextCursor) {
+      return;
+    }
+
+    setLoadError("");
+    startLoadingMore(async () => {
+      const result = await loadMoreItems({
+        scope: "collection",
+        scopeId: collection.id,
+        cursor: nextCursor,
+      });
+
+      if (!result.success) {
+        setLoadError(result.error);
+        return;
+      }
+
+      setPagination((current) => {
+        const currentItems =
+          current.scopeId === collection.id ? current.items : [];
+
+        return {
+          scopeId: collection.id,
+          items: [
+            ...currentItems,
+            ...result.data.items.filter(
+              (item) =>
+                !initialItems.some((existing) => existing.id === item.id) &&
+                !currentItems.some((existing) => existing.id === item.id)
+            ),
+          ],
+          nextCursor: result.data.nextCursor,
+        };
+      });
+    });
+  }
+
   return (
     <main className="flex h-screen overflow-hidden bg-background text-foreground">
       <DesktopSidebar
@@ -143,6 +217,7 @@ export function CollectionDetailShellClient({
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
           searchCollections={searchCollections}
           searchItems={searchItems}
+          usage={usage}
         />
 
         <div className="min-h-0 flex-1 overflow-y-auto bg-background">
@@ -212,6 +287,25 @@ export function CollectionDetailShellClient({
                     </p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {nextCursor && (
+              <div className="flex flex-col items-center gap-2">
+                <Button
+                  disabled={isLoadingMore}
+                  onClick={handleLoadMore}
+                  type="button"
+                  variant="outline"
+                >
+                  {isLoadingMore && <Loader2 className="animate-spin" />}
+                  {isLoadingMore ? "Loading…" : "Load more items"}
+                </Button>
+                {loadError && (
+                  <p aria-live="polite" className="text-sm text-destructive">
+                    {loadError}
+                  </p>
+                )}
               </div>
             )}
           </div>

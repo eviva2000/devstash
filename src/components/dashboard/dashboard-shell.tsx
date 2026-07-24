@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { isProUser } from "@/lib/ai/access";
+import { getUserBillingAccess } from "@/lib/billing/entitlements";
 import { DashboardShellClient } from "./dashboard-shell-client";
 import {
   getCollections,
@@ -41,7 +41,7 @@ export async function DashboardShell() {
     itemTypeCounts,
     searchCollections,
     searchItems,
-    isPro,
+    billingAccess,
   ] = await Promise.all([
     getRecentCollections(userId, 6),
     getCollections(userId),
@@ -54,7 +54,7 @@ export async function DashboardShell() {
     getItemTypeCounts(userId),
     getGlobalSearchCollections(userId),
     getGlobalSearchItems(userId),
-    isProUser(userId),
+    getUserBillingAccess(userId),
   ]);
 
   return (
@@ -74,8 +74,15 @@ export async function DashboardShell() {
       itemTypeCounts={itemTypeCounts}
       searchCollections={searchCollections}
       searchItems={searchItems}
-      isPro={isPro}
+      isPro={billingAccess.hasActivePro}
       collectionStats={collectionStats}
+      usage={{
+        itemUsed: itemStats.total,
+        itemLimit: billingAccess.itemLimit,
+        collectionUsed: collectionStats.total,
+        collectionLimit: billingAccess.collectionLimit,
+        billingStatus: billingAccess.subscriptionStatus,
+      }}
     />
   );
 }

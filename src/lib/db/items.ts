@@ -20,6 +20,7 @@ import type {
   UploadedFileMetadata,
   UploadItemType,
 } from "@/lib/file-uploads";
+import { getUsageLimits } from "@/lib/usage-limits";
 
 const MAX_ITEM_QUERY_LIMIT = 50;
 
@@ -120,6 +121,30 @@ export type CreateItemData = UpdateItemData & {
   typeSlug: string;
   file?: { uploadToken: string } | null;
 };
+
+export type CreateItemFailureCode =
+  | "ITEM_LIMIT_REACHED"
+  | "PRO_REQUIRED"
+  | "BILLING_PAST_DUE"
+  | "INVALID_ITEM_TYPE"
+  | "INVALID_COLLECTION"
+  | "INVALID_UPLOAD";
+
+export type CreateItemFailure = {
+  success: false;
+  code: CreateItemFailureCode;
+};
+
+export type DashboardItemsPage = {
+  items: DashboardItem[];
+  nextCursor: string | null;
+};
+
+export function isCreateItemFailure(
+  result: DashboardItemDetail | CreateItemFailure
+): result is CreateItemFailure {
+  return "success" in result && result.success === false;
+}
 
 function toDashboardCollection(
   collection:
@@ -276,6 +301,7 @@ export async function getItemsByTypeSlug(
 ): Promise<{
   itemType: DbDashboardItemType | null;
   items: DashboardItem[];
+  nextCursor: string | null;
 }> {
   const take = validateQueryLimit(limit, {
     max: MAX_ITEM_QUERY_LIMIT,
@@ -284,17 +310,22 @@ export async function getItemsByTypeSlug(
   const itemType = await getItemTypeBySlug(slug);
 
   if (!itemType) {
-    return { itemType: null, items: [] };
+    return { itemType: null, items: [], nextCursor: null };
   }
 
   const items = await prisma.item.findMany({
     where: { userId, typeId: itemType.id },
-    take,
-    orderBy: { updatedAt: "desc" },
+    take: take + 1,
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     include: itemInclude,
   });
+  const pageItems = items.slice(0, take);
 
-  return { itemType, items: items.map(toDashboardItem) };
+  return {
+    itemType,
+    items: pageItems.map(toDashboardItem),
+    nextCursor: items.length > take ? (pageItems.at(-1)?.id ?? null) : null,
+  };
 }
 
 export async function getItemsByCollectionId(
@@ -302,6 +333,23 @@ export async function getItemsByCollectionId(
   collectionId: string,
   limit: number = MAX_ITEM_QUERY_LIMIT
 ): Promise<DashboardItem[]> {
+  const page = await getItemsByCollectionIdPage(userId, collectionId, {
+    limit,
+  });
+  return page.items;
+}
+
+export async function getItemsByCollectionIdPage(
+  userId: string,
+  collectionId: string,
+  {
+    cursor,
+    limit = MAX_ITEM_QUERY_LIMIT,
+  }: {
+    cursor?: string;
+    limit?: number;
+  } = {}
+): Promise<DashboardItemsPage> {
   const take = validateQueryLimit(limit, {
     max: MAX_ITEM_QUERY_LIMIT,
     name: "Items by collection limit",
@@ -319,12 +367,53 @@ export async function getItemsByCollectionId(
         },
       ],
     },
-    take,
-    orderBy: { updatedAt: "desc" },
+    take: take + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     include: itemInclude,
   });
+  const pageItems = items.slice(0, take);
 
-  return items.map(toDashboardItem);
+  return {
+    items: pageItems.map(toDashboardItem),
+    nextCursor: items.length > take ? (pageItems.at(-1)?.id ?? null) : null,
+  };
+}
+
+export async function getItemsByTypeSlugPage(
+  userId: string,
+  slug: string,
+  {
+    cursor,
+    limit = MAX_ITEM_QUERY_LIMIT,
+  }: {
+    cursor?: string;
+    limit?: number;
+  } = {}
+): Promise<DashboardItemsPage> {
+  const take = validateQueryLimit(limit, {
+    max: MAX_ITEM_QUERY_LIMIT,
+    name: "Items by type limit",
+  });
+  const itemType = await getItemTypeBySlug(slug);
+
+  if (!itemType) {
+    return { items: [], nextCursor: null };
+  }
+
+  const items = await prisma.item.findMany({
+    where: { userId, typeId: itemType.id },
+    take: take + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    include: itemInclude,
+  });
+  const pageItems = items.slice(0, take);
+
+  return {
+    items: pageItems.map(toDashboardItem),
+    nextCursor: items.length > take ? (pageItems.at(-1)?.id ?? null) : null,
+  };
 }
 
 export async function getItemDetailById(
@@ -342,15 +431,45 @@ export async function getItemDetailById(
 export async function createItem(
   userId: string,
   data: CreateItemData
-): Promise<DashboardItemDetail | null> {
-  return prisma.$transaction(async (tx) => {
+): Promise<DashboardItemDetail | CreateItemFailure> {
+  return runSerializableTransaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: {
+        plan: true,
+        subscriptionStatus: true,
+      },
+    });
+    const entitlements = getUsageLimits(user);
+
+    if (
+      doesTypeSupportFile(data.typeSlug) &&
+      !entitlements.canUploadFiles
+    ) {
+      return {
+        success: false,
+        code:
+          user?.subscriptionStatus === "PAST_DUE"
+            ? "BILLING_PAST_DUE"
+            : "PRO_REQUIRED",
+      };
+    }
+
+    if (entitlements.itemLimit !== null) {
+      const itemCount = await tx.item.count({ where: { userId } });
+
+      if (itemCount >= entitlements.itemLimit) {
+        return { success: false, code: "ITEM_LIMIT_REACHED" };
+      }
+    }
+
     const itemType = await tx.itemType.findFirst({
       where: { slug: data.typeSlug, isSystem: true },
       select: { id: true, slug: true },
     });
 
     if (!itemType) {
-      return null;
+      return { success: false, code: "INVALID_ITEM_TYPE" };
     }
 
     const tags = normalizeTags(data.tags);
@@ -362,7 +481,7 @@ export async function createItem(
     );
 
     if (!collectionIds) {
-      return null;
+      return { success: false, code: "INVALID_COLLECTION" };
     }
 
     const supportedFile = await consumeSupportedFileUpload(
@@ -373,7 +492,7 @@ export async function createItem(
     );
 
     if (doesTypeSupportFile(itemType.slug) && !supportedFile) {
-      return null;
+      return { success: false, code: "INVALID_UPLOAD" };
     }
 
     const createdItem = await tx.item.create({
@@ -743,4 +862,33 @@ function toStoredFileMetadata(upload: DbItemUpload): StoredFileMetadata {
     fileMimeType: upload.fileMimeType,
     fileSize: upload.fileSize,
   };
+}
+
+async function runSerializableTransaction<T>(
+  operation: (tx: Prisma.TransactionClient) => Promise<T>
+): Promise<T> {
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await prisma.$transaction(operation, {
+        isolationLevel: "Serializable",
+      });
+    } catch (error) {
+      if (!isTransactionConflict(error) || attempt === maxAttempts) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error("Serializable item transaction retry limit exceeded.");
+}
+
+function isTransactionConflict(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "P2034"
+  );
 }

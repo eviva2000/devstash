@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { isProUser } from "@/lib/ai/access";
+import { getUserBillingAccess } from "@/lib/billing/entitlements";
 import { CollectionsShellClient } from "@/components/collections/collections-shell-client";
 import {
   getCollections,
@@ -35,7 +35,7 @@ export async function CollectionsShell() {
     itemTypeCounts,
     searchCollections,
     searchItems,
-    isPro,
+    billingAccess,
   ] = await Promise.all([
     getCollections(userId),
     getRecentCollections(userId, 6),
@@ -45,7 +45,7 @@ export async function CollectionsShell() {
     getItemTypeCounts(userId),
     getGlobalSearchCollections(userId),
     getGlobalSearchItems(userId),
-    isProUser(userId),
+    getUserBillingAccess(userId),
   ]);
 
   return (
@@ -60,10 +60,17 @@ export async function CollectionsShell() {
       itemStats={itemStats}
       itemTypeCounts={itemTypeCounts}
       itemTypes={itemTypes}
-      isPro={isPro}
+      isPro={billingAccess.hasActivePro}
       recentCollections={recentCollections}
       searchCollections={searchCollections}
       searchItems={searchItems}
+      usage={{
+        itemUsed: itemStats.total,
+        itemLimit: billingAccess.itemLimit,
+        collectionUsed: collections.length,
+        collectionLimit: billingAccess.collectionLimit,
+        billingStatus: billingAccess.subscriptionStatus,
+      }}
     />
   );
 }

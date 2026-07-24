@@ -8,11 +8,13 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const freeBenefits = ["Up to 50 items", "3 collections", "All core item types", "Fast keyword search", "Code & markdown editors"];
-const proBenefits = ["Unlimited items & collections", "AI-generated tags & summaries", "Semantic AI search", "Files and image uploads", "Priority support"];
+const proBenefits = ["Unlimited items & collections", "AI-generated tags & summaries", "Semantic AI search", "File and image uploads", "Priority support"];
 
 export function PricingToggle() {
   const [yearly, setYearly] = useState(true);
-  const price = yearly ? "6" : "8";
+  const price = yearly ? "72" : "7";
+  const callbackUrl = `/profile?interval=${yearly ? "yearly" : "monthly"}`;
+  const proHref = `/register?callbackUrl=${encodeURIComponent(callbackUrl)}`;
 
   return (
     <>
@@ -31,7 +33,7 @@ export function PricingToggle() {
           onClick={() => setYearly(true)}
           type="button"
         >
-          Yearly <span className="ml-1 rounded bg-emerald-400/10 px-1.5 py-0.5 text-[10px] text-emerald-700 dark:text-emerald-300">Save 25%</span>
+          Yearly <span className="ml-1 rounded bg-emerald-400/10 px-1.5 py-0.5 text-[10px] text-emerald-700 dark:text-emerald-300">Save about 14%</span>
         </button>
       </div>
 
@@ -42,7 +44,7 @@ export function PricingToggle() {
             <h3 className="text-xl font-bold tracking-tight">Free</h3>
           </div>
           <p className="mt-4 min-h-10 text-sm leading-5 text-muted-foreground">For building your first organized stash.</p>
-          <p className="mt-6 flex items-start text-foreground"><span className="mt-1 text-xl">$</span><span className="text-5xl font-extrabold tracking-tighter">0</span><span className="mt-auto mb-1 ml-1 text-sm text-muted-foreground">/ forever</span></p>
+          <p className="mt-6 flex items-start text-foreground"><span className="mt-1 text-xl">€</span><span className="text-5xl font-extrabold tracking-tighter">0</span><span className="mt-auto mb-1 ml-1 text-sm text-muted-foreground">/ forever</span></p>
           <Link className={cn(buttonVariants({ variant: "outline" }), "mt-7 w-full")} href="/register">
             Get started free
           </Link>
@@ -60,9 +62,9 @@ export function PricingToggle() {
             <h3 className="text-xl font-bold tracking-tight">Pro</h3>
           </div>
           <p className="mt-4 min-h-10 text-sm leading-5 text-slate-400">For developers making knowledge a superpower.</p>
-          <p className="mt-6 flex items-start text-white"><span className="mt-1 text-xl">$</span><span className="text-5xl font-extrabold tracking-tighter">{price}</span><span className="mt-auto mb-1 ml-1 text-sm text-slate-400">/ month</span></p>
-          <p className="mt-1 h-4 text-xs text-violet-300">{yearly ? "Billed $72 yearly" : "Billed monthly"}</p>
-          <Link className={cn(buttonVariants(), "mt-5 w-full bg-indigo-500 text-white hover:bg-indigo-400")} href="/register">
+          <p className="mt-6 flex items-start text-white"><span className="mt-1 text-xl">€</span><span className="text-5xl font-extrabold tracking-tighter">{price}</span><span className="mt-auto mb-1 ml-1 text-sm text-slate-400">{yearly ? "/ year" : "/ month"}</span></p>
+          <p className="mt-1 h-4 text-xs text-violet-300">{yearly ? "Save €12/year (about 14%)" : "Billed monthly"}</p>
+          <Link className={cn(buttonVariants(), "mt-5 w-full bg-indigo-500 text-white hover:bg-indigo-400")} href={proHref}>
             Start with Pro
           </Link>
           <div className="my-6 h-px bg-white/10" />

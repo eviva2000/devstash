@@ -5,6 +5,7 @@ import type {
 } from "@/features/dashboard/dashboard-types";
 import { prisma } from "@/lib/prisma";
 import { validateQueryLimit } from "@/lib/db/query-limits";
+import { getUsageLimits } from "@/lib/usage-limits";
 
 const MAX_COLLECTION_QUERY_LIMIT = 100;
 
@@ -32,6 +33,17 @@ export type CreateCollectionData = {
 };
 
 export type UpdateCollectionData = CreateCollectionData;
+
+export type CreateCollectionFailure = {
+  success: false;
+  code: "COLLECTION_LIMIT_REACHED";
+};
+
+export function isCreateCollectionFailure(
+  result: DashboardCollection | CreateCollectionFailure
+): result is CreateCollectionFailure {
+  return "success" in result && result.success === false;
+}
 
 function toDashboardCollection(
   collection: CollectionWithItems
@@ -136,15 +148,9 @@ export async function getFavoriteCollections(
   return collections.map(toDashboardCollection);
 }
 
-export async function getCollections(userId: string, limit: number = 100) {
-  const take = validateQueryLimit(limit, {
-    max: MAX_COLLECTION_QUERY_LIMIT,
-    name: "Collections limit",
-  });
-
+export async function getCollections(userId: string) {
   const collections = await prisma.collection.findMany({
     where: { userId },
-    take,
     orderBy: { name: "asc" },
     include: collectionInclude,
   });
@@ -186,19 +192,43 @@ export async function getCollectionById(userId: string, collectionId: string) {
 export async function createCollection(
   userId: string,
   data: CreateCollectionData
-): Promise<DashboardCollection> {
-  const slug = await getUniqueCollectionSlug(userId, data.name);
-  const collection = await prisma.collection.create({
-    data: {
-      name: data.name,
-      slug,
-      description: data.description,
-      userId,
-    },
-    include: collectionInclude,
-  });
+): Promise<DashboardCollection | CreateCollectionFailure> {
+  return runSerializableTransaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: {
+        plan: true,
+        subscriptionStatus: true,
+      },
+    });
+    const entitlements = getUsageLimits(user);
 
-  return toDashboardCollection(collection);
+    if (entitlements.collectionLimit !== null) {
+      const collectionCount = await tx.collection.count({ where: { userId } });
+
+      if (collectionCount >= entitlements.collectionLimit) {
+        return { success: false, code: "COLLECTION_LIMIT_REACHED" };
+      }
+    }
+
+    const slug = await getUniqueCollectionSlug(
+      userId,
+      data.name,
+      undefined,
+      tx
+    );
+    const collection = await tx.collection.create({
+      data: {
+        name: data.name,
+        slug,
+        description: data.description,
+        userId,
+      },
+      include: collectionInclude,
+    });
+
+    return toDashboardCollection(collection);
+  });
 }
 
 export async function updateCollection(
@@ -266,14 +296,15 @@ export async function getCollectionStats(userId: string) {
 async function getUniqueCollectionSlug(
   userId: string,
   name: string,
-  excludeCollectionId?: string
+  excludeCollectionId?: string,
+  client: Pick<Prisma.TransactionClient, "collection"> = prisma
 ) {
   const baseSlug = slugify(name, "collection");
   let slug = baseSlug;
   let suffix = 2;
 
   while (true) {
-    const existingCollection = await prisma.collection.findUnique({
+    const existingCollection = await client.collection.findUnique({
       where: {
         userId_slug: {
           userId,
@@ -302,5 +333,34 @@ function slugify(value: string, fallback: string) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "") || fallback
+  );
+}
+
+async function runSerializableTransaction<T>(
+  operation: (tx: Prisma.TransactionClient) => Promise<T>
+): Promise<T> {
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await prisma.$transaction(operation, {
+        isolationLevel: "Serializable",
+      });
+    } catch (error) {
+      if (!isTransactionConflict(error) || attempt === maxAttempts) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error("Serializable collection transaction retry limit exceeded.");
+}
+
+function isTransactionConflict(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "P2034"
   );
 }
