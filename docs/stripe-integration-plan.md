@@ -248,23 +248,23 @@ Every authenticated user can currently upload images and files:
 - upload consumption: `src/lib/db/items.ts:368-424`;
 - UI: `src/components/dashboard/item-create-dialog.tsx:90-118`.
 
-Gate document uploads after resolving the item type and before writing to R2.
+Gate both document and image uploads after resolving the item type and before
+writing to R2.
 Recheck the entitlement when consuming the upload token during item creation,
 so a stale upload token or mid-flow downgrade cannot bypass the policy.
 
-There is a product-copy conflict:
+The product decision is:
 
-- the project specification includes images in Free and excludes large/document
-  files;
-- the homepage and sidebar currently label both files and images as Pro;
+- both file and image uploads require active Pro;
+- file and image list routes require active Pro and show a server-gated upgrade
+  or billing-recovery page before querying the protected item list;
 - actual limits are 5 MB for images and 10 MB for documents
   (`src/lib/file-uploads.ts:22-61`);
 - the project overview describes 5 MB Free and 50 MB Pro.
 
-Recommended decision: keep images up to 5 MB available on Free, make document
-file uploads Pro-only, and choose whether the initial Pro document limit stays
-10 MB or moves to 50 MB. Align the homepage, sidebar badges, validation copy,
-and tests with that decision before release.
+Keep the initial size limits at 5 MB for images and 10 MB for documents unless
+a later feature changes them. Align the homepage, sidebar badges, validation
+copy, and tests with the active-Pro requirement before release.
 
 ### Custom item types
 
@@ -296,7 +296,7 @@ If a user downgrades while over the Free limit:
   specific operation remains entitled;
 - block new items until the count is below 50;
 - block new collections until the count is below 3;
-- block new document uploads, AI calls, custom-type mutations, and paid export;
+- block new file/image uploads, AI calls, custom-type mutations, and paid export;
 - show current usage, the reason for the block, and a "Manage billing" or
   "Upgrade" action.
 
@@ -573,7 +573,7 @@ export async function getUserEntitlements(userId: string) {
   return {
     hasActivePro,
     canUseAi: hasActivePro,
-    canUploadDocuments: hasActivePro,
+    canUploadFiles: hasActivePro,
     canManageCustomTypes: hasActivePro,
     canExport: hasActivePro,
     itemLimit: hasActivePro ? null : FREE_ITEM_LIMIT,
@@ -740,7 +740,7 @@ Reconciliation must retrieve the Checkout Session, verify it belongs to the
 logged-in user, require a Subscription object/ID, then call
 `syncStripeSubscription`. It must not trust metadata returned by the browser.
 
-### `src/app/api/stripe/webhook/route.ts`
+### `src/app/api/webhooks/stripe/route.ts`
 
 The webhook is public at the HTTP layer and authenticated by Stripe's
 signature:
@@ -827,7 +827,7 @@ src/lib/stripe/config.test.ts
 src/lib/stripe/sync-subscription.test.ts
 src/lib/stripe/process-event.test.ts
 src/actions/billing.test.ts
-src/app/api/stripe/webhook/route.test.ts
+src/app/api/webhooks/stripe/route.test.ts
 src/components/profile/profile-billing-card.test.tsx
 ```
 
@@ -907,7 +907,7 @@ and return a consistent `PRO_REQUIRED` or `BILLING_PAST_DUE` response.
 - inside the existing creation transaction, load the entitlement and item
   count;
 - atomically reject Free creation at 50;
-- recheck document-upload entitlement when consuming an upload;
+- recheck file/image-upload entitlement when consuming an upload;
 - return typed creation failures;
 - add serializable transaction retry;
 - replace fixed "load at most 50" behavior with pagination for Pro-scale lists.
@@ -918,7 +918,7 @@ and return a consistent `PRO_REQUIRED` or `BILLING_PAST_DUE` response.
 - do not rely on client `isPro`;
 - keep validation and user scoping;
 - add tests for Free at 49/50, Pro over 50, past-due, concurrent creation, and
-  document-upload bypass attempts.
+  upload bypass attempts.
 
 #### `src/lib/db/collections.ts`
 
@@ -937,18 +937,17 @@ and return a consistent `PRO_REQUIRED` or `BILLING_PAST_DUE` response.
 #### `src/app/api/uploads/route.ts`
 
 - resolve the requested item type;
-- require active Pro for document/file uploads before writing to R2;
-- preserve Free image uploads if the recommended product decision is accepted;
+- require active Pro for document/file and image uploads before writing to R2;
 - keep auth, rate limiting, MIME validation, and generic provider errors.
 
 #### `src/lib/file-uploads.ts`
 
-Align actual byte limits and error messages with the final 5 MB Free-image /
-10-or-50 MB Pro-document decision.
+Align actual byte limits and error messages with the 5 MB Pro-image /
+10 MB Pro-document decision.
 
 #### `src/app/api/uploads/route.test.ts`
 
-Add Free image, Free document rejection, Pro document, past-due, invalid MIME,
+Add Free file/image rejection, active-Pro file/image, past-due, invalid MIME,
 and oversized-file coverage.
 
 ### Profile and pricing UI
@@ -1103,7 +1102,7 @@ not replace, the server-side live-subscription check.
 Create:
 
 ```text
-https://<production-domain>/api/stripe/webhook
+https://<production-domain>/api/webhooks/stripe
 ```
 
 Subscribe only to the required events:
@@ -1179,10 +1178,9 @@ CLI prints a different secret for local forwarding.
 - concurrent Free collection creates cannot produce collection 4;
 - active Pro can create above both limits;
 - past-due/canceled cannot use paid operations;
-- Free can upload the allowed image size;
-- Free document upload is rejected before R2 write;
-- a forged/stale document upload token is rejected during item creation;
-- active Pro document upload succeeds at the selected size limit;
+- Free file and image uploads are rejected before R2 write;
+- a forged/stale upload token is rejected during item creation;
+- active Pro file and image uploads succeed at their selected size limits;
 - AI requires active Pro;
 - downgrade preserves existing data and downloads;
 - users above Free limits can delete until they are below the limit.
@@ -1204,7 +1202,7 @@ CLI prints a different secret for local forwarding.
 Run:
 
 ```sh
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 Use the `whsec_...` printed by that command for local testing.
@@ -1248,7 +1246,7 @@ end-to-end correlation than isolated synthetic CLI events.
 
 ### Phase 1: policy and foundation
 
-1. Resolve the image/document size and Pro-copy conflict.
+1. Apply the active-Pro requirement to both image and document uploads.
 2. Confirm strict `PAST_DUE` behavior, cancellation timing, proration, tax
    behavior, and billing-data retention.
 3. Create Sandbox Product/Prices and configure environment values.
@@ -1276,7 +1274,7 @@ end-to-end correlation than isolated synthetic CLI events.
 ### Phase 4: enforce the product
 
 18. Add atomic item and collection limits with concurrency tests.
-19. Gate document uploads at both upload and item-creation boundaries.
+19. Gate file and image uploads at both upload and item-creation boundaries.
 20. Align homepage/sidebar/dialog copy and usage indicators.
 21. Add pagination so Pro "unlimited" is visible in practice.
 22. Add the central gate to custom item types and export when those features

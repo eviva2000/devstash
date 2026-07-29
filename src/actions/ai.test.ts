@@ -2,14 +2,31 @@ import type { Session } from "next-auth";
 import { beforeEach, describe, expect, test, vi, type Mock } from "vitest";
 
 import { auth } from "@/auth";
-import { isProUser } from "@/lib/ai/access";
 import { getOpenAIClient } from "@/lib/ai/client";
+import {
+  ActiveProRequiredError,
+  requireActiveProUser,
+} from "@/lib/billing/entitlements";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 import { generateAutoTags, generateDescription } from "./ai";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
-vi.mock("@/lib/ai/access", () => ({ isProUser: vi.fn() }));
+vi.mock("@/lib/billing/entitlements", () => {
+  class MockActiveProRequiredError extends Error {
+    code: "PRO_REQUIRED" | "BILLING_PAST_DUE";
+
+    constructor(code: "PRO_REQUIRED" | "BILLING_PAST_DUE") {
+      super(code);
+      this.code = code;
+    }
+  }
+
+  return {
+    ActiveProRequiredError: MockActiveProRequiredError,
+    requireActiveProUser: vi.fn(),
+  };
+});
 vi.mock("@/lib/ai/client", () => ({
   AI_MODEL: "gpt-5-nano",
   getOpenAIClient: vi.fn(),
@@ -21,14 +38,14 @@ type AuthSession = Session | null;
 const authMock = vi.mocked(auth) as unknown as Mock<() => Promise<AuthSession>>;
 const checkRateLimitMock = vi.mocked(checkRateLimit);
 const getOpenAIClientMock = vi.mocked(getOpenAIClient);
-const isProUserMock = vi.mocked(isProUser);
+const requireActiveProUserMock = vi.mocked(requireActiveProUser);
 const responsesCreateMock = vi.fn();
 
 describe("generateAutoTags", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authMock.mockResolvedValue(sessionForUser("user-1"));
-    isProUserMock.mockResolvedValue(true);
+    requireActiveProUserMock.mockResolvedValue({ hasActivePro: true } as never);
     checkRateLimitMock.mockResolvedValue({
       success: true,
       remaining: 19,
@@ -50,19 +67,35 @@ describe("generateAutoTags", () => {
       code: "UNAUTHENTICATED",
       error: "You must be signed in to suggest tags.",
     });
-    expect(isProUserMock).not.toHaveBeenCalled();
+    expect(requireActiveProUserMock).not.toHaveBeenCalled();
     expect(responsesCreateMock).not.toHaveBeenCalled();
   });
 
   test("enforces a Pro subscription on the server", async () => {
-    isProUserMock.mockResolvedValue(false);
+    requireActiveProUserMock.mockRejectedValue(
+      new ActiveProRequiredError("PRO_REQUIRED")
+    );
 
     await expect(generateAutoTags(validInput())).resolves.toEqual({
       success: false,
       code: "PRO_REQUIRED",
-      error: "AI tag suggestions require a Pro subscription.",
+      error: "AI tag suggestions require an active Pro subscription.",
     });
     expect(checkRateLimitMock).not.toHaveBeenCalled();
+    expect(responsesCreateMock).not.toHaveBeenCalled();
+  });
+
+  test("distinguishes past-due billing from a missing subscription", async () => {
+    requireActiveProUserMock.mockRejectedValue(
+      new ActiveProRequiredError("BILLING_PAST_DUE")
+    );
+
+    await expect(generateAutoTags(validInput())).resolves.toEqual({
+      success: false,
+      code: "BILLING_PAST_DUE",
+      error:
+        "AI tag suggestions are unavailable until your payment method is updated.",
+    });
     expect(responsesCreateMock).not.toHaveBeenCalled();
   });
 
@@ -225,7 +258,7 @@ describe("generateDescription", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authMock.mockResolvedValue(sessionForUser("user-1"));
-    isProUserMock.mockResolvedValue(true);
+    requireActiveProUserMock.mockResolvedValue({ hasActivePro: true } as never);
     checkRateLimitMock.mockResolvedValue({
       success: true,
       remaining: 19,
@@ -248,17 +281,19 @@ describe("generateDescription", () => {
       code: "UNAUTHENTICATED",
       error: "You must be signed in to generate descriptions.",
     });
-    expect(isProUserMock).not.toHaveBeenCalled();
+    expect(requireActiveProUserMock).not.toHaveBeenCalled();
     expect(responsesCreateMock).not.toHaveBeenCalled();
   });
 
   test("enforces a Pro subscription on the server", async () => {
-    isProUserMock.mockResolvedValue(false);
+    requireActiveProUserMock.mockRejectedValue(
+      new ActiveProRequiredError("PRO_REQUIRED")
+    );
 
     await expect(generateDescription(validDescriptionInput())).resolves.toEqual({
       success: false,
       code: "PRO_REQUIRED",
-      error: "AI description generation requires a Pro subscription.",
+      error: "AI description generation requires an active Pro subscription.",
     });
     expect(checkRateLimitMock).not.toHaveBeenCalled();
     expect(responsesCreateMock).not.toHaveBeenCalled();

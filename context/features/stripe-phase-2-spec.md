@@ -72,7 +72,7 @@ deprecation notices.
 ### Signed and idempotent webhooks
 
 - Add the Node.js Route Handler at
-  `src/app/api/stripe/webhook/route.ts`.
+  `src/app/api/webhooks/stripe/route.ts`.
 - Read `request.text()` exactly once before any parsing and verify the
   `stripe-signature` with the configured webhook secret.
 - Return 400 for a missing/invalid signature, 500 for retryable processing
@@ -109,10 +109,12 @@ deprecation notices.
   `COLLECTION_LIMIT_REACHED`; do not overload existing `null` results.
 - Keep existing content readable, editable, downloadable, and deletable after
   downgrade. Block only new over-limit or Pro-only operations.
-- Keep image uploads up to the agreed Free image limit available to Free users.
-  Require active Pro for document/file uploads:
+- Require active Pro for both document/file and image uploads:
   - before writing to R2; and
   - again when consuming the pending upload during item creation.
+- Require active Pro for the file and image list routes. Resolve singular and
+  plural URLs to the canonical item type on the server, and render an upgrade
+  or billing-recovery page before querying the protected item list.
 - Gate existing custom-type and export mutations if those server surfaces are
   present. Any later implementation must call the same entitlement helper.
 - Add pagination/cursor loading where current query caps would otherwise make
@@ -163,8 +165,8 @@ Add focused Vitest coverage for:
 - Free item creation at 49/50 and collection creation at 2/3;
 - concurrent Free creates never exceeding either limit;
 - active Pro over both limits and `PAST_DUE`/canceled denial;
-- Free image upload, Free document rejection before R2, active-Pro document
-  upload, and stale upload-token rejection;
+- Free file and image rejection before R2, active-Pro file and image upload,
+  and stale upload-token rejection;
 - AI requiring active Pro;
 - downgrade preserving existing-data operations;
 - account deletion canceling billing before local deletion.
@@ -183,7 +185,7 @@ This phase is not complete with mocked tests alone.
 3. Forward real local webhooks:
 
    ```sh
-   stripe listen --forward-to localhost:3000/api/stripe/webhook
+   stripe listen --forward-to localhost:3000/api/webhooks/stripe
    ```
 
 4. Use the `whsec_...` printed by that CLI process locally. It is different

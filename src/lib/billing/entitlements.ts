@@ -39,6 +39,19 @@ async function getEntitlementSnapshot(userId: string) {
   };
 }
 
+export async function getUserBillingAccess(userId: string): Promise<
+  UserEntitlements & {
+    subscriptionStatus: "INACTIVE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
+  }
+> {
+  const snapshot = await getEntitlementSnapshot(userId);
+
+  return {
+    ...snapshot.entitlements,
+    subscriptionStatus: snapshot.subscriptionStatus ?? "INACTIVE",
+  };
+}
+
 export async function getUserEntitlements(
   userId: string
 ): Promise<UserEntitlements> {

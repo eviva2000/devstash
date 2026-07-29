@@ -40,6 +40,13 @@ _Description: Reusable React patterns and hooks_
 - Component patterns (Context providers, compound components)
 - Utility functions
 
+4 frontend resource links:
+
+- CSS/Tailwind references
+- Component libraries
+- Design systems
+- Icon libraries
+
 #### AI Workflows
 
 _Description: AI prompts and workflow automations_
@@ -55,27 +62,7 @@ _Description: AI prompts and workflow automations_
 _Description: Infrastructure and deployment resources_
 
 - 1 snippet (Docker, CI/CD config)
-- 1 command (deployment scripts)
+- 5 commands (deployment, Git, Docker, process, and package utilities)
 - 2 links (documentation URLs - use real URLs)
 
-#### Terminal Commands
-
-_Description: Useful shell commands for everyday development_
-
-4 commands:
-
-- Git operations
-- Docker commands
-- Process management
-- Package manager utilities
-
-#### Design Resources
-
-_Description: UI/UX resources and references_
-
-4 links (use real URLs):
-
-- CSS/Tailwind references
-- Component libraries
-- Design systems
-- Icon libraries
+The Free demo user must have exactly 3 collections and fewer than 50 items.

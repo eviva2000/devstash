@@ -104,3 +104,11 @@ export type DashboardUser = {
   email?: string | null;
   image?: string | null;
 };
+
+export type DashboardPlanUsage = {
+  itemUsed: number;
+  itemLimit: number | null;
+  collectionUsed: number;
+  collectionLimit: number | null;
+  billingStatus: "INACTIVE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
+};

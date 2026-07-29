@@ -8,6 +8,7 @@ import type { DashboardCollection } from "@/features/dashboard/dashboard-types";
 import {
   createCollection as createCollectionRecord,
   deleteCollection as deleteCollectionRecord,
+  isCreateCollectionFailure,
   updateCollection as updateCollectionRecord,
   type CreateCollectionData,
   type UpdateCollectionData,
@@ -15,7 +16,15 @@ import {
 
 type CreateCollectionResult =
   | { success: true; data: DashboardCollection }
-  | { success: false; error: string };
+  | {
+      success: false;
+      code:
+        | "UNAUTHENTICATED"
+        | "INVALID_INPUT"
+        | "UNAVAILABLE"
+        | "COLLECTION_LIMIT_REACHED";
+      error: string;
+    };
 
 type UpdateCollectionResult =
   | { success: true; data: DashboardCollection }
@@ -50,6 +59,7 @@ export async function createCollection(
     if (!session?.user?.id) {
       return {
         success: false,
+        code: "UNAUTHENTICATED",
         error: "You must be signed in to create collections.",
       };
     }
@@ -59,6 +69,7 @@ export async function createCollection(
     if (!parsedData.success) {
       return {
         success: false,
+        code: "INVALID_INPUT",
         error: getValidationErrorMessage(parsedData.error),
       };
     }
@@ -69,12 +80,25 @@ export async function createCollection(
       createData
     );
 
+    if (isCreateCollectionFailure(createdCollection)) {
+      return {
+        success: false,
+        code: createdCollection.code,
+        error:
+          "You have reached the Free plan limit of 3 collections. Upgrade to add more.",
+      };
+    }
+
     revalidateCollectionPaths();
 
     return { success: true, data: createdCollection };
   } catch (error) {
     console.error("Failed to create collection.", error);
-    return { success: false, error: "Unable to create collection. Try again." };
+    return {
+      success: false,
+      code: "UNAVAILABLE",
+      error: "Unable to create collection. Try again.",
+    };
   }
 }
 

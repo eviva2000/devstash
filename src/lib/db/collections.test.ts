@@ -12,7 +12,12 @@ import {
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $transaction: vi.fn(),
+    user: {
+      findUnique: vi.fn(),
+    },
     collection: {
+      count: vi.fn(),
       create: vi.fn(),
       deleteMany: vi.fn(),
       findMany: vi.fn(),
@@ -29,10 +34,17 @@ const collectionFindManyMock = prisma.collection.findMany as unknown as Mock;
 const collectionFindFirstMock = prisma.collection.findFirst as unknown as Mock;
 const collectionFindUniqueMock = prisma.collection.findUnique as unknown as Mock;
 const collectionUpdateMock = prisma.collection.update as unknown as Mock;
+const transactionMock = prisma.$transaction as unknown as Mock;
+const userFindUniqueMock = prisma.user.findUnique as unknown as Mock;
 
 describe("createCollection", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    transactionMock.mockImplementation((callback) => callback(prisma));
+    userFindUniqueMock.mockResolvedValue({
+      plan: "PRO",
+      subscriptionStatus: "ACTIVE",
+    });
   });
 
   test("creates a user-scoped collection with a slug from the name", async () => {
@@ -124,7 +136,7 @@ describe("createCollection", () => {
 
 describe("getCollectionById", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   test("fetches only a collection owned by the user", async () => {
@@ -155,6 +167,71 @@ describe("getCollectionById", () => {
     });
   });
 
+  test("allows Free collection 3 and rejects collection 4 transactionally", async () => {
+    transactionMock.mockImplementation((callback) => callback(prisma));
+    userFindUniqueMock.mockResolvedValue({
+      plan: "FREE",
+      subscriptionStatus: "INACTIVE",
+    });
+    const collectionCountMock = prisma.collection.count as unknown as Mock;
+    collectionCountMock.mockResolvedValueOnce(2).mockResolvedValueOnce(3);
+    collectionFindUniqueMock.mockResolvedValue(null);
+    collectionCreateMock.mockResolvedValue(dbCollection());
+    const input = { name: "API Notes", description: null };
+
+    await expect(createCollection("user-1", input)).resolves.toMatchObject({
+      id: "collection-1",
+    });
+    await expect(createCollection("user-1", input)).resolves.toEqual({
+      success: false,
+      code: "COLLECTION_LIMIT_REACHED",
+    });
+    expect(transactionMock).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: "Serializable",
+    });
+    expect(collectionCreateMock).toHaveBeenCalledTimes(1);
+  });
+
+  test("concurrent Free creates cannot both cross the collection limit", async () => {
+    let collectionCount = 2;
+    let transactionQueue = Promise.resolve();
+    transactionMock.mockImplementation((callback) => {
+      const result = transactionQueue.then(() => callback(prisma));
+      transactionQueue = result.then(
+        () => undefined,
+        () => undefined
+      );
+      return result;
+    });
+    userFindUniqueMock.mockResolvedValue({
+      plan: "FREE",
+      subscriptionStatus: "INACTIVE",
+    });
+    (prisma.collection.count as unknown as Mock).mockImplementation(
+      async () => collectionCount
+    );
+    collectionFindUniqueMock.mockResolvedValue(null);
+    collectionCreateMock.mockImplementation(async () => {
+      collectionCount++;
+      return dbCollection({ id: `collection-${collectionCount}` });
+    });
+    const input = { name: "Concurrent collection", description: null };
+
+    const results = await Promise.all([
+      createCollection("user-1", input),
+      createCollection("user-1", input),
+    ]);
+
+    expect(collectionCount).toBe(3);
+    expect(
+      results.filter(
+        (result) => "success" in result && result.success === false
+      )
+    ).toEqual([
+      { success: false, code: "COLLECTION_LIMIT_REACHED" },
+    ]);
+  });
+
   test("returns null when the collection is not owned by the user", async () => {
     collectionFindFirstMock.mockResolvedValue(null);
 
@@ -166,7 +243,7 @@ describe("getCollectionById", () => {
 
 describe("getGlobalSearchCollections", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   test("fetches every user collection with minimal searchable data", async () => {
@@ -201,7 +278,7 @@ describe("getGlobalSearchCollections", () => {
 
 describe("updateCollection", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   test("updates only a collection owned by the user", async () => {
@@ -286,7 +363,7 @@ describe("updateCollection", () => {
 
 describe("deleteCollection", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   test("deletes only a collection owned by the user", async () => {

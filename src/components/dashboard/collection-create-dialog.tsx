@@ -1,6 +1,7 @@
 "use client";
 
 import { FolderOpen, Loader2, Plus, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
@@ -17,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import type { DashboardPlanUsage } from "@/features/dashboard/dashboard-types";
 import { getActionErrorMessage } from "@/lib/utils";
 
 type CreateCollectionFormState = {
@@ -33,18 +35,24 @@ export function CollectionCreateDialog({
   onOpenChange,
   open,
   triggerClassName,
+  usage,
 }: {
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
   triggerClassName?: string;
-} = {}) {
+  usage: DashboardPlanUsage;
+}) {
   const router = useRouter();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState<CreateCollectionFormState>(initialForm);
   const [formError, setFormError] = useState("");
   const isOpen = open ?? uncontrolledOpen;
-  const isSubmitDisabled = isSaving || form.name.trim().length === 0;
+  const isLimitReached =
+    usage.collectionLimit !== null &&
+    usage.collectionUsed >= usage.collectionLimit;
+  const isSubmitDisabled =
+    isSaving || isLimitReached || form.name.trim().length === 0;
 
   function setDialogOpen(nextOpen: boolean) {
     if (open === undefined) {
@@ -87,6 +95,7 @@ export function CollectionCreateDialog({
       console.error("Failed to create collection.", error);
       result = {
         success: false,
+        code: "UNAVAILABLE",
         error: getActionErrorMessage(
           error,
           "Unable to create collection. Try again."
@@ -152,6 +161,26 @@ export function CollectionCreateDialog({
                   >
                     {formError}
                   </p>
+                )}
+
+                {isLimitReached && (
+                  <div
+                    className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm"
+                    role="status"
+                  >
+                    <p className="font-medium">
+                      Collection limit reached: {usage.collectionUsed} /{" "}
+                      {usage.collectionLimit}
+                    </p>
+                    <Link
+                      className="mt-1 inline-flex text-primary underline-offset-4 hover:underline"
+                      href="/profile"
+                    >
+                      {usage.billingStatus === "PAST_DUE"
+                        ? "Manage billing"
+                        : "View upgrade options"}
+                    </Link>
+                  </div>
                 )}
 
                 <section className="grid gap-3">

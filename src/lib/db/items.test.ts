@@ -35,10 +35,14 @@ const itemUploadCreateMock = vi.mocked(prisma.itemUpload.create);
 const itemUploadDeleteMock = vi.mocked(prisma.itemUpload.delete);
 const itemUploadFindFirstMock = vi.mocked(prisma.itemUpload.findFirst);
 const transactionClient = {
+  user: {
+    findUnique: vi.fn(),
+  },
   itemType: {
     findFirst: vi.fn(),
   },
   item: {
+    count: vi.fn(),
     create: vi.fn(),
   },
   collection: {
@@ -54,6 +58,10 @@ describe("createItem", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     transactionMock.mockImplementation((callback) => callback(transactionClient));
+    transactionClient.user.findUnique.mockResolvedValue({
+      plan: "PRO",
+      subscriptionStatus: "ACTIVE",
+    });
   });
 
   test("creates a text item for the resolved system item type", async () => {
@@ -326,7 +334,7 @@ describe("createItem", () => {
     });
   });
 
-  test("returns null when a file upload token is missing or already consumed", async () => {
+  test("returns a typed failure when a file upload token is missing or already consumed", async () => {
     transactionClient.itemType.findFirst.mockResolvedValue({
       id: "type-file",
       slug: "file",
@@ -346,11 +354,11 @@ describe("createItem", () => {
           uploadToken: "cm11111111111111111111111",
         },
       })
-    ).resolves.toBeNull();
+    ).resolves.toEqual({ success: false, code: "INVALID_UPLOAD" });
     expect(transactionClient.item.create).not.toHaveBeenCalled();
   });
 
-  test("returns null when the requested system type does not exist", async () => {
+  test("returns a typed failure when the requested system type does not exist", async () => {
     transactionClient.itemType.findFirst.mockResolvedValue(null);
 
     await expect(
@@ -363,8 +371,117 @@ describe("createItem", () => {
         url: null,
         tags: [],
       })
-    ).resolves.toBeNull();
+    ).resolves.toEqual({ success: false, code: "INVALID_ITEM_TYPE" });
     expect(transactionClient.item.create).not.toHaveBeenCalled();
+  });
+
+  test("allows Free item 50 and rejects item 51 inside a serializable transaction", async () => {
+    transactionClient.user.findUnique.mockResolvedValue({
+      plan: "FREE",
+      subscriptionStatus: "INACTIVE",
+    });
+    transactionClient.item.count.mockResolvedValueOnce(49).mockResolvedValueOnce(50);
+    transactionClient.itemType.findFirst.mockResolvedValue({
+      id: "type-1",
+      slug: "snippet",
+    });
+    transactionClient.item.create.mockResolvedValue(dbItem());
+    const input = {
+      typeSlug: "snippet",
+      title: "Quota item",
+      description: null,
+      content: null,
+      language: null,
+      url: null,
+      tags: [],
+    };
+
+    await expect(createItem("user-1", input)).resolves.toMatchObject({
+      id: "item-1",
+    });
+    await expect(createItem("user-1", input)).resolves.toEqual({
+      success: false,
+      code: "ITEM_LIMIT_REACHED",
+    });
+    expect(transactionMock).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: "Serializable",
+    });
+    expect(transactionClient.item.create).toHaveBeenCalledTimes(1);
+  });
+
+  test.each(["file", "image"])(
+    "requires active Pro again when consuming a %s upload",
+    async (typeSlug) => {
+      transactionClient.user.findUnique.mockResolvedValue({
+        plan: "PRO",
+        subscriptionStatus: "PAST_DUE",
+      });
+
+      await expect(
+        createItem("user-1", {
+          typeSlug,
+          title: "Upload",
+          description: null,
+          content: null,
+          language: null,
+          url: null,
+          tags: [],
+          file: { uploadToken: "cm11111111111111111111111" },
+        })
+      ).resolves.toEqual({
+        success: false,
+        code: "BILLING_PAST_DUE",
+      });
+      expect(transactionClient.itemUpload.updateMany).not.toHaveBeenCalled();
+      expect(transactionClient.item.create).not.toHaveBeenCalled();
+    }
+  );
+
+  test("concurrent Free creates cannot both cross the item limit", async () => {
+    let itemCount = 49;
+    let transactionQueue = Promise.resolve();
+    transactionMock.mockImplementation((callback) => {
+      const result = transactionQueue.then(() => callback(transactionClient));
+      transactionQueue = result.then(
+        () => undefined,
+        () => undefined
+      );
+      return result;
+    });
+    transactionClient.user.findUnique.mockResolvedValue({
+      plan: "FREE",
+      subscriptionStatus: "INACTIVE",
+    });
+    transactionClient.item.count.mockImplementation(async () => itemCount);
+    transactionClient.itemType.findFirst.mockResolvedValue({
+      id: "type-1",
+      slug: "snippet",
+    });
+    transactionClient.item.create.mockImplementation(async () => {
+      itemCount++;
+      return dbItem({ id: `item-${itemCount}` });
+    });
+    const input = {
+      typeSlug: "snippet",
+      title: "Concurrent item",
+      description: null,
+      content: null,
+      language: null,
+      url: null,
+      tags: [],
+    };
+
+    const results = await Promise.all([
+      createItem("user-1", input),
+      createItem("user-1", input),
+    ]);
+
+    expect(itemCount).toBe(50);
+    expect(
+      results.filter(
+        (result) => "success" in result && result.success === false
+      )
+    ).toEqual([{ success: false, code: "ITEM_LIMIT_REACHED" }]);
   });
 });
 
@@ -490,8 +607,8 @@ describe("getItemsByCollectionId", () => {
           },
         ],
       },
-      take: 50,
-      orderBy: { updatedAt: "desc" },
+      take: 51,
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
       include: expect.any(Object),
     });
   });

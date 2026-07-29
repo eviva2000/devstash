@@ -27,6 +27,11 @@ vi.mock("@/auth", () => ({
 vi.mock("@/lib/db/collections", () => ({
   createCollection: vi.fn(),
   deleteCollection: vi.fn(),
+  isCreateCollectionFailure: (value: unknown) =>
+    typeof value === "object" &&
+    value !== null &&
+    "success" in value &&
+    value.success === false,
   updateCollection: vi.fn(),
 }));
 
@@ -49,6 +54,7 @@ describe("createCollection", () => {
 
     await expect(createCollection(validCreateInput())).resolves.toEqual({
       success: false,
+      code: "UNAUTHENTICATED",
       error: "You must be signed in to create collections.",
     });
     expect(createCollectionRecordMock).not.toHaveBeenCalled();
@@ -64,6 +70,7 @@ describe("createCollection", () => {
       })
     ).resolves.toEqual({
       success: false,
+      code: "INVALID_INPUT",
       error: "Name is required.",
     });
     expect(createCollectionRecordMock).not.toHaveBeenCalled();
@@ -113,6 +120,7 @@ describe("createCollection", () => {
 
     await expect(createCollection(validCreateInput())).resolves.toEqual({
       success: false,
+      code: "UNAVAILABLE",
       error: "Unable to create collection. Try again.",
     });
     expect(consoleError).toHaveBeenCalledWith(

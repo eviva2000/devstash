@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, Loader2, Plus, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useMemo, useState } from "react";
@@ -34,6 +35,7 @@ import {
 import type {
   DashboardCollection,
   DashboardItemType,
+  DashboardPlanUsage,
 } from "@/features/dashboard/dashboard-types";
 import {
   getTypeColorStyle,
@@ -70,6 +72,7 @@ export function ItemCreateDialog({
   initialTypeSlug,
   isPro,
   itemTypes,
+  usage,
   onOpenChange,
   open,
   triggerClassName,
@@ -79,6 +82,7 @@ export function ItemCreateDialog({
   initialTypeSlug?: string;
   isPro: boolean;
   itemTypes: DashboardItemType[];
+  usage: DashboardPlanUsage;
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
   triggerClassName?: string;
@@ -110,8 +114,13 @@ export function ItemCreateDialog({
   const supportsLanguage = doesTypeSupportLanguage(form.typeSlug);
   const supportsUrl = doesTypeSupportUrl(form.typeSlug);
   const supportsFileUpload = doesTypeSupportFile(form.typeSlug);
+  const isUploadBlocked = supportsFileUpload && !isPro;
+  const isItemLimitReached =
+    usage.itemLimit !== null && usage.itemUsed >= usage.itemLimit;
   const isSubmitDisabled =
     isSaving ||
+    isUploadBlocked ||
+    isItemLimitReached ||
     availableTypes.length === 0 ||
     form.title.trim().length === 0 ||
     (supportsUrl && form.url.trim().length === 0) ||
@@ -169,6 +178,7 @@ export function ItemCreateDialog({
       console.error("Failed to create item.", error);
       result = {
         success: false,
+        code: "UNAVAILABLE",
         error: getActionErrorMessage(error, "Unable to create item. Try again."),
       };
     } finally {
@@ -236,6 +246,29 @@ export function ItemCreateDialog({
                   >
                     {formError}
                   </p>
+                )}
+
+                {(isItemLimitReached || isUploadBlocked) && (
+                  <div
+                    className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm"
+                    role="status"
+                  >
+                    <p className="font-medium">
+                      {isItemLimitReached
+                        ? `Item limit reached: ${usage.itemUsed} / ${usage.itemLimit}`
+                        : usage.billingStatus === "PAST_DUE"
+                          ? "File and image uploads are paused while billing is past due."
+                          : "File and image uploads require an active Pro subscription."}
+                    </p>
+                    <Link
+                      className="mt-1 inline-flex text-primary underline-offset-4 hover:underline"
+                      href="/profile"
+                    >
+                      {usage.billingStatus === "PAST_DUE"
+                        ? "Manage billing"
+                        : "View upgrade options"}
+                    </Link>
+                  </div>
                 )}
 
                 <section className="space-y-2">
@@ -408,7 +441,7 @@ export function ItemCreateDialog({
                   {supportsFileUpload && (
                     <CreateFieldBlock label="Upload" required>
                       <FileUpload
-                        disabled={isSaving}
+                        disabled={isSaving || isUploadBlocked}
                         itemType={form.typeSlug as UploadItemType}
                         onChange={(file) => {
                           updateForm({

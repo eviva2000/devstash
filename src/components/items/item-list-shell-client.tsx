@@ -1,8 +1,10 @@
 "use client";
 
-import { Inbox } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Inbox, Loader2 } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
 
+import { loadMoreItems } from "@/actions/items";
+import { Button } from "@/components/ui/button";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
 import {
@@ -18,6 +20,7 @@ import type {
   DashboardItem,
   DashboardItemStats,
   DashboardItemType,
+  DashboardPlanUsage,
   DashboardUser,
   GlobalSearchCollection,
   GlobalSearchItem,
@@ -34,11 +37,13 @@ interface ItemListShellClientProps {
   readonly itemTypes: DashboardItemType[];
   readonly itemType: DashboardItemType;
   readonly items: DashboardItem[];
+  readonly nextCursor: string | null;
   readonly itemStats: DashboardItemStats;
   readonly itemTypeCounts: Record<string, number>;
   readonly isPro: boolean;
   readonly searchCollections: GlobalSearchCollection[];
   readonly searchItems: GlobalSearchItem[];
+  readonly usage: DashboardPlanUsage;
 }
 
 export function ItemListShellClient({
@@ -48,17 +53,48 @@ export function ItemListShellClient({
   favoriteCollections,
   itemTypes,
   itemType,
-  items,
+  items: initialItems,
+  nextCursor: initialNextCursor,
   itemStats,
   itemTypeCounts,
   isPro,
   searchCollections,
   searchItems,
+  usage,
 }: ItemListShellClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isItemDrawerOpen, setIsItemDrawerOpen] = useState(false);
+  const [pagination, setPagination] = useState<{
+    scopeId: string;
+    items: DashboardItem[];
+    nextCursor: string | null | undefined;
+  }>({
+    scopeId: itemType.slug,
+    items: [],
+    nextCursor: undefined,
+  });
+  const [loadError, setLoadError] = useState("");
+  const [isLoadingMore, startLoadingMore] = useTransition();
+  const items = useMemo(
+    () => {
+      const additionalItems =
+        pagination.scopeId === itemType.slug ? pagination.items : [];
+
+      return Array.from(
+        new Map(
+          [...initialItems, ...additionalItems].map((item) => [item.id, item])
+        ).values()
+      );
+    },
+    [initialItems, itemType.slug, pagination]
+  );
+  const nextCursor =
+    pagination.scopeId !== itemType.slug ||
+    pagination.nextCursor === undefined
+      ? initialNextCursor
+      : pagination.nextCursor;
 
   const sidebarData: SidebarData = useMemo(
     () => ({
@@ -119,6 +155,44 @@ export function ItemListShellClient({
   const getItemCollection = (item: DashboardItem) =>
     item.collectionId ? collectionById.get(item.collectionId) : undefined;
 
+  function handleLoadMore() {
+    if (!nextCursor) {
+      return;
+    }
+
+    setLoadError("");
+    startLoadingMore(async () => {
+      const result = await loadMoreItems({
+        scope: "type",
+        scopeId: itemType.slug,
+        cursor: nextCursor,
+      });
+
+      if (!result.success) {
+        setLoadError(result.error);
+        return;
+      }
+
+      setPagination((current) => {
+        const currentItems =
+          current.scopeId === itemType.slug ? current.items : [];
+
+        return {
+          scopeId: itemType.slug,
+          items: [
+            ...currentItems,
+            ...result.data.items.filter(
+              (item) =>
+                !initialItems.some((existing) => existing.id === item.id) &&
+                !currentItems.some((existing) => existing.id === item.id)
+            ),
+          ],
+          nextCursor: result.data.nextCursor,
+        };
+      });
+    });
+  }
+
   return (
     <main className="flex h-screen overflow-hidden bg-background text-foreground">
       <DesktopSidebar
@@ -145,6 +219,7 @@ export function ItemListShellClient({
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
           searchCollections={searchCollections}
           searchItems={searchItems}
+          usage={usage}
         />
 
         <div className="min-h-0 flex-1 overflow-y-auto bg-background">
@@ -167,6 +242,7 @@ export function ItemListShellClient({
                     isPro={isPro}
                     itemTypes={itemTypes}
                     triggerLabel={createButtonLabel}
+                    usage={usage}
                   />
                 )}
               </div>
@@ -234,6 +310,25 @@ export function ItemListShellClient({
                     </p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {nextCursor && (
+              <div className="flex flex-col items-center gap-2">
+                <Button
+                  disabled={isLoadingMore}
+                  onClick={handleLoadMore}
+                  type="button"
+                  variant="outline"
+                >
+                  {isLoadingMore && <Loader2 className="animate-spin" />}
+                  {isLoadingMore ? "Loading…" : "Load more items"}
+                </Button>
+                {loadError && (
+                  <p aria-live="polite" className="text-sm text-destructive">
+                    {loadError}
+                  </p>
+                )}
               </div>
             )}
           </div>

@@ -8,6 +8,10 @@ import {
   SubscriptionPlan,
   SubscriptionStatus,
 } from "../src/generated/prisma/client";
+import {
+  FREE_COLLECTION_LIMIT,
+  FREE_ITEM_LIMIT,
+} from "../src/lib/usage-limits";
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -37,10 +41,8 @@ const EXPECTED_SYSTEM_ITEM_TYPES = [
 
 const EXPECTED_COLLECTION_ITEM_COUNTS = {
   "AI Workflows": 3,
-  "Design Resources": 4,
-  DevOps: 4,
-  "React Patterns": 3,
-  "Terminal Commands": 4,
+  DevOps: 8,
+  "React Patterns": 7,
 } as const;
 
 const EXPECTED_ITEMS_BY_TYPE = {
@@ -202,6 +204,10 @@ async function main() {
       Object.keys(EXPECTED_COLLECTION_ITEM_COUNTS).length
     } demo collections, found ${demoUser.collections.length}.`
   );
+  assertCondition(
+    demoUser.collections.length === FREE_COLLECTION_LIMIT,
+    `Free demo user must have exactly ${FREE_COLLECTION_LIMIT} collections.`
+  );
 
   const itemCountsByType = new Map<string, number>();
 
@@ -252,6 +258,10 @@ async function main() {
   assertCondition(
     demoUser.items.length === 18,
     `Expected 18 demo items, found ${demoUser.items.length}.`
+  );
+  assertCondition(
+    demoUser.items.length < FREE_ITEM_LIMIT,
+    `Free demo user must have fewer than ${FREE_ITEM_LIMIT} items.`
   );
 
   console.log("Database connection and demo seed data OK");

@@ -26,6 +26,11 @@ vi.mock("@/lib/db/items", () => ({
   createItem: vi.fn(),
   deleteItem: vi.fn(),
   getItemDetailById: vi.fn(),
+  isCreateItemFailure: (value: unknown) =>
+    typeof value === "object" &&
+    value !== null &&
+    "success" in value &&
+    value.success === false,
   updateItem: vi.fn(),
 }));
 
@@ -57,6 +62,7 @@ describe("createItem", () => {
 
     await expect(createItem(validCreateInput())).resolves.toEqual({
       success: false,
+      code: "UNAUTHENTICATED",
       error: "You must be signed in to create items.",
     });
     expect(createItemRecordMock).not.toHaveBeenCalled();
@@ -72,6 +78,7 @@ describe("createItem", () => {
       })
     ).resolves.toEqual({
       success: false,
+      code: "INVALID_INPUT",
       error: "Title is required.",
     });
     expect(createItemRecordMock).not.toHaveBeenCalled();
@@ -88,6 +95,7 @@ describe("createItem", () => {
       })
     ).resolves.toEqual({
       success: false,
+      code: "INVALID_INPUT",
       error: "URL is required for links.",
     });
     expect(createItemRecordMock).not.toHaveBeenCalled();
@@ -135,6 +143,7 @@ describe("createItem", () => {
       })
     ).resolves.toEqual({
       success: false,
+      code: "INVALID_INPUT",
       error: "Upload a file first.",
     });
     expect(createItemRecordMock).not.toHaveBeenCalled();
@@ -191,10 +200,14 @@ describe("createItem", () => {
 
   test("returns a valid-type error when the database helper cannot resolve the type", async () => {
     authMock.mockResolvedValue(sessionForUser("user-1"));
-    createItemRecordMock.mockResolvedValue(null);
+    createItemRecordMock.mockResolvedValue({
+      success: false,
+      code: "INVALID_ITEM_TYPE",
+    });
 
     await expect(createItem(validCreateInput())).resolves.toEqual({
       success: false,
+      code: "INVALID_ITEM_TYPE",
       error: "Choose a valid item type.",
     });
   });
@@ -206,6 +219,7 @@ describe("createItem", () => {
 
     await expect(createItem(validCreateInput())).resolves.toEqual({
       success: false,
+      code: "UNAVAILABLE",
       error: "Unable to create item. Try again.",
     });
     expect(consoleError).toHaveBeenCalledWith(

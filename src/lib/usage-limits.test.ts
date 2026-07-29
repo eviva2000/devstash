@@ -18,7 +18,7 @@ describe("getUsageLimits", () => {
     ).toEqual({
       hasActivePro: true,
       canUseAi: true,
-      canUploadDocuments: true,
+      canUploadFiles: true,
       canManageCustomTypes: true,
       canExport: true,
       itemLimit: null,
@@ -40,7 +40,7 @@ describe("getUsageLimits", () => {
       expect(getUsageLimits({ plan, subscriptionStatus })).toEqual({
         hasActivePro: false,
         canUseAi: false,
-        canUploadDocuments: false,
+        canUploadFiles: false,
         canManageCustomTypes: false,
         canExport: false,
         itemLimit: 50,

@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { isProUser } from "@/lib/ai/access";
+import { getUserBillingAccess } from "@/lib/billing/entitlements";
 import { CollectionDetailShellClient } from "@/components/collections/collection-detail-shell-client";
 import {
   getCollectionById,
@@ -13,7 +13,7 @@ import {
 } from "@/lib/db/collections";
 import {
   getGlobalSearchItems,
-  getItemsByCollectionId,
+  getItemsByCollectionIdPage,
   getItemStats,
   getItemTypeCounts,
 } from "@/lib/db/items";
@@ -34,7 +34,7 @@ export async function CollectionDetailShell({
 
   const [
     collection,
-    items,
+    itemPage,
     collections,
     recentCollections,
     favoriteCollections,
@@ -43,10 +43,10 @@ export async function CollectionDetailShell({
     itemTypeCounts,
     searchCollections,
     searchItems,
-    isPro,
+    billingAccess,
   ] = await Promise.all([
     getCollectionById(userId, collectionId),
-    getItemsByCollectionId(userId, collectionId),
+    getItemsByCollectionIdPage(userId, collectionId),
     getCollections(userId),
     getRecentCollections(userId, 6),
     getFavoriteCollections(userId),
@@ -55,7 +55,7 @@ export async function CollectionDetailShell({
     getItemTypeCounts(userId),
     getGlobalSearchCollections(userId),
     getGlobalSearchItems(userId),
-    isProUser(userId),
+    getUserBillingAccess(userId),
   ]);
 
   if (!collection) {
@@ -75,11 +75,19 @@ export async function CollectionDetailShell({
       itemStats={itemStats}
       itemTypeCounts={itemTypeCounts}
       itemTypes={itemTypes}
-      items={items}
-      isPro={isPro}
+      items={itemPage.items}
+      isPro={billingAccess.hasActivePro}
       recentCollections={recentCollections}
       searchCollections={searchCollections}
       searchItems={searchItems}
+      usage={{
+        itemUsed: itemStats.total,
+        itemLimit: billingAccess.itemLimit,
+        collectionUsed: collections.length,
+        collectionLimit: billingAccess.collectionLimit,
+        billingStatus: billingAccess.subscriptionStatus,
+      }}
+      nextCursor={itemPage.nextCursor}
     />
   );
 }
