@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   createBillingPortalSession,
   createCheckoutSession,
+  reconcileBillingPortal,
   reconcileCheckoutSession,
 } from "@/actions/billing";
 import { Badge } from "@/components/ui/badge";
@@ -43,18 +44,20 @@ export function ProfileBillingCard({
   billing,
   checkoutState,
   initialInterval,
+  portalState,
   sessionId,
 }: {
   billing: BillingState;
   checkoutState?: string;
   initialInterval: BillingInterval;
+  portalState?: string;
   sessionId?: string;
 }) {
   const router = useRouter();
   const reconciliationStarted = useRef(false);
   const [interval, setInterval] = useState<BillingInterval>(initialInterval);
   const [feedback, setFeedback] = useState(() =>
-    getInitialFeedback(checkoutState)
+    getInitialFeedback(checkoutState, portalState)
   );
   const [isPending, startTransition] = useTransition();
 
@@ -83,6 +86,36 @@ export function ProfileBillingCard({
     });
   }, [checkoutState, router, sessionId]);
 
+  useEffect(() => {
+    const waitForCancellation = portalState === "canceled";
+
+    if (
+      (portalState !== "return" && !waitForCancellation) ||
+      reconciliationStarted.current
+    ) {
+      return;
+    }
+
+    reconciliationStarted.current = true;
+    setFeedback(
+      waitForCancellation
+        ? "Confirming your cancellation…"
+        : "Refreshing your billing status…"
+    );
+    startTransition(async () => {
+      const result = await reconcileBillingPortal(waitForCancellation);
+
+      if (result.success) {
+        setFeedback("Your billing status has been updated.");
+        router.replace("/profile?portal=confirmed");
+        router.refresh();
+        return;
+      }
+
+      setFeedback(result.error);
+    });
+  }, [portalState, router]);
+
   function startCheckout(selectedInterval: BillingInterval) {
     setFeedback("");
     startTransition(async () => {
@@ -104,6 +137,10 @@ export function ProfileBillingCard({
 
   const status = getStatusLabel(billing);
   const periodLabel = billing.cancelAtPeriodEnd ? "Access ends" : "Renews";
+  const canCancelSubscription =
+    billing.canManageBilling &&
+    !billing.cancelAtPeriodEnd &&
+    (billing.status === "ACTIVE" || billing.status === "PAST_DUE");
 
   return (
     <section
@@ -203,7 +240,7 @@ export function ProfileBillingCard({
         </div>
       )}
 
-      {(billing.canManageBilling || billing.status === "PAST_DUE") && (
+      {canCancelSubscription && (
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <Button
             disabled={isPending}
@@ -211,9 +248,7 @@ export function ProfileBillingCard({
             type="button"
             variant={billing.status === "PAST_DUE" ? "default" : "outline"}
           >
-            {billing.status === "PAST_DUE"
-              ? "Update payment method"
-              : "Manage billing"}
+            Cancel subscription
           </Button>
           {billing.status === "PAST_DUE" && (
             <p className="text-sm text-destructive">
@@ -290,7 +325,11 @@ function getStatusLabel(billing: BillingState) {
   }
 }
 
-function getInitialFeedback(checkoutState?: string) {
+function getInitialFeedback(checkoutState?: string, portalState?: string) {
+  if (portalState === "confirmed") {
+    return "Your billing status has been updated.";
+  }
+
   switch (checkoutState) {
     case "canceled":
       return "Checkout was canceled. No changes were made.";
@@ -298,6 +337,8 @@ function getInitialFeedback(checkoutState?: string) {
       return "Your subscription is active.";
     case "success":
       return "Confirming your subscription…";
+    case "confirmed":
+      return "Your billing status has been updated.";
     default:
       return "";
   }

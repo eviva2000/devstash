@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 import {
   createBillingPortalSession,
   createCheckoutSession,
+  reconcileBillingPortal,
   reconcileCheckoutSession,
 } from "./billing";
 
@@ -212,7 +213,11 @@ describe("billing actions", () => {
   });
 
   test("creates a fresh Portal Session from the database Customer", async () => {
-    findUniqueMock.mockResolvedValue({ stripeCustomerId: "cus_database" } as never);
+    findUniqueMock.mockResolvedValue({
+      stripeCustomerId: "cus_database",
+      stripeSubscriptionId: "sub_1",
+      stripeSubscriptionStatus: "active",
+    } as never);
     portalCreateMock.mockResolvedValue({
       url: "https://billing.stripe.test/session",
     });
@@ -221,8 +226,49 @@ describe("billing actions", () => {
 
     expect(portalCreateMock).toHaveBeenCalledWith({
       customer: "cus_database",
-      return_url: "https://app.devstash.test/profile",
+      return_url: "https://app.devstash.test/profile?portal=return",
+      flow_data: {
+        type: "subscription_cancel",
+        subscription_cancel: { subscription: "sub_1" },
+        after_completion: {
+          type: "redirect",
+          redirect: {
+            return_url: "https://app.devstash.test/profile?portal=canceled",
+          },
+        },
+      },
     });
+  });
+
+  test("falls back to the standard portal when Stripe rejects a cancellation deep link", async () => {
+    findUniqueMock.mockResolvedValue({
+      stripeCustomerId: "cus_database",
+      stripeSubscriptionId: "sub_1",
+      stripeSubscriptionStatus: "active",
+    } as never);
+    portalCreateMock
+      .mockRejectedValueOnce(new Error("Cancellation flow is unavailable"))
+      .mockResolvedValueOnce({ url: "https://billing.stripe.test/session" });
+
+    await expect(createBillingPortalSession()).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(portalCreateMock).toHaveBeenLastCalledWith({
+      customer: "cus_database",
+      return_url: "https://app.devstash.test/profile?portal=return",
+    });
+  });
+
+  test("refreshes the tracked subscription after returning from the Customer Portal", async () => {
+    findUniqueMock.mockResolvedValue({
+      stripeCustomerId: "cus_1",
+      stripeSubscriptionId: "sub_1",
+    } as never);
+
+    await expect(reconcileBillingPortal()).resolves.toEqual({ success: true });
+
+    expect(syncMock).toHaveBeenCalledWith("sub_1");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/profile");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
   });
 
   test("rejects reconciliation owned by a different app user", async () => {

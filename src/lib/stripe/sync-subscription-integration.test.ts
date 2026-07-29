@@ -195,6 +195,7 @@ function subscription({
     customer: "cus_1",
     status: "active",
     cancel_at_period_end: false,
+    cancel_at: null,
     metadata: { app_user_id: "user-1" },
     items: {
       object: "list",

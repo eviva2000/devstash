@@ -31,6 +31,10 @@ type ReconcileCheckoutResult =
   | { success: true }
   | BillingActionFailure;
 
+type ReconcilePortalResult =
+  | { success: true }
+  | BillingActionFailure;
+
 const checkoutSchema = z
   .object({
     interval: billingIntervalSchema,
@@ -238,38 +242,149 @@ export async function createBillingPortalSession(): Promise<
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { stripeCustomerId: true },
+    select: {
+      stripeCustomerId: true,
+      stripeSubscriptionId: true,
+      stripeSubscriptionStatus: true,
+    },
   });
 
-  if (!user?.stripeCustomerId) {
+  if (
+    !user?.stripeCustomerId ||
+    !user.stripeSubscriptionId ||
+    !isLiveStripeStatus(user.stripeSubscriptionStatus)
+  ) {
     return {
       success: false,
       code: "CUSTOMER_MISSING",
-      error: "No billing account is available yet.",
+      error: "No active subscription is available to manage.",
     };
   }
 
   let portalUrl: string;
+  const returnUrl = `${getConfiguredAppOrigin()}/profile?portal=return`;
+  const cancellationReturnUrl = `${getConfiguredAppOrigin()}/profile?portal=canceled`;
+  const stripe = getStripeClient();
 
   try {
-    const portal = await getStripeClient().billingPortal.sessions.create({
+    const portal = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${getConfiguredAppOrigin()}/profile`,
+      return_url: returnUrl,
+      flow_data: {
+        type: "subscription_cancel",
+        subscription_cancel: {
+          subscription: user.stripeSubscriptionId,
+        },
+        after_completion: {
+          type: "redirect",
+          redirect: {
+            return_url: cancellationReturnUrl,
+          },
+        },
+      },
     });
     portalUrl = portal.url;
   } catch (error) {
-    console.error("Unable to create Stripe Customer Portal Session.", {
+    // Older portal configurations can reject deep-linked cancellation flows.
+    // Keep billing available by returning a standard portal session instead.
+    console.warn("Unable to create direct Stripe cancellation flow; using portal.", {
+      userId: session.user.id,
+      error: error instanceof Error ? error.message : "Unknown Stripe error",
+    });
+
+    try {
+      const portal = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: returnUrl,
+      });
+      portalUrl = portal.url;
+    } catch (fallbackError) {
+      console.error("Unable to create Stripe Customer Portal Session.", {
+        userId: session.user.id,
+        error:
+          fallbackError instanceof Error
+            ? fallbackError.message
+            : "Unknown Stripe error",
+      });
+      return {
+        success: false,
+        code: "UNAVAILABLE",
+        error: "Unable to open billing management. Try again.",
+      };
+    }
+  }
+
+  redirect(portalUrl);
+}
+
+/**
+ * Stripe's Customer Portal does not include the subscription ID in its return
+ * URL. Re-read the authenticated user's tracked subscription on return so the
+ * profile reflects a cancellation even if its webhook has not arrived yet.
+ */
+export async function reconcileBillingPortal(
+  waitForCancellation = false
+): Promise<ReconcilePortalResult> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      code: "UNAUTHENTICATED",
+      error: "Sign in before confirming billing changes.",
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      stripeCustomerId: true,
+      stripeSubscriptionId: true,
+    },
+  });
+
+  if (!user?.stripeCustomerId || !user.stripeSubscriptionId) {
+    return {
+      success: false,
+      code: "CUSTOMER_MISSING",
+      error: "No subscription is available to refresh.",
+    };
+  }
+
+  try {
+    const attempts = waitForCancellation ? 3 : 1;
+
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      const result = await syncStripeSubscription(user.stripeSubscriptionId);
+      const cancellationIsVisible =
+        result.snapshot?.stripeCancelAtPeriodEnd ||
+        result.snapshot?.subscriptionStatus === "CANCELED";
+
+      if (!waitForCancellation || cancellationIsVisible || !result.snapshot) {
+        break;
+      }
+
+      await delay(750);
+    }
+  } catch (error) {
+    console.error("Unable to reconcile Stripe Customer Portal changes.", {
       userId: session.user.id,
       error: error instanceof Error ? error.message : "Unknown Stripe error",
     });
     return {
       success: false,
       code: "UNAVAILABLE",
-      error: "Unable to open billing management. Try again.",
+      error: "Your billing changes are still being confirmed. Refresh in a moment.",
     };
   }
 
-  redirect(portalUrl);
+  revalidatePath("/profile");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 export async function reconcileCheckoutSession(

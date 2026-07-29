@@ -79,7 +79,10 @@ export function mapStripeSubscription(
     stripePriceId: item.price.id,
     stripeSubscriptionStatus: subscription.status,
     stripeCurrentPeriodEnd: new Date(item.current_period_end * 1000),
-    stripeCancelAtPeriodEnd: subscription.cancel_at_period_end,
+    // Stripe can schedule the end of a subscription with either flag. Portal
+    // configurations that set `cancel_at` would otherwise look active and
+    // renewing in DevStash despite having a confirmed cancellation date.
+    stripeCancelAtPeriodEnd: isScheduledForCancellation(subscription),
     interval,
   } satisfies Omit<
     LocalSubscriptionSnapshot,
@@ -298,7 +301,7 @@ function getFailClosedSnapshot(
     stripeCurrentPeriodEnd: singleItem
       ? new Date(singleItem.current_period_end * 1000)
       : null,
-    stripeCancelAtPeriodEnd: subscription.cancel_at_period_end,
+    stripeCancelAtPeriodEnd: isScheduledForCancellation(subscription),
     interval: null,
     grantsPro: false,
   };
@@ -308,6 +311,10 @@ function getExpandableId(
   value: string | { id: string }
 ): string {
   return typeof value === "string" ? value : value.id;
+}
+
+function isScheduledForCancellation(subscription: Stripe.Subscription): boolean {
+  return subscription.cancel_at_period_end || Boolean(subscription.cancel_at);
 }
 
 async function lockBillingUser(

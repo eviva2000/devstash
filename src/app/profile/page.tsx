@@ -32,6 +32,7 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
 type SearchParams = Promise<{
   checkout?: string | string[];
   interval?: string | string[];
+  portal?: string | string[];
   session_id?: string | string[];
 }>;
 
@@ -138,6 +139,7 @@ export default async function ProfilePage({
           initialInterval={
             getParam(params.interval) === "monthly" ? "monthly" : "yearly"
           }
+          portalState={getParam(params.portal)}
           sessionId={getParam(params.session_id)}
         />
 

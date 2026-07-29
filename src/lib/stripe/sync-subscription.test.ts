@@ -50,6 +50,15 @@ describe("mapStripeSubscription", () => {
     ).toBe("yearly");
   });
 
+  test("treats a Stripe cancel_at timestamp as a scheduled cancellation", () => {
+    expect(
+      mapStripeSubscription(
+        subscription({ cancelAt: 1_800_000_000 }),
+        { monthly: "price_monthly", yearly: "price_yearly" }
+      ).stripeCancelAtPeriodEnd
+    ).toBe(true);
+  });
+
   test.each([
     subscription({ priceId: "price_unknown" }),
     subscription({ status: "trialing" }),
@@ -66,10 +75,12 @@ describe("mapStripeSubscription", () => {
 
 function subscription({
   itemCount = 1,
+  cancelAt = null,
   priceId = "price_monthly",
   status = "active",
 }: {
   itemCount?: number;
+  cancelAt?: number | null;
   priceId?: string;
   status?: Stripe.Subscription.Status;
 } = {}): Stripe.Subscription {
@@ -89,6 +100,7 @@ function subscription({
     customer: "cus_1",
     status,
     cancel_at_period_end: false,
+    cancel_at: cancelAt,
     metadata: { app_user_id: "user-1" },
     items: {
       object: "list",
