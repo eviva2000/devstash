@@ -20,7 +20,7 @@ vi.mock("@/lib/stripe/process-event", () => ({
 
 const processStripeEventMock = vi.mocked(processStripeEvent);
 
-describe("POST /api/stripe/webhook", () => {
+describe("POST /api/webhooks/stripe", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     processStripeEventMock.mockResolvedValue({
@@ -31,7 +31,7 @@ describe("POST /api/stripe/webhook", () => {
 
   test("rejects a missing signature", async () => {
     const response = await POST(
-      new Request("http://localhost/api/stripe/webhook", {
+      new Request("http://localhost/api/webhooks/stripe", {
         method: "POST",
         body: eventPayload(),
       })
@@ -87,7 +87,7 @@ describe("POST /api/stripe/webhook", () => {
 });
 
 function signedRequest(signature: string, payload = eventPayload()) {
-  return new Request("http://localhost/api/stripe/webhook", {
+  return new Request("http://localhost/api/webhooks/stripe", {
     method: "POST",
     headers: {
       "stripe-signature": signature,

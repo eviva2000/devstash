@@ -72,7 +72,7 @@ deprecation notices.
 ### Signed and idempotent webhooks
 
 - Add the Node.js Route Handler at
-  `src/app/api/stripe/webhook/route.ts`.
+  `src/app/api/webhooks/stripe/route.ts`.
 - Read `request.text()` exactly once before any parsing and verify the
   `stripe-signature` with the configured webhook secret.
 - Return 400 for a missing/invalid signature, 500 for retryable processing
@@ -185,7 +185,7 @@ This phase is not complete with mocked tests alone.
 3. Forward real local webhooks:
 
    ```sh
-   stripe listen --forward-to localhost:3000/api/stripe/webhook
+   stripe listen --forward-to localhost:3000/api/webhooks/stripe
    ```
 
 4. Use the `whsec_...` printed by that CLI process locally. It is different

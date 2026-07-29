@@ -740,7 +740,7 @@ Reconciliation must retrieve the Checkout Session, verify it belongs to the
 logged-in user, require a Subscription object/ID, then call
 `syncStripeSubscription`. It must not trust metadata returned by the browser.
 
-### `src/app/api/stripe/webhook/route.ts`
+### `src/app/api/webhooks/stripe/route.ts`
 
 The webhook is public at the HTTP layer and authenticated by Stripe's
 signature:
@@ -827,7 +827,7 @@ src/lib/stripe/config.test.ts
 src/lib/stripe/sync-subscription.test.ts
 src/lib/stripe/process-event.test.ts
 src/actions/billing.test.ts
-src/app/api/stripe/webhook/route.test.ts
+src/app/api/webhooks/stripe/route.test.ts
 src/components/profile/profile-billing-card.test.tsx
 ```
 
@@ -1102,7 +1102,7 @@ not replace, the server-side live-subscription check.
 Create:
 
 ```text
-https://<production-domain>/api/stripe/webhook
+https://<production-domain>/api/webhooks/stripe
 ```
 
 Subscribe only to the required events:
@@ -1202,7 +1202,7 @@ CLI prints a different secret for local forwarding.
 Run:
 
 ```sh
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 Use the `whsec_...` printed by that command for local testing.
