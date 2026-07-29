@@ -12,7 +12,7 @@ export default function DashboardLoading() {
       <DashboardSidebarSkeleton />
 
       <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-background px-4 md:px-6">
+        <header className="flex h-20 shrink-0 items-center gap-3 border-b border-border bg-background px-4 pt-4 md:px-6">
           <Skeleton className="size-8 md:hidden" />
           <Skeleton className="size-8 md:hidden" />
           <Skeleton className="hidden h-8 w-full max-w-md md:block" />
@@ -57,7 +57,7 @@ export default function DashboardLoading() {
 function DashboardSidebarSkeleton() {
   return (
     <aside className="hidden w-72 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex md:flex-col">
-      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-sidebar-border px-3">
+      <div className="flex h-20 shrink-0 items-center gap-3 border-b border-sidebar-border px-3 pt-4">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Layers3 className="size-5" />
         </span>

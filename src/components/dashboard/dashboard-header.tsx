@@ -42,7 +42,7 @@ export function DashboardHeader({
   const [isItemCreateOpen, setIsItemCreateOpen] = useState(false);
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-background px-4 md:px-6">
+    <header className="flex h-20 shrink-0 items-center gap-3 border-b border-border bg-background px-4 pt-4 md:px-6">
       <Button
         aria-expanded={isMobileDrawerOpen}
         aria-label="Open sidebar"

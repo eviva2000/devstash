@@ -123,7 +123,7 @@ function SidebarContent({
     <>
       <div
         className={cn(
-          "flex h-16 shrink-0 items-center border-b border-sidebar-border px-4",
+          "flex h-20 shrink-0 items-center border-b border-sidebar-border px-4 pt-4",
           compact ? "justify-center gap-3 px-2" : "gap-3"
         )}
       >
