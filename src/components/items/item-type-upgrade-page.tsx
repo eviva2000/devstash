@@ -183,12 +183,12 @@ export function ItemTypeUpgradePage({
                     disabled={isPending}
                     label="Monthly"
                     onSelect={() => startCheckout("monthly")}
-                    price="€7"
+                    price="€8"
                     suffix="/ month"
                   />
                   <PlanOption
-                    badge="Save about 14%"
-                    description="€12 less than paying monthly"
+                    badge="Save 25%"
+                    description="€24 less than paying monthly"
                     disabled={isPending}
                     label="Yearly"
                     onSelect={() => startCheckout("yearly")}

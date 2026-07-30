@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { CollectionCreateDialog } from "@/components/dashboard/collection-create-dialog";
@@ -8,7 +9,7 @@ import { GlobalSearch } from "@/components/dashboard/global-search";
 import { ItemCreateDialog } from "@/components/dashboard/item-create-dialog";
 import { MobileCreateMenu } from "@/components/dashboard/mobile-create-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type {
   DashboardCollection,
   DashboardItemType,
@@ -64,6 +65,19 @@ export function DashboardHeader({
 
       <ThemeToggle className="ml-auto md:ml-0" />
 
+      {!isPro && (
+        <Link
+          className={buttonVariants({
+            variant: "ghost",
+            size: "sm",
+            className: "ml-auto text-[14px]",
+          })}
+          href="/upgrade"
+        >
+          Upgrade
+        </Link>
+      )}
+
       <MobileCreateMenu
         onCreateCollection={() => setIsCollectionCreateOpen(true)}
         onCreateItem={() => setIsItemCreateOpen(true)}
@@ -72,7 +86,7 @@ export function DashboardHeader({
       <CollectionCreateDialog
         onOpenChange={setIsCollectionCreateOpen}
         open={isCollectionCreateOpen}
-        triggerClassName="ml-auto hidden md:inline-flex"
+        triggerClassName="hidden md:inline-flex"
         usage={usage}
       />
 

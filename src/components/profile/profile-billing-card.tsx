@@ -220,11 +220,11 @@ export function ProfileBillingCard({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium">
-                {interval === "monthly" ? "€7 / month" : "€72 / year"}
+                {interval === "monthly" ? "€8 / month" : "€72 / year"}
               </p>
               <p className="text-sm text-muted-foreground">
                 {interval === "yearly"
-                  ? "Save €12 each year (about 14%)."
+                  ? "Save €24 each year (25%)."
                   : "Flexible monthly billing."}
               </p>
             </div>

@@ -118,6 +118,17 @@ export default async function ProfilePage({
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <ThemeToggle />
+              {!profile.billing.hasActivePro && (
+                <Link
+                  className={buttonVariants({
+                    variant: "ghost",
+                    className: "text-[14px]",
+                  })}
+                  href="/upgrade"
+                >
+                  Upgrade
+                </Link>
+              )}
               <Link
                 className={buttonVariants({ variant: "outline" })}
                 href="/dashboard"
