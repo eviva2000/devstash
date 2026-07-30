@@ -13,6 +13,7 @@ import {
   Settings,
   Star,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -455,13 +456,18 @@ function SidebarLink({
   readonly onClick?: () => void;
 }) {
   const hasMarker = marker || Boolean(markerStyle);
+  const pathname = usePathname();
+  const isActive = pathname === href;
 
   return (
     <Link
       className={cn(
         "flex h-9 items-center rounded-lg text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        isActive &&
+          "bg-sidebar-accent font-medium text-sidebar-accent-foreground shadow-xs",
         isCollapsed ? "justify-center px-0" : "gap-2 px-2"
       )}
+      aria-current={isActive ? "page" : undefined}
       href={href}
       onClick={onClick}
       title={isCollapsed ? label : undefined}
