@@ -9,7 +9,8 @@ export type RateLimitName =
   | "resendVerification"
   | "fileUpload"
   | "aiAutoTags"
-  | "aiDescription";
+  | "aiDescription"
+  | "aiCodeExplanation";
 
 type RateLimitConfig = {
   limit: number;
@@ -25,6 +26,7 @@ const RATE_LIMIT_CONFIG: Record<RateLimitName, RateLimitConfig> = {
   fileUpload: { limit: 20, windowSeconds: 15 * 60 },
   aiAutoTags: { limit: 20, windowSeconds: 60 * 60 },
   aiDescription: { limit: 20, windowSeconds: 60 * 60 },
+  aiCodeExplanation: { limit: 10, windowSeconds: 60 * 60 },
 };
 
 export type RateLimitResult = {

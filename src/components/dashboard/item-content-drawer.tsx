@@ -288,6 +288,7 @@ export function ItemContentDrawer({
                 type={displayType}
                 usesCodeEditor={usesCodeEditor}
                 usesMarkdownEditor={usesMarkdownEditor}
+                isPro={isPro}
               />
             )}
           </div>
