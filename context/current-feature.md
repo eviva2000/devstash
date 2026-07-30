@@ -1,20 +1,17 @@
-# Current Feature: UI Review Fixes
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Highlight the active sidebar destination across desktop and mobile navigation.
-- Offer GitHub account creation from the Register page, consistent with Sign in.
-- Tighten mobile auth-page spacing without affecting desktop layout.
+<!-- List goals for the active feature here. -->
 
 ## Notes
 
-- Derived from the July 30 Playwright UI review.
-- Preserve the untracked `.playwright-mcp/` browser artifacts; they are not part of this feature.
+<!-- Add implementation notes, constraints, or spec links here. -->
 
 ## History
 
@@ -366,3 +363,8 @@ Keep this updated. Earliest to Latest
   - Added concise, transient Markdown explanations for snippet and command drawer content, with loading and toast error states
   - Added a Pro-aware Explain control and Code/Explain toggle in the code editor; after generation the toggle replaces the window-control circles to keep the header compact
   - Added focused server action coverage and verified with `npm test` (204 passing), `npm run lint`, `npx tsc --noEmit`, `npm run build`, and `git diff --check`
+- **UI Review Fixes** (July 30, 2026)
+  - Completed on branch `ui-review-fixes`
+  - Added active-state styling and `aria-current` to desktop and mobile sidebar links
+  - Added a GitHub registration option with a visual divider and tightened mobile auth-page spacing
+  - Verified with `npm test` (204 passing), `npm run lint`, `npx tsc --noEmit`, `npm run build`, and `git diff --check`
