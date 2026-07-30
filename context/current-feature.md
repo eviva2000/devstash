@@ -1,25 +1,17 @@
-# Current Feature: AI Explain Code
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Add an authenticated, Pro-gated, validated, and rate-limited `explainCode` server action using OpenAI `gpt-5-nano`.
-- Offer an Explain control for snippet and command items only in the item drawer read view.
-- Add Explain button to code editor header (next to Copy button)
-- Render a concise markdown explanation inline in the code editor, with Code and Explain tabs after generation.
-- Provide loading feedback, free-user Pro gating guidance, and toast-based error handling.
-- Add focused unit tests for the server action.
+<!-- List goals for the active feature here. -->
 
 ## Notes
 
-- Source spec: `context/features/ai-explain-spec.md`.
-- Explanations are ephemeral: do not persist them to the database; regenerate on each request.
-- The feature is unavailable in create and edit forms and for non-code item types.
-- Pass `isPro` into the item drawer/code editor. Follow `docs/ai-integration-plan.md` and existing project patterns.
+<!-- Add implementation notes, constraints, or spec links here. -->
 
 ## History
 
@@ -365,3 +357,9 @@ Keep this updated. Earliest to Latest
   - Reshaped the demo seed data to a Free-tier account (3 collections, fewer than 50 items) to exercise quota gating
   - Added focused coverage for Stripe lifecycle handling, feature gates, quota concurrency, uploads, reconciliation, and subscription-safe deletion
   - Merged into `main` with a merge commit; local completion only (no remote push)
+- **AI Explain Code** (July 30, 2026)
+  - Completed on branch `ai-explain-code`
+  - Added an authenticated, active-Pro-gated `explainCode` action using `gpt-5-nano`, item ownership checks, input validation, and a per-user explanation rate limit
+  - Added concise, transient Markdown explanations for snippet and command drawer content, with loading and toast error states
+  - Added a Pro-aware Explain control and Code/Explain toggle in the code editor; after generation the toggle replaces the window-control circles to keep the header compact
+  - Added focused server action coverage and verified with `npm test` (204 passing), `npm run lint`, `npx tsc --noEmit`, `npm run build`, and `git diff --check`
