@@ -1,17 +1,25 @@
-# Current Feature
+# Current Feature: AI Explain Code
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
-<!-- List goals for the active feature here. -->
+- Add an authenticated, Pro-gated, validated, and rate-limited `explainCode` server action using OpenAI `gpt-5-nano`.
+- Offer an Explain control for snippet and command items only in the item drawer read view.
+- Add Explain button to code editor header (next to Copy button)
+- Render a concise markdown explanation inline in the code editor, with Code and Explain tabs after generation.
+- Provide loading feedback, free-user Pro gating guidance, and toast-based error handling.
+- Add focused unit tests for the server action.
 
 ## Notes
 
-<!-- Add implementation notes, constraints, or spec links here. -->
+- Source spec: `context/features/ai-explain-spec.md`.
+- Explanations are ephemeral: do not persist them to the database; regenerate on each request.
+- The feature is unavailable in create and edit forms and for non-code item types.
+- Pass `isPro` into the item drawer/code editor. Follow `docs/ai-integration-plan.md` and existing project patterns.
 
 ## History
 

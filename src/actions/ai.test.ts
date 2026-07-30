@@ -8,8 +8,9 @@ import {
   requireActiveProUser,
 } from "@/lib/billing/entitlements";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { prisma } from "@/lib/prisma";
 
-import { generateAutoTags, generateDescription } from "./ai";
+import { explainCode, generateAutoTags, generateDescription } from "./ai";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/billing/entitlements", () => {
@@ -32,6 +33,7 @@ vi.mock("@/lib/ai/client", () => ({
   getOpenAIClient: vi.fn(),
 }));
 vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: vi.fn() }));
+vi.mock("@/lib/prisma", () => ({ prisma: { item: { findFirst: vi.fn() } } }));
 
 type AuthSession = Session | null;
 
@@ -40,6 +42,7 @@ const checkRateLimitMock = vi.mocked(checkRateLimit);
 const getOpenAIClientMock = vi.mocked(getOpenAIClient);
 const requireActiveProUserMock = vi.mocked(requireActiveProUser);
 const responsesCreateMock = vi.fn();
+const findFirstMock = vi.mocked(prisma.item.findFirst);
 
 describe("generateAutoTags", () => {
   beforeEach(() => {
@@ -436,6 +439,46 @@ describe("generateDescription", () => {
       "Failed to generate an AI description.",
       {}
     );
+  });
+});
+
+describe("explainCode", () => {
+  const itemId = "c123456789012345678901234";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authMock.mockResolvedValue(sessionForUser("user-1"));
+    requireActiveProUserMock.mockResolvedValue({ hasActivePro: true } as never);
+    checkRateLimitMock.mockResolvedValue({ success: true, remaining: 9, reset: Date.now() + 60_000 });
+    findFirstMock.mockResolvedValue({
+      title: "Run tests",
+      content: "npm test",
+      language: "shell",
+      type: { name: "Command" },
+    } as never);
+    getOpenAIClientMock.mockReturnValue({ responses: { create: responsesCreateMock } } as never);
+    responsesCreateMock.mockResolvedValue({ output_text: "This runs the test suite." });
+  });
+
+  test("authenticates, verifies Pro access, loads the owned code item, and explains it", async () => {
+    await expect(explainCode({ itemId })).resolves.toEqual({ success: true, data: "This runs the test suite." });
+    expect(findFirstMock).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ id: itemId, userId: "user-1" }) }));
+    expect(checkRateLimitMock).toHaveBeenCalledWith("aiCodeExplanation", "user-1");
+    expect(responsesCreateMock).toHaveBeenCalledWith(expect.objectContaining({ model: "gpt-5-nano", store: false, max_output_tokens: 700 }));
+  });
+
+  test("does not consume quota for an invalid or unavailable item", async () => {
+    await expect(explainCode({ itemId: "invalid" })).resolves.toMatchObject({ success: false, code: "INVALID_INPUT" });
+    expect(checkRateLimitMock).not.toHaveBeenCalled();
+    findFirstMock.mockResolvedValue(null);
+    await expect(explainCode({ itemId })).resolves.toMatchObject({ success: false, code: "NOT_FOUND" });
+    expect(checkRateLimitMock).not.toHaveBeenCalled();
+  });
+
+  test("returns a safe rate-limit error without calling OpenAI", async () => {
+    checkRateLimitMock.mockResolvedValue({ success: false, remaining: 0, reset: Date.now() + 60_000 });
+    await expect(explainCode({ itemId })).resolves.toMatchObject({ success: false, code: "RATE_LIMITED" });
+    expect(responsesCreateMock).not.toHaveBeenCalled();
   });
 });
 

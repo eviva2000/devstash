@@ -1,10 +1,12 @@
 "use client";
 
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Crown, Loader2, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { useCallback, useMemo, useState } from "react";
 import type { BeforeMount, EditorProps } from "@monaco-editor/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +32,11 @@ interface CodeEditorProps {
   readonly disabled?: boolean;
   readonly language?: string | null;
   readonly minHeight?: number;
+  readonly explanation?: string | null;
+  readonly explainDisabled?: boolean;
+  readonly isExplaining?: boolean;
+  readonly isPro?: boolean;
+  readonly onExplain?: () => void;
   readonly onChange?: (value: string) => void;
   readonly readOnly?: boolean;
   readonly value: string;
@@ -41,6 +48,11 @@ export function CodeEditor({
   disabled = false,
   language,
   minHeight,
+  explanation = null,
+  explainDisabled = false,
+  isExplaining = false,
+  isPro = false,
+  onExplain,
   onChange,
   readOnly = false,
   value,
@@ -56,6 +68,9 @@ export function CodeEditor({
   );
   const editorHeight = Math.max(160, totalHeight - headerHeight);
   const isReadOnly = readOnly || disabled;
+  const [activeTab, setActiveTab] = useState<"code" | "explain">("code");
+  const canExplain = Boolean(onExplain && readOnly);
+  const hasExplanation = Boolean(explanation);
 
   const editorOptions = useMemo<EditorProps["options"]>(
     () => ({
@@ -149,14 +164,30 @@ export function CodeEditor({
       style={{ height: totalHeight }}
     >
       <div className="flex h-10 items-center gap-3 border-b border-border bg-muted px-3">
-        <div className="flex items-center gap-1.5" aria-hidden="true">
-          <span className="size-2.5 rounded-full bg-[#ff5f56]" />
-          <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
-          <span className="size-2.5 rounded-full bg-[#27c93f]" />
-        </div>
+        {!hasExplanation && (
+          <div className="flex items-center gap-1.5" aria-hidden="true">
+            <span className="size-2.5 rounded-full bg-[#ff5f56]" />
+            <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
+            <span className="size-2.5 rounded-full bg-[#27c93f]" />
+          </div>
+        )}
+        {explanation && (
+          <div className="flex items-center rounded-md bg-background p-0.5 text-xs">
+            <button className={cn("rounded px-2 py-1", activeTab === "code" && "bg-muted text-foreground")} onClick={() => setActiveTab("code")} type="button">Code</button>
+            <button className={cn("rounded px-2 py-1", activeTab === "explain" && "bg-muted text-foreground")} onClick={() => setActiveTab("explain")} type="button">Explain</button>
+          </div>
+        )}
         <span className="ml-auto truncate text-xs font-medium text-muted-foreground">
           {displayLanguage}
         </span>
+        {canExplain && (
+          <span title={isPro ? "Explain code" : "AI features require Pro subscription"}>
+            <Button aria-busy={isExplaining} aria-label={isPro ? "Explain code" : "AI features require Pro subscription"} className="h-7 gap-1 px-2 text-violet-500 hover:bg-violet-500/10 hover:text-violet-600" disabled={isExplaining || explainDisabled} onClick={onExplain} size="sm" type="button" variant="ghost">
+              {isExplaining ? <Loader2 className="size-3.5 animate-spin" /> : isPro ? <Sparkles className="size-3.5" /> : <Crown className="size-3.5" />}
+              <span>Explain</span>
+            </Button>
+          </span>
+        )}
         <Button
           aria-label="Copy code"
           className="size-7 text-muted-foreground hover:bg-background hover:text-foreground"
@@ -169,7 +200,9 @@ export function CodeEditor({
           {hasCopied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
         </Button>
       </div>
-      <MonacoEditor
+      {activeTab === "explain" && explanation ? (
+        <div className="h-full overflow-y-auto bg-background p-4 text-sm leading-6 text-foreground"><ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown></div>
+      ) : <MonacoEditor
         height={`${editorHeight}px`}
         language={normalizedLanguage}
         loading={<CodeEditorLoading />}
@@ -181,7 +214,7 @@ export function CodeEditor({
         value={value}
         width="100%"
         beforeMount={beforeMount}
-      />
+      />}
     </div>
   );
 }

@@ -2,7 +2,10 @@
 
 import { Download } from "lucide-react";
 import NextImage from "next/image";
+import { useState } from "react";
+import { toast } from "sonner";
 
+import { explainCode } from "@/actions/ai";
 import { CodeEditor } from "@/components/dashboard/code-editor";
 import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
 import { buttonVariants } from "@/components/ui/button";
@@ -26,13 +29,28 @@ export function ItemDrawerDetails({
   type,
   usesCodeEditor,
   usesMarkdownEditor,
+  isPro,
 }: Readonly<{
   collection: DashboardCollection | null;
   item: ItemDetail;
   type?: DashboardItemType;
   usesCodeEditor: boolean;
   usesMarkdownEditor: boolean;
+  isPro: boolean;
 }>) {
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [isExplaining, setIsExplaining] = useState(false);
+
+  async function handleExplain() {
+    if (!isPro) { toast.error("AI features require Pro subscription"); return; }
+    setIsExplaining(true);
+    try {
+      const result = await explainCode({ itemId: item.id });
+      if (!result.success) { toast.error(result.error); return; }
+      setExplanation(result.data);
+    } catch { toast.error("AI code explanation is temporarily unavailable. Try again."); }
+    finally { setIsExplaining(false); }
+  }
   return (
     <div className="space-y-7">
       <section className="space-y-2">
@@ -79,6 +97,10 @@ export function ItemDrawerDetails({
             language={item.language}
             usesCodeEditor={usesCodeEditor}
             usesMarkdownEditor={usesMarkdownEditor}
+            explanation={explanation}
+            isExplaining={isExplaining}
+            isPro={isPro}
+            onExplain={usesCodeEditor ? handleExplain : undefined}
           />
         </section>
       )}
@@ -143,11 +165,19 @@ function ContentView({
   language,
   usesCodeEditor,
   usesMarkdownEditor,
+  explanation,
+  isExplaining,
+  isPro,
+  onExplain,
 }: Readonly<{
   content: string;
   language?: string | null;
   usesCodeEditor: boolean;
   usesMarkdownEditor: boolean;
+  explanation: string | null;
+  isExplaining: boolean;
+  isPro: boolean;
+  onExplain?: () => void;
 }>) {
   if (usesCodeEditor) {
     return (
@@ -155,6 +185,10 @@ function ContentView({
         ariaLabel="Content"
         language={language}
         readOnly
+        explanation={explanation}
+        isExplaining={isExplaining}
+        isPro={isPro}
+        onExplain={onExplain}
         value={content}
       />
     );
