@@ -2,17 +2,16 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { CreditCard, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
   createBillingPortalSession,
-  createCheckoutSession,
   reconcileBillingPortal,
   reconcileCheckoutSession,
 } from "@/actions/billing";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 type BillingState = {
   plan: "FREE" | "PRO";
@@ -32,8 +31,6 @@ type BillingState = {
   };
 };
 
-type BillingInterval = "monthly" | "yearly";
-
 const dateFormatter = new Intl.DateTimeFormat("en", {
   day: "numeric",
   month: "short",
@@ -43,19 +40,16 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
 export function ProfileBillingCard({
   billing,
   checkoutState,
-  initialInterval,
   portalState,
   sessionId,
 }: {
   billing: BillingState;
   checkoutState?: string;
-  initialInterval: BillingInterval;
   portalState?: string;
   sessionId?: string;
 }) {
   const router = useRouter();
   const reconciliationStarted = useRef(false);
-  const [interval, setInterval] = useState<BillingInterval>(initialInterval);
   const [feedback, setFeedback] = useState(() =>
     getInitialFeedback(checkoutState, portalState)
   );
@@ -115,17 +109,6 @@ export function ProfileBillingCard({
       setFeedback(result.error);
     });
   }, [portalState, router]);
-
-  function startCheckout(selectedInterval: BillingInterval) {
-    setFeedback("");
-    startTransition(async () => {
-      const result = await createCheckoutSession({
-        interval: selectedInterval,
-        attemptId: crypto.randomUUID(),
-      });
-      setFeedback(result.error);
-    });
-  }
 
   function openPortal() {
     setFeedback("");
@@ -196,46 +179,20 @@ export function ProfileBillingCard({
 
       {!billing.hasActivePro && billing.status !== "PAST_DUE" && (
         <div className="mt-5 rounded-md border border-border bg-background p-4">
-          <div
-            aria-label="Choose billing interval"
-            className="mb-4 flex w-fit gap-1 rounded-md bg-muted p-1"
-            role="group"
-          >
-            {(["monthly", "yearly"] as const).map((value) => (
-              <button
-                aria-pressed={interval === value}
-                className={cn(
-                  "rounded-sm px-3 py-1.5 text-sm font-medium text-muted-foreground",
-                  interval === value && "bg-background text-foreground shadow-sm"
-                )}
-                disabled={isPending}
-                key={value}
-                onClick={() => setInterval(value)}
-                type="button"
-              >
-                {capitalize(value)}
-              </button>
-            ))}
-          </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-medium">
-                {interval === "monthly" ? "€8 / month" : "€72 / year"}
-              </p>
+              <p className="font-medium">Upgrade to DevStash Pro</p>
               <p className="text-sm text-muted-foreground">
-                {interval === "yearly"
-                  ? "Save €24 each year (25%)."
-                  : "Flexible monthly billing."}
+                Choose €8 monthly or €72 yearly on the upgrade page.
               </p>
             </div>
-            <Button
-              disabled={isPending}
-              onClick={() => startCheckout(interval)}
-              type="button"
+            <Link
+              className={buttonVariants()}
+              href="/upgrade"
             >
               <Sparkles data-icon="inline-start" />
-              {isPending ? "Opening…" : "Upgrade to Pro"}
-            </Button>
+              Upgrade to Pro
+            </Link>
           </div>
         </div>
       )}
