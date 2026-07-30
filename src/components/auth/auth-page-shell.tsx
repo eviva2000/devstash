@@ -14,7 +14,7 @@ export function AuthPageShell({
   title: string;
 }>) {
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground">
+    <main className="relative flex min-h-screen items-center justify-center bg-background px-4 py-6 text-foreground sm:py-10">
       <ThemeToggle className="absolute right-4 top-4" />
 
       <section className="w-full max-w-md">
@@ -28,7 +28,7 @@ export function AuthPageShell({
           <span className="text-sm font-semibold">DevStash</span>
         </Link>
 
-        <div className="mt-8 rounded-lg border border-border bg-card p-6 text-card-foreground shadow-2xl shadow-black/20">
+        <div className="mt-6 rounded-lg border border-border bg-card p-5 text-card-foreground shadow-2xl shadow-black/20 sm:mt-8 sm:p-6">
           <div className="mb-6 space-y-1">
             <h1 className="text-2xl font-semibold tracking-normal">{title}</h1>
             <p className="text-sm text-muted-foreground">{subtitle}</p>

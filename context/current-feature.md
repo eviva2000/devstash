@@ -1,17 +1,20 @@
-# Current Feature
+# Current Feature: UI Review Fixes
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
-<!-- List goals for the active feature here. -->
+- Highlight the active sidebar destination across desktop and mobile navigation.
+- Offer GitHub account creation from the Register page, consistent with Sign in.
+- Tighten mobile auth-page spacing without affecting desktop layout.
 
 ## Notes
 
-<!-- Add implementation notes, constraints, or spec links here. -->
+- Derived from the July 30 Playwright UI review.
+- Preserve the untracked `.playwright-mcp/` browser artifacts; they are not part of this feature.
 
 ## History
 
