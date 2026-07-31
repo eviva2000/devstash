@@ -63,14 +63,14 @@ export function DashboardHeader({
         searchCollections={searchCollections}
       />
 
-      <ThemeToggle className="ml-auto md:ml-0" />
+      <ThemeToggle className="ml-auto" />
 
       {!isPro && (
         <Link
           className={buttonVariants({
             variant: "ghost",
             size: "sm",
-            className: "ml-auto text-[14px]",
+            className: "text-[14px]",
           })}
           href="/upgrade"
         >

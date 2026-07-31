@@ -10,6 +10,7 @@ import {
 } from "@/lib/billing/entitlements";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { cuidSchema, getFirstZodError } from "@/lib/validation";
 
 type GenerateAutoTagsErrorCode =
   | "UNAUTHENTICATED"
@@ -63,6 +64,17 @@ export type ExplainCodeResult =
       retryAfterSeconds?: number;
     };
 
+type AiRateLimitFailure = {
+  success: false;
+  code: "RATE_LIMITED";
+  error: string;
+  retryAfterSeconds: number;
+};
+
+type AiRateLimitMessage =
+  | string
+  | ((retryAfterMinutes: number) => string);
+
 const generateAutoTagsSchema = z.object({
   title: z
     .string()
@@ -113,7 +125,7 @@ const rawDescriptionSchema = z.object({
   description: z.string().trim().min(1).max(500),
 });
 
-const explainCodeSchema = z.object({ itemId: z.cuid() }).strict();
+const explainCodeSchema = z.object({ itemId: cuidSchema() }).strict();
 
 const AUTO_TAG_INSTRUCTIONS = `You generate concise tags for developer resources.
 Return JSON only in this exact shape: {"tags":["tag one","tag two","tag three"]}.
@@ -152,8 +164,10 @@ export async function explainCode(input: unknown): Promise<ExplainCodeResult> {
 
   const rateLimit = await checkRateLimit("aiCodeExplanation", session.user.id);
   if (!rateLimit.success) {
-    const retryAfterSeconds = Math.max(1, Math.ceil((rateLimit.reset - Date.now()) / 1000));
-    return { success: false, code: "RATE_LIMITED", error: "You have reached the AI explanation limit. Try again later.", retryAfterSeconds };
+    return getAiRateLimitFailure(
+      rateLimit.reset,
+      "You have reached the AI explanation limit. Try again later."
+    );
   }
 
   try {
@@ -202,27 +216,21 @@ export async function generateAutoTags(
     return {
       success: false,
       code: "INVALID_INPUT",
-      error:
-        parsedInput.error.issues[0]?.message ??
-        "Check the item details and try again.",
+      error: getFirstZodError(
+        parsedInput.error,
+        "Check the item details and try again."
+      ),
     };
   }
 
   const rateLimit = await checkRateLimit("aiAutoTags", session.user.id);
 
   if (!rateLimit.success) {
-    const retryAfterSeconds = Math.max(
-      1,
-      Math.ceil((rateLimit.reset - Date.now()) / 1000)
+    return getAiRateLimitFailure(
+      rateLimit.reset,
+      (retryAfterMinutes) =>
+        `You have reached the AI suggestion limit. Try again in ${retryAfterMinutes} minute${retryAfterMinutes === 1 ? "" : "s"}.`
     );
-    const retryAfterMinutes = Math.max(1, Math.ceil(retryAfterSeconds / 60));
-
-    return {
-      success: false,
-      code: "RATE_LIMITED",
-      error: `You have reached the AI suggestion limit. Try again in ${retryAfterMinutes} minute${retryAfterMinutes === 1 ? "" : "s"}.`,
-      retryAfterSeconds,
-    };
   }
 
   try {
@@ -294,27 +302,21 @@ export async function generateDescription(
     return {
       success: false,
       code: "INVALID_INPUT",
-      error:
-        parsedInput.error.issues[0]?.message ??
-        "Check the item details and try again.",
+      error: getFirstZodError(
+        parsedInput.error,
+        "Check the item details and try again."
+      ),
     };
   }
 
   const rateLimit = await checkRateLimit("aiDescription", session.user.id);
 
   if (!rateLimit.success) {
-    const retryAfterSeconds = Math.max(
-      1,
-      Math.ceil((rateLimit.reset - Date.now()) / 1000)
+    return getAiRateLimitFailure(
+      rateLimit.reset,
+      (retryAfterMinutes) =>
+        `You have reached the AI description limit. Try again in ${retryAfterMinutes} minute${retryAfterMinutes === 1 ? "" : "s"}.`
     );
-    const retryAfterMinutes = Math.max(1, Math.ceil(retryAfterSeconds / 60));
-
-    return {
-      success: false,
-      code: "RATE_LIMITED",
-      error: `You have reached the AI description limit. Try again in ${retryAfterMinutes} minute${retryAfterMinutes === 1 ? "" : "s"}.`,
-      retryAfterSeconds,
-    };
   }
 
   try {
@@ -370,6 +372,25 @@ export async function generateDescription(
       error: "AI description generation is temporarily unavailable. Try again.",
     };
   }
+}
+
+function getAiRateLimitFailure(
+  resetAt: number,
+  message: AiRateLimitMessage
+): AiRateLimitFailure {
+  const retryAfterSeconds = Math.max(
+    1,
+    Math.ceil((resetAt - Date.now()) / 1_000)
+  );
+  const retryAfterMinutes = Math.max(1, Math.ceil(retryAfterSeconds / 60));
+
+  return {
+    success: false,
+    code: "RATE_LIMITED",
+    error:
+      typeof message === "function" ? message(retryAfterMinutes) : message,
+    retryAfterSeconds,
+  };
 }
 
 function parseSuggestions(outputText: string, existingTags: string[]): string[] {

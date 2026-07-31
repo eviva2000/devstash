@@ -13,6 +13,7 @@ import {
   type CreateCollectionData,
   type UpdateCollectionData,
 } from "@/lib/db/collections";
+import { cuidSchema, getFirstZodError } from "@/lib/validation";
 
 type CreateCollectionResult =
   | { success: true; data: DashboardCollection }
@@ -46,9 +47,7 @@ const createCollectionSchema = z.object({
   ),
 });
 
-const collectionIdSchema = z
-  .string()
-  .regex(/^c[a-z0-9]{24}$/, "Collection not found.");
+const collectionIdSchema = cuidSchema("Collection not found.");
 
 export async function createCollection(
   data: unknown
@@ -70,7 +69,10 @@ export async function createCollection(
       return {
         success: false,
         code: "INVALID_INPUT",
-        error: getValidationErrorMessage(parsedData.error),
+        error: getFirstZodError(
+          parsedData.error,
+          "Check the collection details and try again."
+        ),
       };
     }
 
@@ -127,7 +129,10 @@ export async function updateCollection(
     if (!parsedData.success) {
       return {
         success: false,
-        error: getValidationErrorMessage(parsedData.error),
+        error: getFirstZodError(
+          parsedData.error,
+          "Check the collection details and try again."
+        ),
       };
     }
 
@@ -196,8 +201,4 @@ function revalidateCollectionPaths(collectionId?: string) {
   }
   revalidatePath("/items/[type]", "page");
   revalidatePath("/profile");
-}
-
-function getValidationErrorMessage(error: z.ZodError): string {
-  return error.issues[0]?.message ?? "Check the collection details and try again.";
 }
