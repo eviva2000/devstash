@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
@@ -8,13 +8,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
-import { AutoTagField } from "@/components/dashboard/auto-tag-field";
-import { CodeEditor } from "@/components/dashboard/code-editor";
-import { CodeLanguageSelect } from "@/components/dashboard/code-language-select";
-import { CollectionSelector } from "@/components/dashboard/collection-selector";
-import { FileUpload } from "@/components/dashboard/file-upload";
-import { GenerateDescriptionButton } from "@/components/dashboard/generate-description-button";
-import { MarkdownEditor } from "@/components/dashboard/markdown-editor";
+import { ItemCreateFormFields } from "@/components/dashboard/item-create-dialog/item-create-form-fields";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,48 +18,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type {
   DashboardCollection,
   DashboardItemType,
   DashboardPlanUsage,
 } from "@/features/dashboard/dashboard-types";
-import {
-  getTypeColorStyle,
-  typeColorMap,
-  typeIconMap,
-} from "@/features/dashboard/dashboard-utils";
-import type { UploadedFileMetadata, UploadItemType } from "@/lib/file-uploads";
 import { getDefaultCodeLanguage } from "@/lib/code-languages";
+import type { UploadedFileMetadata } from "@/lib/file-uploads";
 import {
   doesTypeSupportContent,
   doesTypeSupportFile,
   doesTypeSupportLanguage,
   doesTypeSupportUrl,
-  doesTypeUseCodeEditor,
-  doesTypeUseMarkdownEditor,
   isCreatableItemType,
 } from "@/lib/item-type-capabilities";
-import { cn, getActionErrorMessage, parseTags } from "@/lib/utils";
+import { getActionErrorMessage, parseTags } from "@/lib/utils";
 
-type CreateItemFormState = {
-  typeSlug: string;
-  title: string;
-  description: string;
-  tags: string;
-  content: string;
-  language: string;
-  url: string;
-  collectionIds: string[];
-  file: UploadedFileMetadata | null;
-};
+import type { CreateItemFormState } from "./item-create-dialog/types";
 
 export function ItemCreateDialog({
   collections,
@@ -105,12 +74,7 @@ export function ItemCreateDialog({
   );
   const [formError, setFormError] = useState("");
   const isOpen = open ?? uncontrolledOpen;
-  const selectedType =
-    availableTypes.find((type) => type.slug === form.typeSlug) ??
-    availableTypes[0];
   const supportsContent = doesTypeSupportContent(form.typeSlug);
-  const usesCodeEditor = doesTypeUseCodeEditor(form.typeSlug);
-  const usesMarkdownEditor = doesTypeUseMarkdownEditor(form.typeSlug);
   const supportsLanguage = doesTypeSupportLanguage(form.typeSlug);
   const supportsUrl = doesTypeSupportUrl(form.typeSlug);
   const supportsFileUpload = doesTypeSupportFile(form.typeSlug);
@@ -154,6 +118,34 @@ export function ItemCreateDialog({
     setForm(getInitialForm(defaultTypeSlug));
     setFormError("");
     setIsSaving(false);
+  }
+
+  function handleTypeChange(typeSlug: string) {
+    if (!typeSlug) {
+      return;
+    }
+
+    if (form.file) {
+      void cleanupPendingUpload(form.file.uploadToken);
+    }
+
+    updateForm({
+      typeSlug,
+      file: null,
+      language: doesTypeSupportLanguage(typeSlug)
+        ? getDefaultCodeLanguage(typeSlug)
+        : "",
+    });
+  }
+
+  function handleFileChange(file: UploadedFileMetadata | null) {
+    updateForm({
+      file,
+      title:
+        form.title.trim().length === 0 && file
+          ? getTitleFromFileName(file.fileName)
+          : form.title,
+    });
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -209,11 +201,11 @@ export function ItemCreateDialog({
 
       <Dialog
         open={isOpen}
-        onOpenChange={(open) => {
+        onOpenChange={(nextOpen) => {
           if (isSaving) {
             return;
           }
-          if (open) {
+          if (nextOpen) {
             openDialog();
             return;
           }
@@ -224,10 +216,7 @@ export function ItemCreateDialog({
           className="max-h-[calc(100dvh-1rem)] max-w-xl sm:max-h-[min(720px,calc(100dvh-2rem))]"
           showCloseButton={!isSaving}
         >
-          <form
-            className="flex min-h-0 flex-1 flex-col"
-            onSubmit={handleSubmit}
-          >
+          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
             <div className="shrink-0 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
               <DialogHeader className="pr-8">
                 <DialogTitle>Create Item</DialogTitle>
@@ -271,192 +260,17 @@ export function ItemCreateDialog({
                   </div>
                 )}
 
-                <section className="space-y-2">
-                  <FieldLabel>Type</FieldLabel>
-                  <Select
-                    disabled={isSaving || availableTypes.length === 0}
-                    onValueChange={(value) => {
-                      if (value) {
-                        if (form.file) {
-                          void cleanupPendingUpload(form.file.uploadToken);
-                        }
-
-                        updateForm({
-                          typeSlug: value,
-                          file: null,
-                          language: doesTypeSupportLanguage(value)
-                            ? getDefaultCodeLanguage(value)
-                            : "",
-                        });
-                      }
-                    }}
-                    value={form.typeSlug}
-                  >
-                    <SelectTrigger aria-label="Item type">
-                      <span className="flex min-w-0 items-center gap-2">
-                        {selectedType && (
-                          <TypeIconBadge type={selectedType} size="sm" />
-                        )}
-                        <SelectValue placeholder="Choose item type">
-                          {(value) =>
-                            availableTypes.find((type) => type.slug === value)
-                              ?.name ?? "Choose item type"
-                          }
-                        </SelectValue>
-                      </span>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableTypes.map((type) => (
-                        <SelectItem
-                          key={type.id}
-                          label={type.name}
-                          value={type.slug}
-                        >
-                          <span className="flex min-w-0 items-center gap-2">
-                            <TypeIconBadge type={type} />
-                            <span className="truncate">{type.name}</span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </section>
-
-                <section className="grid gap-4">
-                  <CreateField label="Title" required>
-                    <Input
-                      autoFocus
-                      disabled={isSaving}
-                      onChange={(event) =>
-                        updateForm({ title: event.target.value })
-                      }
-                      required
-                      value={form.title}
-                    />
-                  </CreateField>
-
-                  <CreateFieldBlock
-                    action={
-                      <GenerateDescriptionButton
-                        content={supportsContent ? form.content : ""}
-                        disabled={isSaving}
-                        fileName={form.file?.fileName ?? ""}
-                        isPro={isPro}
-                        itemType={selectedType?.name ?? form.typeSlug}
-                        language={supportsLanguage ? form.language : ""}
-                        onGenerated={(description) =>
-                          updateForm({ description })
-                        }
-                        tags={form.tags}
-                        title={form.title}
-                        url={supportsUrl ? form.url : ""}
-                      />
-                    }
-                    className="pt-2"
-                    label="Description"
-                  >
-                    <CreateTextarea
-                      ariaLabel="Description"
-                      disabled={isSaving}
-                      onChange={(description) => updateForm({ description })}
-                      rows={2}
-                      value={form.description}
-                    />
-                  </CreateFieldBlock>
-
-                  <AutoTagField
-                    content={form.content}
-                    disabled={isSaving}
-                    isPro={isPro}
-                    onChange={(tags) => updateForm({ tags })}
-                    tags={form.tags}
-                    title={form.title}
-                  />
-
-                  <CollectionSelector
-                    collections={collections}
-                    disabled={isSaving}
-                    onChange={(collectionIds) => updateForm({ collectionIds })}
-                    selectedIds={form.collectionIds}
-                  />
-
-                  {supportsLanguage && (
-                    <CreateFieldBlock label="Language">
-                      <CodeLanguageSelect
-                        disabled={isSaving}
-                        onChange={(language) => updateForm({ language })}
-                        value={form.language}
-                      />
-                    </CreateFieldBlock>
-                  )}
-
-                  {supportsContent && (
-                    usesCodeEditor ? (
-                      <CreateFieldBlock label="Content">
-                        <CodeEditor
-                          ariaLabel="Content"
-                          disabled={isSaving}
-                          language={form.language}
-                          minHeight={260}
-                          onChange={(content) => updateForm({ content })}
-                          value={form.content}
-                        />
-                      </CreateFieldBlock>
-                    ) : usesMarkdownEditor ? (
-                      <CreateFieldBlock label="Content">
-                        <MarkdownEditor
-                          ariaLabel="Content"
-                          disabled={isSaving}
-                          minHeight={260}
-                          onChange={(content) => updateForm({ content })}
-                          value={form.content}
-                        />
-                      </CreateFieldBlock>
-                    ) : (
-                      <CreateField label="Content">
-                        <CreateTextarea
-                          disabled={isSaving}
-                          onChange={(content) => updateForm({ content })}
-                          rows={5}
-                          value={form.content}
-                        />
-                      </CreateField>
-                    )
-                  )}
-
-                  {supportsUrl && (
-                    <CreateField label="URL" required>
-                      <Input
-                        disabled={isSaving}
-                        onChange={(event) =>
-                          updateForm({ url: event.target.value })
-                        }
-                        required
-                        type="url"
-                        value={form.url}
-                      />
-                    </CreateField>
-                  )}
-
-                  {supportsFileUpload && (
-                    <CreateFieldBlock label="Upload" required>
-                      <FileUpload
-                        disabled={isSaving || isUploadBlocked}
-                        itemType={form.typeSlug as UploadItemType}
-                        onChange={(file) => {
-                          updateForm({
-                            file,
-                            title:
-                              form.title.trim().length === 0 && file
-                                ? getTitleFromFileName(file.fileName)
-                                : form.title,
-                          });
-                        }}
-                        value={form.file}
-                      />
-                    </CreateFieldBlock>
-                  )}
-                </section>
+                <ItemCreateFormFields
+                  availableTypes={availableTypes}
+                  collections={collections}
+                  form={form}
+                  isPro={isPro}
+                  isSaving={isSaving}
+                  isUploadBlocked={isUploadBlocked}
+                  onFileChange={handleFileChange}
+                  onTypeChange={handleTypeChange}
+                  onUpdate={updateForm}
+                />
               </div>
             </div>
 
@@ -479,122 +293,6 @@ export function ItemCreateDialog({
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-function TypeIconBadge({
-  size = "default",
-  type,
-}: {
-  size?: "default" | "sm";
-  type: DashboardItemType;
-}) {
-  return (
-    <span
-      className={cn(
-        "flex shrink-0 items-center justify-center rounded-md",
-        size === "sm" ? "size-6" : "size-7",
-        typeColorMap[type.color as keyof typeof typeColorMap] ??
-          typeColorMap.zinc
-      )}
-      style={getTypeColorStyle(type.color)}
-    >
-      <SelectedTypeIcon type={type} />
-    </span>
-  );
-}
-
-function SelectedTypeIcon({ type }: { type: DashboardItemType }) {
-  const Icon =
-    typeIconMap[type.icon as keyof typeof typeIconMap] ??
-    typeIconMap[type.slug as keyof typeof typeIconMap] ??
-    FileText;
-
-  return <Icon className="size-4" />;
-}
-
-function CreateField({
-  children,
-  label,
-  required = false,
-}: {
-  children: React.ReactNode;
-  label: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="block space-y-1.5">
-      <FieldLabel required={required}>{label}</FieldLabel>
-      {children}
-    </label>
-  );
-}
-
-function CreateFieldBlock({
-  action,
-  children,
-  className,
-  label,
-  required = false,
-}: {
-  action?: React.ReactNode;
-  children: React.ReactNode;
-  className?: string;
-  label: string;
-  required?: boolean;
-}) {
-  return (
-    <div className={cn("block space-y-1.5", className)}>
-      {action ? (
-        <div className="flex min-h-8 items-center justify-between gap-2">
-          <FieldLabel required={required}>{label}</FieldLabel>
-          {action}
-        </div>
-      ) : (
-        <FieldLabel required={required}>{label}</FieldLabel>
-      )}
-      {children}
-    </div>
-  );
-}
-
-function FieldLabel({
-  children,
-  required = false,
-}: {
-  children: React.ReactNode;
-  required?: boolean;
-}) {
-  return (
-    <span className="text-sm font-medium text-muted-foreground">
-      {children}
-      {required && <span className="text-destructive"> *</span>}
-    </span>
-  );
-}
-
-function CreateTextarea({
-  ariaLabel,
-  disabled,
-  onChange,
-  rows,
-  value,
-}: {
-  ariaLabel?: string;
-  disabled: boolean;
-  onChange: (value: string) => void;
-  rows: number;
-  value: string;
-}) {
-  return (
-    <textarea
-      aria-label={ariaLabel}
-      className="w-full resize-none rounded-lg border border-input bg-input/20 px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-[color,box-shadow,background-color,border-color] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
-      disabled={disabled}
-      onChange={(event) => onChange(event.target.value)}
-      rows={rows}
-      value={value}
-    />
   );
 }
 

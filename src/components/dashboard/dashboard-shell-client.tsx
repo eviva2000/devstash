@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import type {
   DashboardData,
@@ -16,11 +16,8 @@ import type {
 import { getTypeHref } from "@/features/dashboard/dashboard-utils";
 
 import { DashboardHeader } from "./dashboard-header";
+import { DashboardAppShell } from "./dashboard-app-shell";
 import { DashboardMain } from "./dashboard-main";
-import {
-  DesktopSidebar,
-  MobileDrawer,
-} from "./dashboard-sidebar";
 
 interface DashboardShellClientProps {
   readonly user: DashboardUser;
@@ -62,9 +59,6 @@ export function DashboardShellClient({
   itemStats,
   usage,
 }: Readonly<DashboardShellClientProps>) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-
   const { dashboardData, sidebarData } = useMemo(() => {
     const typeById = new Map(itemTypes.map((type) => [type.id, type]));
     const allDashboardItems = uniqueItems([...pinnedItems, ...recentItems]);
@@ -127,42 +121,31 @@ export function DashboardShellClient({
   ]);
 
   return (
-    <main className="flex h-screen overflow-hidden bg-background text-foreground">
-      <DesktopSidebar
-        data={sidebarData}
-        isCollapsed={isCollapsed}
-        onToggle={() => setIsCollapsed((value) => !value)}
-        user={user}
-      />
-
-      <MobileDrawer
-        data={sidebarData}
-        isOpen={isMobileDrawerOpen}
-        onClose={() => setIsMobileDrawerOpen(false)}
-        user={user}
-      />
-
-      <section className="flex min-w-0 flex-1 flex-col">
+    <DashboardAppShell
+      renderHeader={({ isMobileDrawerOpen, openMobileDrawer }) => (
         <DashboardHeader
           collections={collections}
           isMobileDrawerOpen={isMobileDrawerOpen}
           isPro={isPro}
           itemTypes={itemTypes}
-          onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+          onOpenMobileDrawer={openMobileDrawer}
           searchCollections={searchCollections}
           searchItems={searchItems}
           usage={usage}
         />
-        <DashboardMain
-          collections={collections}
-          data={dashboardData}
-          extendedCollections={recentCollections}
-          collectionStats={collectionStats}
-          itemStats={itemStats}
-          isPro={isPro}
-        />
-      </section>
-    </main>
+      )}
+      sidebarData={sidebarData}
+      user={user}
+    >
+      <DashboardMain
+        collections={collections}
+        data={dashboardData}
+        extendedCollections={recentCollections}
+        collectionStats={collectionStats}
+        itemStats={itemStats}
+        isPro={isPro}
+      />
+    </DashboardAppShell>
   );
 }
 

@@ -1,17 +1,20 @@
-# Current Feature
+# Component Structure Refactor
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-Complete
+In Progress
 
 ## Goals
 
-<!-- List goals for the active feature here. -->
+- Extract the shared authenticated dashboard layout so sidebar and mobile-drawer state have one owner.
+- Split the item creation dialog into focused components for form fields and reusable field controls.
+- Preserve existing dashboard, item, collection, and profile behavior while reducing duplicated component code.
 
 ## Notes
 
-<!-- Add implementation notes, constraints, or spec links here. -->
+- The shared app shell supplies page-specific headers through a render prop so existing header variants remain unchanged.
+- The item-create dialog container retains submission and upload-cleanup behavior; conditional form UI lives in dedicated modules.
 
 ## History
 
