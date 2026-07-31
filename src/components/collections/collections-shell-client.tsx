@@ -1,14 +1,11 @@
 "use client";
 
 import { FolderOpen } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { CollectionCard } from "@/components/dashboard/collection-card";
+import { DashboardAppShell } from "@/components/dashboard/dashboard-app-shell";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import {
-  DesktopSidebar,
-  MobileDrawer,
-} from "@/components/dashboard/dashboard-sidebar";
 import type {
   DashboardCollection,
   DashboardItemStats,
@@ -48,9 +45,6 @@ export function CollectionsShellClient({
   searchItems,
   usage,
 }: CollectionsShellClientProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-
   const sidebarData: SidebarData = useMemo(
     () => ({
       totalItemsCount: itemStats.total,
@@ -75,32 +69,22 @@ export function CollectionsShellClient({
   );
 
   return (
-    <main className="flex h-screen overflow-hidden bg-background text-foreground">
-      <DesktopSidebar
-        data={sidebarData}
-        isCollapsed={isCollapsed}
-        onToggle={() => setIsCollapsed((value) => !value)}
-        user={user}
-      />
-
-      <MobileDrawer
-        data={sidebarData}
-        isOpen={isMobileDrawerOpen}
-        onClose={() => setIsMobileDrawerOpen(false)}
-        user={user}
-      />
-
-      <section className="flex min-w-0 flex-1 flex-col">
+    <DashboardAppShell
+      renderHeader={({ isMobileDrawerOpen, openMobileDrawer }) => (
         <DashboardHeader
           collections={collections}
           isMobileDrawerOpen={isMobileDrawerOpen}
           isPro={isPro}
           itemTypes={itemTypes}
-          onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+          onOpenMobileDrawer={openMobileDrawer}
           searchCollections={searchCollections}
           searchItems={searchItems}
           usage={usage}
         />
+      )}
+      sidebarData={sidebarData}
+      user={user}
+    >
 
         <div className="min-h-0 flex-1 overflow-y-auto bg-background">
           <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-4 py-6 md:px-6 lg:px-8">
@@ -139,7 +123,6 @@ export function CollectionsShellClient({
             )}
           </div>
         </div>
-      </section>
-    </main>
+    </DashboardAppShell>
   );
 }
