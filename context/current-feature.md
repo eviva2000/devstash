@@ -1,20 +1,17 @@
-# Component Structure Refactor
+# Current Feature
 
 ## Status
 
 <!-- Not Started | In Progress | Complete -->
-In Progress
+Complete
 
 ## Goals
 
-- Extract the shared authenticated dashboard layout so sidebar and mobile-drawer state have one owner.
-- Split the item creation dialog into focused components for form fields and reusable field controls.
-- Preserve existing dashboard, item, collection, and profile behavior while reducing duplicated component code.
+<!-- List goals for the active feature here. -->
 
 ## Notes
 
-- The shared app shell supplies page-specific headers through a render prop so existing header variants remain unchanged.
-- The item-create dialog container retains submission and upload-cleanup behavior; conditional form UI lives in dedicated modules.
+<!-- Add implementation notes, constraints, or spec links here. -->
 
 ## History
 
@@ -371,3 +368,9 @@ Keep this updated. Earliest to Latest
   - Added active-state styling and `aria-current` to desktop and mobile sidebar links
   - Added a GitHub registration option with a visual divider and tightened mobile auth-page spacing
   - Verified with `npm test` (204 passing), `npm run lint`, `npx tsc --noEmit`, `npm run build`, and `git diff --check`
+- **Component Structure Refactor** (July 31, 2026)
+  - Completed on branch `refactor-component-structure`
+  - Extracted the shared authenticated dashboard layout so sidebar collapse and mobile-drawer state are owned in one place.
+  - Converted dashboard, item-list, collection, collection-detail, and profile shells to supply page-specific headers and content through the shared shell.
+  - Split the item-creation dialog into a lifecycle container, conditional form fields, reusable field controls, and shared form-state types.
+  - Verified with `npx tsc --noEmit`, focused ESLint, validation tests, and `git diff --check`.
