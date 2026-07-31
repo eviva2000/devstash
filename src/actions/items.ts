@@ -9,6 +9,7 @@ import type {
   DashboardItemDetail,
 } from "@/features/dashboard/dashboard-types";
 import { deleteR2Object } from "@/lib/storage/r2";
+import { cuidSchema, getFirstZodError, isCuid } from "@/lib/validation";
 import {
   createItem as createItemRecord,
   deleteItem as deleteItemRecord,
@@ -85,11 +86,7 @@ const updateItemSchema = z.object({
     .array(z.string().trim().min(1).max(50, "Tag is too long."))
     .max(30, "Too many tags."),
   collectionIds: z
-    .array(
-      z
-        .string()
-        .regex(/^c[a-z0-9]{24}$/, "Choose a valid collection.")
-    )
+    .array(cuidSchema("Choose a valid collection."))
     .max(50, "Too many collections.")
     .default([]),
 });
@@ -101,9 +98,7 @@ const createItemSchema = updateItemSchema
     }),
     file: z
       .object({
-        uploadToken: z
-          .string()
-          .regex(/^c[a-z0-9]{24}$/, "Upload a file first."),
+        uploadToken: cuidSchema("Upload a file first."),
       })
       .nullable()
       .optional(),
@@ -130,12 +125,12 @@ const loadMoreItemsSchema = z.discriminatedUnion("scope", [
   z.object({
     scope: z.literal("type"),
     scopeId: z.string().trim().min(1).max(100),
-    cursor: z.string().regex(/^c[a-z0-9]{24}$/),
+    cursor: cuidSchema(),
   }),
   z.object({
     scope: z.literal("collection"),
-    scopeId: z.string().regex(/^c[a-z0-9]{24}$/),
-    cursor: z.string().regex(/^c[a-z0-9]{24}$/),
+    scopeId: cuidSchema(),
+    cursor: cuidSchema(),
   }),
 ]);
 
@@ -199,7 +194,10 @@ export async function createItem(data: unknown): Promise<CreateItemResult> {
       return {
         success: false,
         code: "INVALID_INPUT",
-        error: getValidationErrorMessage(parsedData.error),
+        error: getFirstZodError(
+          parsedData.error,
+          "Check the item details and try again."
+        ),
       };
     }
 
@@ -239,7 +237,7 @@ export async function updateItem(
       return { success: false, error: "You must be signed in to update items." };
     }
 
-    if (!/^c[a-z0-9]{24}$/.test(itemId)) {
+    if (!isCuid(itemId)) {
       return { success: false, error: "Item not found." };
     }
 
@@ -248,7 +246,10 @@ export async function updateItem(
     if (!parsedData.success) {
       return {
         success: false,
-        error: getValidationErrorMessage(parsedData.error),
+        error: getFirstZodError(
+          parsedData.error,
+          "Check the item details and try again."
+        ),
       };
     }
 
@@ -277,7 +278,7 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
       return { success: false, error: "You must be signed in to delete items." };
     }
 
-    if (!/^c[a-z0-9]{24}$/.test(itemId)) {
+    if (!isCuid(itemId)) {
       return { success: false, error: "Item not found." };
     }
 
@@ -309,10 +310,6 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
     console.error("Failed to delete item.", error);
     return { success: false, error: "Unable to delete item. Try again." };
   }
-}
-
-function getValidationErrorMessage(error: z.ZodError): string {
-  return error.issues[0]?.message ?? "Check the item details and try again.";
 }
 
 function getCreateItemFailureMessage(code: CreateItemFailureCode): string {
